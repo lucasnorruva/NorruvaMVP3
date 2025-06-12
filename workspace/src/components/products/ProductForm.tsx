@@ -151,8 +151,8 @@ const formSchema = z.object({
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
   imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
   
-  onChainStatus: z.string().optional(), // New field for on-chain status
-  onChainLifecycleStage: z.string().optional(), // New field for on-chain lifecycle stage
+  onChainStatus: z.string().optional(), 
+  onChainLifecycleStage: z.string().optional(), 
 
   productDetails: z.object({ 
     repairabilityScore: repairabilityScoreSchema,
@@ -164,8 +164,8 @@ const formSchema = z.object({
   batteryRegulation: batteryRegulationDetailsSchema.optional(),
   customAttributesJsonString: z.string().optional(),
   
-  authenticationVcId: z.string().optional(), 
-  ownershipNftLink: ownershipNftLinkSchema, 
+  authenticationVcId: z.string().optional(),
+  ownershipNftLink: ownershipNftLinkSchema,
 
   compliance: z.object({
     eprel: z.object({ 
@@ -765,6 +765,3 @@ export default function ProductForm({
     </Form>
   );
 }
-
-
-    

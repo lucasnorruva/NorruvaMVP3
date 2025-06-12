@@ -621,6 +621,3 @@ export default function AddNewProductPage() {
     </div>
   );
 }
-
-
-    
