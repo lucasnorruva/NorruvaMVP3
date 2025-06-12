@@ -2171,14 +2171,31 @@ components:
               properties:
                 value:
                   type: number
+                  nullable: true
                 scale:
                   type: number
+                  nullable: true
                 reportUrl:
                   type: string
+                  format: url
                   nullable: true
                 vcId:
                   type: string
                   nullable: true
+            sparePartsAvailability:
+              type: string
+              nullable: true
+              description: "Information on spare parts availability, e.g., 'Up to 7 years'."
+            repairManualUrl:
+              type: string
+              format: url
+              nullable: true
+              description: "URL to the product's repair manual."
+            disassemblyInstructionsUrl:
+              type: string
+              format: url
+              nullable: true
+              description: "URL to the product's disassembly instructions."
             recyclabilityInformation:
               type: object
               nullable: true
@@ -2390,6 +2407,10 @@ components:
         productDetails:
           description: "An eco friendly fridge."
           energyLabel: "A++"
+          repairabilityScore: { value: 8.5, scale: 10, reportUrl: "https://example.com/repairX500.pdf" }
+          sparePartsAvailability: "Available for 7 years post-purchase."
+          repairManualUrl: "https://example.com/manuals/repairX500.pdf"
+          disassemblyInstructionsUrl: "https://example.com/manuals/disassemblyX500.pdf"
     LifecycleEvent:
       type: object
       properties:
@@ -2605,6 +2626,16 @@ components:
             imageHint:
               type: string
               nullable: true
+            repairabilityScore:
+              type: object
+              nullable: true
+              properties:
+                value: { type: number , nullable: true }
+                scale: { type: number , nullable: true }
+                reportUrl: { type: string, format: url, nullable: true }
+            sparePartsAvailability: { type: string, nullable: true }
+            repairManualUrl: { type: string, format: url, nullable: true }
+            disassemblyInstructionsUrl: { type: string, format: url, nullable: true }
         textileInformation:
           $ref: '#/components/schemas/TextileInformation'
           nullable: true
@@ -2733,6 +2764,16 @@ components:
             imageHint:
               type: string
               nullable: true
+            repairabilityScore:
+              type: object
+              nullable: true
+              properties:
+                value: { type: number , nullable: true }
+                scale: { type: number , nullable: true }
+                reportUrl: { type: string, format: url, nullable: true }
+            sparePartsAvailability: { type: string, nullable: true }
+            repairManualUrl: { type: string, format: url, nullable: true }
+            disassemblyInstructionsUrl: { type: string, format: url, nullable: true }
         textileInformation:
           $ref: '#/components/schemas/TextileInformation'
           nullable: true
@@ -3305,4 +3346,3 @@ components:
       description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
     
 
-```

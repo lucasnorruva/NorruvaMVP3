@@ -145,6 +145,9 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         materialsUsed: dpp.productDetails?.materials?.map(m => ({ name: m.name, percentage: m.percentage, source: m.origin, isRecycled: m.isRecycled })),
         energyLabelRating: dpp.productDetails?.energyLabel,
         repairability: dpp.productDetails?.repairabilityScore ? { score: dpp.productDetails.repairabilityScore.value, scale: dpp.productDetails.repairabilityScore.scale, detailsUrl: dpp.productDetails.repairabilityScore.reportUrl } : undefined,
+        sparePartsAvailability: dpp.productDetails?.sparePartsAvailability,
+        repairManualUrl: dpp.productDetails?.repairManualUrl,
+        disassemblyInstructionsUrl: dpp.productDetails?.disassemblyInstructionsUrl,
         recyclabilityInfo: dpp.productDetails?.recyclabilityInformation ? { percentage: dpp.productDetails.recyclabilityInformation.recycledContentPercentage, instructionsUrl: dpp.productDetails.recyclabilityInformation.instructionsUrl } : undefined,
         supplyChainLinks: dpp.supplyChainLinks || [],
         certifications: mappedCertifications,
@@ -160,7 +163,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         onChainLifecycleStage: dpp.metadata.onChainLifecycleStage,
         textileInformation: dpp.textileInformation, 
         constructionProductInformation: dpp.constructionProductInformation, 
-        batteryRegulation: dpp.compliance.battery_regulation, // Directly map full battery_regulation
+        batteryRegulation: dpp.compliance.battery_regulation,
         lastUpdated: dpp.metadata.last_updated,
     };
 }
@@ -227,6 +230,10 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             energyLabel: userProductData.energyLabel,
             specifications: userProductData.specifications, 
             customAttributes: parsedCustomAttributes, 
+            repairabilityScore: userProductData.repairabilityScore,
+            sparePartsAvailability: userProductData.sparePartsAvailability,
+            repairManualUrl: userProductData.repairManualUrl,
+            disassemblyInstructionsUrl: userProductData.disassemblyInstructionsUrl,
           },
           compliance: { 
             eprel: userProductData.complianceData?.eprel,
@@ -269,3 +276,4 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
     
 
     
+

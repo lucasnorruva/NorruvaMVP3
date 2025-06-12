@@ -19,8 +19,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       onChainStatus: "Active", 
       onChainLifecycleStage: "InUse", 
     },
-    authenticationVcId: "vc_auth_DPP001_mock123", // Added for Task 31
-    ownershipNftLink: { // Added for Task 31
+    authenticationVcId: "vc_auth_DPP001_mock123", 
+    ownershipNftLink: { 
         registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1",
         contractAddress: "0xNFTContractForDPP001",
         tokenId: "1",
@@ -39,6 +39,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Warranty Period", value: "5 Years"},
         {key: "Country of Origin", value: "Germany"}
       ],
+      repairabilityScore: { value: 8.5, scale: 10, reportUrl: "https://greentech.com/repair/X500-ECO-report.pdf", vcId: "vc:repair:greentech:dpp001" },
+      sparePartsAvailability: "7 years from date of purchase",
+      repairManualUrl: "https://greentech.com/manuals/X500-ECO-repair.pdf",
+      disassemblyInstructionsUrl: "https://greentech.com/manuals/X500-ECO-disassembly.pdf",
+      recyclabilityInformation: { instructionsUrl: "https://greentech.com/recycling/X500-ECO", recycledContentPercentage: 70, designForRecycling: true, vcId: "vc:recycle:greentech:dpp001"},
     },
     compliance: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
@@ -155,7 +160,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageHint: "cotton t-shirt apparel",
       materials: [{name: "Organic Cotton", percentage: 100}],
       specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
-      customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}]
+      customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}],
+      repairabilityScore: { value: 5.0, scale: 10 },
+      sparePartsAvailability: "N/A (textile)",
+      repairManualUrl: "https://ecothreads.com/repair/common-textile-repairs",
+      disassemblyInstructionsUrl: "https://ecothreads.com/recycling/textile-disassembly-guide",
     },
     textileInformation: {
       fiberComposition: [
@@ -170,10 +179,17 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eprel: { status: "Not Applicable", lastChecked: "2024-07-25T00:00:00Z" },
       eu_espr: { status: "pending" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z", svhcListVersion: "N/A" }, 
+      scipNotification: { 
+        status: 'Pending Notification', 
+        svhcListVersion: '2024/01 (24.0.1)',
+        submittingLegalEntity: 'EcoThreads S.A.',
+        articleName: 'Dyed Organic Cotton Fabric',
+        primaryArticleId: 'FAB-ORG-CTN-01',
+        lastChecked: "2024-07-25T00:00:00Z" 
+      }, 
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "61091000", 
+        hsCode: "61091000", // HS Code for cotton t-shirts
         countryOfOrigin: "IN",
         netWeightKg: 0.15,
         grossWeightKg: 0.2,
@@ -236,6 +252,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       onChainStatus: "FlaggedForReview", 
       onChainLifecycleStage: "InUse" 
     },
+    productDetails: { 
+      description: "A recycled phone case.",
+      repairabilityScore: { value: 2.5, scale: 10 },
+      sparePartsAvailability: "Not typically repaired",
+    },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -263,7 +284,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       },
     },
     consumerScans: 2100,
-     productDetails: { description: "A recycled phone case."},
      blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333"},
     documents: [],
     traceability: {
@@ -294,6 +314,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       onChainStatus: "Archived", 
       onChainLifecycleStage: "EndOfLife" 
     },
+    productDetails: { 
+      description: "A modular sofa.",
+      repairabilityScore: { value: 7.0, scale: 10, reportUrl: "https://comfyliving.com/repair/sofa" },
+      sparePartsAvailability: "Individual modules available for 5 years",
+      repairManualUrl: "https://comfyliving.com/manuals/sofa-repair",
+      disassemblyInstructionsUrl: "https://comfyliving.com/manuals/sofa-disassembly",
+    },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-20T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -311,7 +338,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       }
     },
     consumerScans: 850,
-    productDetails: { description: "A modular sofa."},
     documents: [],
     traceability: {
       originCountry: "SE",
@@ -358,7 +384,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Charging Time (0-80%)", value: "30 minutes (DC Fast Charge @ 150kW)"},
         {key: "Energy Density (Wh/kg)", value: "167"},
         {key: "Thermal Management", value: "Liquid Cooled"}
-      ]
+      ],
+      repairabilityScore: { value: 6.0, scale: 10, reportUrl: "https://powervolt.com/repair/PV-EVB-75KWH-report" },
+      sparePartsAvailability: "Cell modules, BMS available for 10 years",
+      repairManualUrl: "https://powervolt.com/manuals/PV-EVB-75KWH-repair",
+      disassemblyInstructionsUrl: "https://powervolt.com/manuals/PV-EVB-75KWH-disassembly",
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, 
@@ -382,11 +412,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         submittingLegalEntity: 'PowerVolt Inc.',
         articleName: 'EV Battery Module Assembly',
         primaryArticleId: 'PV-EVB-75KWH-ASSY',
+        safeUseInstructionsLink: 'https://powervolt.com/sds/PV-EVB-75KWH-SUI.pdf',
         lastChecked: "2024-07-27T00:00:00Z" 
       },
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "85076000", 
+        hsCode: "85076000", // HS code for lithium-ion batteries
         countryOfOrigin: "US",
         netWeightKg: 450.0,
         grossWeightKg: 465.0,
@@ -458,14 +489,18 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       customAttributes: [
         {key: "Recycled Content Source", value: "Post-consumer paper"},
         {key: "VOC Emissions", value: "Low (A+)"}
-      ]
+      ],
+      repairabilityScore: { value: 3.0, scale: 10, reportUrl: "https://buildgreen.com/repair/ESP-R50-report" },
+      sparePartsAvailability: "Not applicable (panel system)",
+      repairManualUrl: "https://buildgreen.com/manuals/ESP-R50-repair-patching",
+      disassemblyInstructionsUrl: "https://buildgreen.com/manuals/ESP-R50-removal-recycling",
     },
     constructionProductInformation: {
       declarationOfPerformanceId: "DoP_ESP-R50-1200_001",
       ceMarkingDetailsUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf",
       intendedUseDescription: "Thermal insulation for building envelopes (walls, roofs, floors).",
       essentialCharacteristics: [
-        { characteristicName: "Thermal Conductivity (λ)", value: "0.030", unit: "W/(m·K)", testMethod: "EN 12667" },
+        { characteristicName: "Thermal Conductivity (λ)", value: "0.030 W/(m·K)", testMethod: "EN 12667" },
         { characteristicName: "Reaction to Fire", value: "B-s1, d0", testMethod: "EN 13501-1" },
         { characteristicName: "Water Vapour Diffusion Resistance (µ)", value: "3", testMethod: "EN 12086" }
       ]
@@ -473,13 +508,22 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-08-01T00:00:00Z" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-08-01T00:00:00Z", svhcListVersion: "N/A" },
+      scipNotification: { 
+        status: 'Not Required', 
+        lastChecked: "2024-08-01T00:00:00Z", 
+        svhcListVersion: "N/A",
+        articleName: "Insulation Panel (Cellulose Based)",
+        primaryArticleId: "ESP-R50-1200-PANEL"
+      },
       esprConformity: { status: "conformant", assessmentId: "CPR_ASSESS_006", assessmentDate: "2024-07-15" },
       euCustomsData: {
         status: "Verified",
         declarationId: "CUST_CPR_DPP006",
-        hsCode: "68061000", // Slag wool, rock wool and similar mineral wools
+        hsCode: "68061000", 
         countryOfOrigin: "BE",
+        netWeightKg: 5.5,
+        grossWeightKg: 6.0,
+        customsValuation: { value: 25.00, currency: "EUR" },
         lastChecked: "2024-07-20T00:00:00Z"
       }
     },
@@ -492,3 +536,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
+
+    
+    
+    
+

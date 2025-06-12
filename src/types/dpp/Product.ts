@@ -104,6 +104,9 @@ export interface DigitalProductPassport {
     sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
     energyLabel?: string;
     repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string; // New for Right to Repair
+    repairManualUrl?: string; // New for Right to Repair
+    disassemblyInstructionsUrl?: string; // New for Right to Repair
     recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
     specifications?: string; 
     customAttributes?: CustomAttribute[];
@@ -181,6 +184,9 @@ export interface SimpleProductDetail {
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
+  sparePartsAvailability?: string; // New for Right to Repair
+  repairManualUrl?: string; // New for Right to Repair
+  disassemblyInstructionsUrl?: string; // New for Right to Repair
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   complianceSummary?: ProductComplianceSummary;
@@ -238,6 +244,10 @@ export interface StoredUserProduct {
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributesJsonString?: string;
+  repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string }; // Added for Right to Repair
+  sparePartsAvailability?: string; // New for Right to Repair
+  repairManualUrl?: string; // New for Right to Repair
+  disassemblyInstructionsUrl?: string; // New for Right to Repair
   complianceData?: { 
     eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
     esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
@@ -289,6 +299,10 @@ export interface RichMockProduct {
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
+  repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string }; // Added for Right to Repair
+  sparePartsAvailability?: string; // New for Right to Repair
+  repairManualUrl?: string; // New for Right to Repair
+  disassemblyInstructionsUrl?: string; // New for Right to Repair
 }
 
 export interface PublicProductInfo {
@@ -309,6 +323,7 @@ export interface PublicProductInfo {
   sku?: string;
   nfcTagId?: string;
   rfidTagId?: string;
+  gtin?: string; // Added GTIN to public info
   anchorTransactionHash?: string;
   blockchainPlatform?: string;
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';
@@ -325,7 +340,11 @@ export interface PublicProductInfo {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
+  batteryRegulation?: BatteryRegulationDetails; 
+  repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string }; // Added for Right to Repair
+  sparePartsAvailability?: string; // New for Right to Repair
+  repairManualUrl?: string; // New for Right to Repair
+  disassemblyInstructionsUrl?: string; // New for Right to Repair
 }
 
 export interface Supplier {
@@ -378,7 +397,11 @@ export interface DisplayableProduct {
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
+  batteryRegulation?: BatteryRegulationDetails; 
+  repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string }; // Added for Right to Repair
+  sparePartsAvailability?: string; // New for Right to Repair
+  repairManualUrl?: string; // New for Right to Repair
+  disassemblyInstructionsUrl?: string; // New for Right to Repair
 }
 
 export interface AnchorResult {
@@ -421,7 +444,7 @@ export interface TransitProduct {
   name: string;
   stage: string;
   eta: string; 
-  dppStatus: ProductComplianceSummary['overallStatus']; // Changed to use overallStatus type
+  dppStatus: ProductComplianceSummary['overallStatus']; 
   transport: "Ship" | "Truck" | "Plane";
   origin: string; 
   destination: string; 
@@ -440,8 +463,10 @@ export interface InspectionEvent {
   id: string;
   icon: React.ElementType;
   title: string;
-  timestamp: string; // ISO Date string or human-readable
+  timestamp: string; 
   description: string;
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
   badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }
+    
+

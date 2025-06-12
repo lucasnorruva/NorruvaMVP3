@@ -40,7 +40,7 @@ interface BatteryRegulationOrigin {
   vcIdOrigin?: AiOrigin;
 }
 
-export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRegulation' | 'compliance'> {
+export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails'> {
   productNameOrigin?: AiOrigin;
   productDescriptionOrigin?: AiOrigin;
   manufacturerOrigin?: AiOrigin;
@@ -50,6 +50,12 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
   energyLabelOrigin?: AiOrigin;
   specificationsOrigin?: AiOrigin;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual' | undefined;
+  productDetails?: {
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
   batteryRegulationOrigin?: BatteryRegulationOrigin;
   compliance?: {
@@ -66,7 +72,7 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
 }
 
 
-export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance'> {
+export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails'> {
   id: string;
   status: string; 
   compliance: string; 
@@ -76,12 +82,17 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   keyCompliancePoints?: string[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
-  repairability?: { score: number; scale: number; detailsUrl?: string };
+  // repairability moved under productDetails below
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary; 
-  
+  productDetails?: { // To store new repairability fields
+    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
   complianceData?: { 
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
@@ -145,6 +156,13 @@ const defaultConstructionProductInformationState: Partial<ConstructionProductInf
   essentialCharacteristics: [],
 };
 
+const defaultProductDetailsState = {
+  repairabilityScore: { value: null, scale: null, reportUrl: "", vcId: "" },
+  sparePartsAvailability: "",
+  repairManualUrl: "",
+  disassemblyInstructionsUrl: "",
+};
+
 
 export default function AddNewProductPage() {
   const router = useRouter();
@@ -167,6 +185,7 @@ export default function AddNewProductPage() {
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
     onChainStatus: "Unknown", 
     onChainLifecycleStage: "Unknown", 
+    productDetails: { ...defaultProductDetailsState },
     batteryRegulation: { ...defaultBatteryRegulationState },
     customAttributesJsonString: "",
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
@@ -196,6 +215,14 @@ export default function AddNewProductPage() {
           ...productToEdit,
           onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", 
           onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", 
+          productDetails: {
+            ...defaultProductDetailsState, // Ensure all fields are present
+            ...(productToEdit.productDetails || {}), // Spread existing productDetails if any
+            repairabilityScore: productToEdit.repairabilityScore || productToEdit.productDetails?.repairabilityScore || defaultProductDetailsState.repairabilityScore,
+            sparePartsAvailability: productToEdit.sparePartsAvailability || productToEdit.productDetails?.sparePartsAvailability || defaultProductDetailsState.sparePartsAvailability,
+            repairManualUrl: productToEdit.repairManualUrl || productToEdit.productDetails?.repairManualUrl || defaultProductDetailsState.repairManualUrl,
+            disassemblyInstructionsUrl: productToEdit.disassemblyInstructionsUrl || productToEdit.productDetails?.disassemblyInstructionsUrl || defaultProductDetailsState.disassemblyInstructionsUrl,
+          },
           batteryRegulation: {
             ...defaultBatteryRegulationState,
             ...(productToEdit.batteryRegulation || {}),
@@ -295,6 +322,7 @@ export default function AddNewProductPage() {
       const result = await extractProductData({ documentDataUri, documentType });
 
       const aiInitialFormData: Partial<InitialProductFormData> = {
+        productDetails: { ...defaultProductDetailsState }, // Ensure productDetails is initialized
         batteryRegulation: { ...defaultBatteryRegulationState },
         batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState },
         compliance: { 
@@ -404,7 +432,12 @@ export default function AddNewProductPage() {
         lastUpdated: new Date().toISOString(),
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
-        
+        productDetails: { // Save new repairability fields
+            repairabilityScore: formDataFromForm.productDetails?.repairabilityScore,
+            sparePartsAvailability: formDataFromForm.productDetails?.sparePartsAvailability,
+            repairManualUrl: formDataFromForm.productDetails?.repairManualUrl,
+            disassemblyInstructionsUrl: formDataFromForm.productDetails?.disassemblyInstructionsUrl,
+        },
         complianceData: {
           eprel: formDataFromForm.compliance?.eprel,
           esprConformity: formDataFromForm.compliance?.esprConformity,
@@ -561,3 +594,4 @@ export default function AddNewProductPage() {
     </div>
   );
 }
+

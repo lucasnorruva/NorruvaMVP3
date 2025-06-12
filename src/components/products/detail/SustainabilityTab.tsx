@@ -6,7 +6,7 @@
 import type { SimpleProductDetail } from "@/types/dpp";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Leaf, Zap, Recycle, Wrench, CheckCircle, AlertCircle, Info, Users } from "lucide-react";
+import { Leaf, Zap, Recycle, Wrench, CheckCircle, AlertCircle, Info, Users, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -23,7 +23,9 @@ const DetailItem: React.FC<{ label: string; value?: string | number | null; unit
         {value}
         {unit && <span className="ml-0.5 text-xs text-muted-foreground">{unit}</span>}
         {link && (
-          <Link href={link} target="_blank" rel="noopener noreferrer" className="ml-1.5 text-primary hover:underline text-xs">(Details)</Link>
+          <Link href={link} target="_blank" rel="noopener noreferrer" className="ml-1.5 text-primary hover:underline text-xs inline-flex items-center">
+            Details <ExternalLink className="h-3 w-3 ml-1" />
+          </Link>
         )}
       </span>
     </div>
@@ -93,7 +95,6 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
         </CardHeader>
         <CardContent className="space-y-2">
           <DetailItem label="Energy Label Rating" value={product.energyLabelRating} />
-          {/* Add more energy-related details here if available in SimpleProductDetail */}
           {!product.energyLabelRating && <p className="text-sm text-muted-foreground">Energy label information not specified.</p>}
         </CardContent>
       </Card>
@@ -101,9 +102,9 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center">
-            <Wrench className="mr-2 h-5 w-5 text-blue-600" /> Repair &amp; Recyclability
+            <Wrench className="mr-2 h-5 w-5 text-blue-600" /> Repairability & End-of-Life
           </CardTitle>
-          <CardDescription>Information on product end-of-life and maintenance.</CardDescription>
+          <CardDescription>Information on product maintenance, repair, and disposal.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {product.repairability && (
@@ -113,14 +114,18 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
                 <span className="font-bold text-xl text-blue-700">{product.repairability.score}</span> / {product.repairability.scale}
                 {product.repairability.detailsUrl && (
                   <Link href={product.repairability.detailsUrl} target="_blank" rel="noopener noreferrer">
-                    <Button variant="link" size="sm" className="p-0 h-auto ml-2 text-xs">View Details</Button>
+                    <Button variant="link" size="sm" className="p-0 h-auto ml-2 text-xs inline-flex items-center">View Report <ExternalLink className="h-3 w-3 ml-1"/></Button>
                   </Link>
                 )}
               </p>
             </div>
           )}
+          <DetailItem label="Spare Parts Availability" value={product.sparePartsAvailability} />
+          <DetailItem label="Repair Manual" value="View/Download" link={product.repairManualUrl} />
+          <DetailItem label="Disassembly Instructions" value="View/Download" link={product.disassemblyInstructionsUrl} />
+
           {product.recyclabilityInfo && (
-            <div>
+            <div className="pt-2 mt-2 border-t border-border/50">
               <h4 className="text-sm font-medium mb-1">Recyclability:</h4>
                <DetailItem label="Recyclable Content" value={product.recyclabilityInfo.percentage} unit="%" />
                {product.recyclabilityInfo.instructionsUrl && (
@@ -132,8 +137,8 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
                )}
             </div>
           )}
-          {!product.repairability && !product.recyclabilityInfo && (
-             <p className="text-sm text-muted-foreground">Repair and recyclability information not specified.</p>
+          {!product.repairability && !product.sparePartsAvailability && !product.repairManualUrl && !product.disassemblyInstructionsUrl && !product.recyclabilityInfo && (
+             <p className="text-sm text-muted-foreground">Repair and end-of-life information not specified.</p>
           )}
         </CardContent>
       </Card>
