@@ -276,7 +276,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </CardContent>
         </Card>
 
-        {product.textileInformation && (
+        {product.textileInformation && (Object.keys(product.textileInformation).length > 0 && (product.textileInformation.fiberComposition && product.textileInformation.fiberComposition.length > 0 || product.textileInformation.countryOfOriginLabeling || product.textileInformation.careInstructionsUrl || product.textileInformation.isSecondHand !== undefined)) && (
           <Card className="shadow-sm">
             <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Shirt className="mr-2 h-5 w-5 text-purple-600" />Textile Information</CardTitle></CardHeader>
             <CardContent className="text-sm space-y-1.5">
@@ -297,7 +297,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </Card>
         )}
 
-        {product.constructionProductInformation && (
+        {product.constructionProductInformation && (Object.keys(product.constructionProductInformation).length > 0 && (product.constructionProductInformation.declarationOfPerformanceId || product.constructionProductInformation.ceMarkingDetailsUrl || product.constructionProductInformation.intendedUseDescription || (product.constructionProductInformation.essentialCharacteristics && product.constructionProductInformation.essentialCharacteristics.length > 0))) && (
           <Card className="shadow-sm">
             <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Construction className="mr-2 h-5 w-5 text-orange-600" />Construction Product Information</CardTitle></CardHeader>
             <CardContent className="text-sm space-y-1.5">
