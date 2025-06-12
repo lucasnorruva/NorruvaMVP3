@@ -115,7 +115,25 @@ export default function DeveloperPortalPage() {
   const [listDppsSnippetLang, setListDppsSnippetLang] = useState("cURL");
 
   const [postDppBody, setPostDppBody] = useState<string>(
-    JSON.stringify({ productName: "New Widget Pro", category: "Gadgets", gtin: "1234500000123" }, null, 2)
+    JSON.stringify({
+      productName: "New Widget Pro",
+      category: "Gadgets",
+      gtin: "1234500000123",
+      productDetails: {
+        description: "A fantastic new widget with pro features."
+      }
+      // To add textile info (optional):
+      // "textileInformation": {
+      //   "fiberComposition": [{ "fiberName": "Organic Cotton", "percentage": 100 }],
+      //   "countryOfOriginLabeling": "Made in EU",
+      //   "isSecondHand": false
+      // },
+      // To add construction product info (optional):
+      // "constructionProductInformation": {
+      //   "declarationOfPerformanceId": "DoP-XYZ-001",
+      //   "intendedUseDescription": "For structural support in residential buildings."
+      // }
+    }, null, 2)
   );
   const [postDppResponse, setPostDppResponse] = useState<string | null>(null);
   const [isPostDppLoading, setIsPostDppLoading] = useState(false);
@@ -149,7 +167,18 @@ export default function DeveloperPortalPage() {
 
   const [putProductId, setPutProductId] = useState<string>("DPP001");
   const [putProductBody, setPutProductBody] = useState<string>(
-    JSON.stringify({ productDetails: { description: "Updated description with enhanced features." }, metadata: { status: "pending_review"} }, null, 2)
+    JSON.stringify({
+      productDetails: { description: "Updated description with enhanced features." },
+      metadata: { status: "pending_review" }
+      // Example textile update (optional):
+      // "textileInformation": {
+      //   "careInstructionsUrl": "https://example.com/newcare"
+      // },
+      // Example construction update (optional):
+      // "constructionProductInformation": {
+      //   "ceMarkingDetailsUrl": "https://example.com/newCE"
+      // }
+    }, null, 2)
   );
   const [putProductResponse, setPutProductResponse] = useState<string | null>(null);
   const [isPutProductLoading, setIsPutProductLoading] = useState(false);
@@ -587,8 +616,8 @@ export default function DeveloperPortalPage() {
       children: (
         <div>
           <Label htmlFor="postDppBody">Request Body (JSON)</Label>
-          <Textarea id="postDppBody" value={postDppBody} onChange={(e) => setPostDppBody(e.target.value)} rows={5} className="font-mono text-xs" />
-          <p className="text-xs text-muted-foreground mt-1">Example required fields: productName, category. See API Reference for full schema.</p>
+          <Textarea id="postDppBody" value={postDppBody} onChange={(e) => setPostDppBody(e.target.value)} rows={10} className="font-mono text-xs" />
+          <p className="text-xs text-muted-foreground mt-1">Example required fields: productName, category. See API Reference for full schema including textile/construction.</p>
         </div>
       )
     },
@@ -611,8 +640,8 @@ export default function DeveloperPortalPage() {
           </div>
           <div className="mt-2">
             <Label htmlFor="putProductBody">Request Body (JSON)</Label>
-            <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={4} className="font-mono text-xs" />
-            <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields.</p>
+            <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={8} className="font-mono text-xs" />
+            <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields including textile/construction.</p>
           </div>
         </>
       )
@@ -1435,4 +1464,3 @@ export default function DeveloperPortalPage() {
   );
 }
 
-```
