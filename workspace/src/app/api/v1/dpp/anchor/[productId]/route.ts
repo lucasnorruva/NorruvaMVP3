@@ -37,18 +37,19 @@ export async function POST(
   }
 
   const anchorHash = `0xmockAnchor${Date.now().toString(16)}`;
-  // Generate conceptual contractAddress and tokenId
-  const mockContractAddress = `0xMOCK_CONTRACT_FOR_${productId}`;
-  const mockTokenId = `MOCK_TID_${productId}_${Date.now().toString(36).slice(-4).toUpperCase()}`;
+  const existingIdentifiers = MOCK_DPPS[index].blockchainIdentifiers || {};
+  
+  const mockContractAddress = existingIdentifiers.contractAddress || `0xMOCK_CONTRACT_FOR_${productId}`;
+  const mockTokenId = existingIdentifiers.tokenId || `MOCK_TID_${productId}_${Date.now().toString(36).slice(-4).toUpperCase()}`;
 
   const updated: DigitalProductPassport = {
     ...MOCK_DPPS[index],
     blockchainIdentifiers: {
-      ...(MOCK_DPPS[index].blockchainIdentifiers || {}),
+      ...existingIdentifiers,
       platform: requestBody.platform,
       anchorTransactionHash: anchorHash,
-      contractAddress: mockContractAddress, // Set conceptual contract address
-      tokenId: mockTokenId,                 // Set conceptual token ID
+      contractAddress: mockContractAddress, 
+      tokenId: mockTokenId,                 
     },
     metadata: {
       ...MOCK_DPPS[index].metadata,
