@@ -17,8 +17,6 @@ const createHistoryEntry = (
 ): Omit<HistoryEntry, 'version'> | null => {
     if (!timestamp || isNaN(new Date(timestamp).getTime())) {
         // If timestamp is invalid or missing, try to use a fallback or skip this entry
-        console.warn(`Invalid or missing timestamp for history action: ${actionType}. Details: ${details}`);
-        // Optionally, use a default timestamp or skip creating the entry
         // For now, we'll skip if truly invalid, or use a very old date if undefined but details present
         if (!timestamp && details) { // If timestamp is undefined but there are details, use a default past date
              return { timestamp: "1970-01-01T00:00:00Z", actionType, details, changedBy };
@@ -51,7 +49,7 @@ export async function GET(
 
   // Initial creation
   const creationTimestamp = product.metadata.created_at || product.metadata.last_updated; // Fallback if created_at is missing
-  const creationEntry = createHistoryEntry(creationTimestamp, "DPP Created", `Initial version of DPP for ${product.productName}.`, "System/Initial Importer");
+  const creationEntry = createHistoryEntry(creationTimestamp, "DPP Created", `Initial version of DPP for ${product.productName}. Status: ${product.metadata.status}.`, "System/Initial Importer");
   if (creationEntry) {
     potentialHistory.push(creationEntry);
     maxEventTimestamp = Math.max(maxEventTimestamp, new Date(creationEntry.timestamp).getTime());
@@ -106,9 +104,9 @@ export async function GET(
   }
 
   // Blockchain Identifiers (Conceptual Anchor Event)
-  if (product.blockchainIdentifiers?.anchorTransactionHash && product.metadata.last_updated) { // Assuming anchor updates last_updated
+  if (product.blockchainIdentifiers?.anchorTransactionHash && product.metadata.last_updated) { 
     const entry = createHistoryEntry(
-        product.metadata.last_updated, // Use last_updated as proxy for anchor time
+        product.metadata.last_updated, 
         "DPP Anchored to Blockchain",
         `Product DPP anchored on platform ${product.blockchainIdentifiers.platform || 'Unknown'}. Tx: ${product.blockchainIdentifiers.anchorTransactionHash.substring(0,15)}...`,
         "System (Blockchain Service)"
@@ -117,7 +115,7 @@ export async function GET(
   }
 
   // Ownership NFT Link
-  if (product.ownershipNftLink && product.metadata.last_updated) { // Assuming link updates last_updated
+  if (product.ownershipNftLink && product.metadata.last_updated) { 
     const entry = createHistoryEntry(
         product.metadata.last_updated, 
         "Ownership NFT Linked",
@@ -173,11 +171,12 @@ export async function GET(
   // General updates based on last_updated (if significantly different from creation/last event)
   const productLastUpdatedTime = new Date(product.metadata.last_updated).getTime();
   if (productLastUpdatedTime > maxEventTimestamp) {
-     if (productLastUpdatedTime - maxEventTimestamp > 60000) { // Only if significantly later
+     // Only add generic update if it's significantly later than specific events
+     if (productLastUpdatedTime - maxEventTimestamp > 60000) { // e.g., more than 1 minute after last known event
         const entry = createHistoryEntry(
             product.metadata.last_updated,
             "DPP Data Updated", 
-            "Product information was updated via platform.",
+            `Product information was updated. Status: ${product.metadata.status}.`,
             "User/System (Generic Update)"
         );
         if(entry) potentialHistory.push(entry);
@@ -185,13 +184,15 @@ export async function GET(
   }
   
   const validHistoryEntries = potentialHistory.filter(entry => entry !== null) as Array<Omit<HistoryEntry, 'version'>>;
+  // Sort by timestamp ascending to assign versions correctly
   validHistoryEntries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   const versionedHistory: HistoryEntry[] = validHistoryEntries.map((entry, index) => ({
     ...entry,
-    version: index + 1,
+    version: index + 1, // Assign version based on chronological order
   }));
   
+  // Finally, sort by timestamp descending for display (most recent first)
   versionedHistory.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return NextResponse.json(versionedHistory);
