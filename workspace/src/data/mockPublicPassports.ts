@@ -4,7 +4,7 @@ import type { PublicProductInfo } from '@/types/dpp';
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
   "PROD001": {
     passportId: "PROD001",
-    productName: "EcoFriendly Refrigerator X2000",
+    productName: "EcoSmart Refrigerator X500",
     tagline: "Cool, Efficient, Sustainable.",
     imageUrl: "https://placehold.co/800x600.png",
     imageHint: "refrigerator kitchen",
@@ -19,7 +19,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     manufacturerWebsite: "#",
     brandLogoUrl: "https://placehold.co/150x50.png?text=GreenTech",
     learnMoreLink: "#",
-    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling directives. EPREL registered. EBSI verification completed for key claims.",
+    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling directives. EPREL registered. EBSI verification completed for key claims. SCIP Notified. Customs Data Verified.",
     category: "Appliances",
     modelNumber: "X500-ECO",
     sku: "SKU-X500",
@@ -77,7 +77,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     manufacturerWebsite: "#",
     brandLogoUrl: "https://placehold.co/150x50.png?text=EcoThreads",
     learnMoreLink: "#",
-    complianceSummary: "Complies with EU textile labelling regulations. GOTS certified. EBSI verification pending.",
+    complianceSummary: "Complies with EU textile labelling regulations. GOTS certified. EBSI verification pending. SCIP Notification Pending.",
     category: "Apparel",
     modelNumber: "ET-TS-ORG-M",
     blockchainPlatform: "MockChain (Polygon Layer 2)",
@@ -110,6 +110,48 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     },
     authenticationVcId: "vc_auth_DPP002_mock456",
   },
+  "PROD005": { // Maps to DPP005 (EV Battery)
+    passportId: "DPP005",
+    productName: "High-Performance EV Battery",
+    tagline: "Powering the Future of Mobility.",
+    imageUrl: "https://placehold.co/800x600.png",
+    imageHint: "ev battery module electric car",
+    productStory: "The PowerVolt EV Battery Module PV-EVB-75KWH is engineered for exceptional range, rapid charging, and long-term durability. Featuring advanced NMC 811 chemistry and a robust liquid cooling system, it's ready for demanding automotive applications. Full compliance data as per EU Battery Regulation is available.",
+    sustainabilityHighlights: [
+      { iconName: "Zap", text: "High Energy Density (167 Wh/kg)" },
+      { iconName: "Recycle", text: "Contains Recycled Cobalt (12%), Lithium (4%), Nickel (10%)" },
+      { iconName: "Leaf", text: "Carbon Footprint: 85.5 kg CO2e/kWh" },
+    ],
+    manufacturerName: "PowerVolt",
+    manufacturerWebsite: "#",
+    brandLogoUrl: "https://placehold.co/150x50.png?text=PowerVolt",
+    complianceSummary: "EU Battery Regulation data pending final review. SCIP notification submitted. Customs documentation in progress.",
+    category: "Automotive Parts",
+    modelNumber: "PV-EVB-75KWH",
+    anchorTransactionHash: "0xevBatteryAnchorHash555AAA",
+    blockchainPlatform: "PowerChain Ledger",
+    contractAddress: "0xEV_BATTERY_REGISTRY",
+    tokenId: "TOKEN_PV_EVB_75KWH_SN001",
+    ebsiStatus: 'pending_verification',
+    onChainStatus: "Active",
+    onChainLifecycleStage: "QualityAssurance",
+    batteryRegulation: { // Example of public-facing battery info
+        status: "pending",
+        batteryChemistry: "NMC 811",
+        batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
+        carbonFootprint: { value: 85.5, unit: "kg CO2e/kWh", calculationMethod: "PEFCR for Batteries v1.2" },
+        recycledContent: [
+            { material: "Cobalt", percentage: 12 },
+            { material: "Lithium", percentage: 4 },
+            { material: "Nickel", percentage: 10 }
+        ],
+        stateOfHealth: { value: 100, unit: '%' },
+    },
+    certifications: [
+        { name: "UN 38.3 Transport Test", authority: "TestCert Ltd.", isVerified: true, standard: "UN Manual of Tests and Criteria" },
+        { name: "ISO 26262 (ASIL D)", authority: "AutomotiveSafetyCert", isVerified: true, standard: "ISO 26262" }
+    ],
+  },
   "PROD006": { 
     passportId: "PROD006",
     productName: "EcoSmart Insulation Panel R50",
@@ -126,7 +168,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     manufacturerName: "BuildGreen Systems",
     manufacturerWebsite: "#",
     brandLogoUrl: "https://placehold.co/150x50.png?text=BuildGreen",
-    complianceSummary: "Complies with EU Construction Products Regulation (CPR). Declaration of Performance available. CE Marked.",
+    complianceSummary: "Complies with EU Construction Products Regulation (CPR). Declaration of Performance available. CE Marked. SCIP Notification Not Required.",
     category: "Construction Materials",
     modelNumber: "ESP-R50-1200",
     ebsiStatus: 'pending_verification',
@@ -137,8 +179,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { stage: "CE Marking Achieved", date: "July 2024", details: "Conformity assessment completed.", iconName: "Award" },
     ],
     certifications: [
-      { name: "CE Marking (CPR)", authority: "Notified Body 1234", isVerified: true, standard: "EN 13163" },
-      { name: "Environmental Product Declaration (EPD)", authority: "EPD Program Operator XYZ", link: "#", isVerified: false, standard: "ISO 14025" }
+      { name: "CE Marking (CPR)", authority: "Notified Body 1234 (BE)", isVerified: true, standard: "EN 13163", link: "https://buildgreen.com/certs/ce_esp-r50.pdf" },
+      { name: "Environmental Product Declaration (EPD)", authority: "EPD Program Operator XYZ", link: "https://buildgreen.com/epd/esp-r50.pdf", isVerified: false, standard: "ISO 14025" }
     ],
     constructionProductInformation: {
       declarationOfPerformanceId: "DoP_ESP-R50-1200_001",
@@ -188,7 +230,17 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         tokenId: "101",
         chainName: "MockUserChain",
     },
+    // Add mock Textile/Construction info for USER_PROD if relevant to its category
+    constructionProductInformation: { // Assuming a wooden chair can have some CPR-like info
+        intendedUseDescription: "Indoor seating for residential use.",
+        essentialCharacteristics: [
+            { characteristicName: "Load Bearing Capacity", value: "120 kg", testMethod: "EN 12520" },
+            { characteristicName: "Formaldehyde Emission", value: "E1 Class", testMethod: "EN 717-1" }
+        ]
+    }
   }
 };
 
+    
+    
     

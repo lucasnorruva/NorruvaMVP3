@@ -170,10 +170,17 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eprel: { status: "Not Applicable", lastChecked: "2024-07-25T00:00:00Z" },
       eu_espr: { status: "pending" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z", svhcListVersion: "N/A" }, 
+      scipNotification: { 
+        status: 'Pending Notification', 
+        svhcListVersion: '2024/01 (24.0.1)',
+        submittingLegalEntity: 'EcoThreads S.A.',
+        articleName: 'Dyed Organic Cotton Fabric',
+        primaryArticleId: 'FAB-ORG-CTN-01',
+        lastChecked: "2024-07-25T00:00:00Z" 
+      }, 
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "61091000", 
+        hsCode: "61091000", // HS Code for cotton t-shirts
         countryOfOrigin: "IN",
         netWeightKg: 0.15,
         grossWeightKg: 0.2,
@@ -382,11 +389,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         submittingLegalEntity: 'PowerVolt Inc.',
         articleName: 'EV Battery Module Assembly',
         primaryArticleId: 'PV-EVB-75KWH-ASSY',
+        safeUseInstructionsLink: 'https://powervolt.com/sds/PV-EVB-75KWH-SUI.pdf',
         lastChecked: "2024-07-27T00:00:00Z" 
       },
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "85076000", 
+        hsCode: "85076000", // HS code for lithium-ion batteries
         countryOfOrigin: "US",
         netWeightKg: 450.0,
         grossWeightKg: 465.0,
@@ -465,7 +473,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       ceMarkingDetailsUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf",
       intendedUseDescription: "Thermal insulation for building envelopes (walls, roofs, floors).",
       essentialCharacteristics: [
-        { characteristicName: "Thermal Conductivity (λ)", value: "0.030", unit: "W/(m·K)", testMethod: "EN 12667" },
+        { characteristicName: "Thermal Conductivity (λ)", value: "0.030 W/(m·K)", testMethod: "EN 12667" },
         { characteristicName: "Reaction to Fire", value: "B-s1, d0", testMethod: "EN 13501-1" },
         { characteristicName: "Water Vapour Diffusion Resistance (µ)", value: "3", testMethod: "EN 12086" }
       ]
@@ -473,13 +481,22 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-08-01T00:00:00Z" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-08-01T00:00:00Z", svhcListVersion: "N/A" },
+      scipNotification: { 
+        status: 'Not Required', 
+        lastChecked: "2024-08-01T00:00:00Z", 
+        svhcListVersion: "N/A",
+        articleName: "Insulation Panel (Cellulose Based)",
+        primaryArticleId: "ESP-R50-1200-PANEL"
+      },
       esprConformity: { status: "conformant", assessmentId: "CPR_ASSESS_006", assessmentDate: "2024-07-15" },
       euCustomsData: {
         status: "Verified",
         declarationId: "CUST_CPR_DPP006",
-        hsCode: "68061000", // Slag wool, rock wool and similar mineral wools
+        hsCode: "68061000", // Slag wool, rock wool and similar mineral wools (cellulose based might differ, example)
         countryOfOrigin: "BE",
+        netWeightKg: 5.5,
+        grossWeightKg: 6.0,
+        customsValuation: { value: 25.00, currency: "EUR" },
         lastChecked: "2024-07-20T00:00:00Z"
       }
     },
@@ -492,9 +509,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
+
     
     
     
-
-
-
