@@ -5,8 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox"; // Added Checkbox
-import { Filter, ListFilter, Search, Tag, ShieldAlert, CheckSquare, Link as LinkIcon, XCircle, SlidersHorizontal, Shirt, Construction } from "lucide-react"; // Added Shirt, Construction
+import { Checkbox } from "@/components/ui/checkbox"; 
+import { Filter, ListFilter, Search, Tag, ShieldAlert, CheckSquare, Link as LinkIcon, XCircle, SlidersHorizontal, Shirt, Construction, Sigma } from "lucide-react"; // Added Sigma
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
@@ -17,8 +17,9 @@ export interface ProductManagementFilterState {
   compliance: string;
   category: string;
   blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
-  isTextileProduct?: boolean; // New filter
-  isConstructionProduct?: boolean; // New filter
+  isTextileProduct?: boolean; 
+  isConstructionProduct?: boolean; 
+  onChainStatus?: string; // New filter field
 }
 
 interface ProductManagementFiltersComponentProps {
@@ -35,8 +36,9 @@ const defaultFilters: ProductManagementFilterState = {
   compliance: "All",
   category: "All",
   blockchainAnchored: "all",
-  isTextileProduct: undefined, // Default to undefined (no filter)
-  isConstructionProduct: undefined, // Default to undefined (no filter)
+  isTextileProduct: undefined, 
+  isConstructionProduct: undefined, 
+  onChainStatus: "All", // Default for new filter
 };
 
 export default function ProductManagementFiltersComponent({
@@ -57,6 +59,16 @@ export default function ProductManagementFiltersComponent({
     { value: "not_anchored", label: "Not Anchored" },
   ];
 
+  const onChainStatusOptions = [
+    { value: "All", label: "All On-Chain Statuses" },
+    { value: "Unknown", label: "Unknown" },
+    { value: "Active", label: "Active" },
+    { value: "Pending Activation", label: "Pending Activation" },
+    { value: "Recalled", label: "Recalled" },
+    { value: "Flagged for Review", label: "Flagged for Review" },
+    { value: "Archived", label: "Archived" },
+  ];
+
   const handleClearFilters = () => {
     onFilterChange(defaultFilters);
   };
@@ -69,6 +81,7 @@ export default function ProductManagementFiltersComponent({
     filters.blockchainAnchored !== defaultFilters.blockchainAnchored,
     filters.isTextileProduct !== defaultFilters.isTextileProduct,
     filters.isConstructionProduct !== defaultFilters.isConstructionProduct,
+    filters.onChainStatus !== defaultFilters.onChainStatus, // Include new filter in count
   ].filter(Boolean).length;
 
   return (
@@ -91,7 +104,7 @@ export default function ProductManagementFiltersComponent({
               </div>
             </AccordionTrigger>
             <AccordionContent className="pt-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end p-4 border-t">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end p-4 border-t"> {/* Adjusted to xl:grid-cols-6 */}
                 <div>
                   <Label htmlFor="search-query-pm" className="text-sm font-medium mb-1 flex items-center">
                     <Search className="h-4 w-4 mr-2 text-primary" />
@@ -109,7 +122,7 @@ export default function ProductManagementFiltersComponent({
                 <div>
                   <Label htmlFor="status-filter-pm" className="text-sm font-medium mb-1 flex items-center">
                     <CheckSquare className="h-4 w-4 mr-2 text-primary" />
-                    Filter by DPP Status
+                    DPP Platform Status
                   </Label>
                   <Select
                     value={filters.status}
@@ -130,7 +143,7 @@ export default function ProductManagementFiltersComponent({
                 <div>
                   <Label htmlFor="compliance-filter-pm" className="text-sm font-medium mb-1 flex items-center">
                     <ShieldAlert className="h-4 w-4 mr-2 text-primary" />
-                    Filter by Compliance Status
+                    Compliance Status
                   </Label>
                   <Select
                     value={filters.compliance}
@@ -190,7 +203,27 @@ export default function ProductManagementFiltersComponent({
                     </SelectContent>
                   </Select>
                 </div>
-                {/* New Product Type Filters */}
+                <div> {/* New On-Chain Status Filter */}
+                  <Label htmlFor="onchain-status-filter-pm" className="text-sm font-medium mb-1 flex items-center">
+                    <Sigma className="h-4 w-4 mr-1.5 text-primary" />
+                    On-Chain Status
+                  </Label>
+                  <Select
+                    value={filters.onChainStatus || 'All'}
+                    onValueChange={(value) => handleInputChange('onChainStatus', value)}
+                  >
+                    <SelectTrigger id="onchain-status-filter-pm" className="w-full">
+                      <SelectValue placeholder="Select on-chain status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {onChainStatusOptions.map((option) => (
+                        <SelectItem key={`pm-onchain-${option.value}`} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-center space-x-2 pt-5">
                   <Checkbox
                     id="isTextileProduct"

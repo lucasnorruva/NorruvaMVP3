@@ -9,7 +9,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3, Sigma } from "lucide-react"; // Added Sigma
+import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3, Sigma } from "lucide-react"; 
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,8 +34,8 @@ import { MOCK_DPPS as InitialMockDppsData } from '@/data';
 const initialMockProductsData: RichMockProduct[] = InitialMockDppsData.map(dpp => ({
   ...dpp,
   productId: dpp.id,
-  status: dpp.metadata.status as RichMockProduct['status'], // Ensure status mapping
-  compliance: dpp.complianceSummary?.overallStatus || "N/A", // Simplified for list, might need better mapping
+  status: dpp.metadata.status as RichMockProduct['status'], 
+  compliance: dpp.complianceSummary?.overallStatus || "N/A", 
   lastUpdated: dpp.metadata.last_updated,
   description: dpp.productDetails?.description,
   imageUrl: dpp.productDetails?.imageUrl,
@@ -54,7 +54,7 @@ const initialMockProductsData: RichMockProduct[] = InitialMockDppsData.map(dpp =
   blockchainIdentifiers: dpp.blockchainIdentifiers,
   authenticationVcId: dpp.authenticationVcId,
   ownershipNftLink: dpp.ownershipNftLink,
-  metadata: dpp.metadata, // Keep the full metadata for onChainStatus
+  metadata: dpp.metadata, 
 }));
 
 
@@ -87,7 +87,7 @@ const SortableTableHead: React.FC<{
 interface ProductWithCompleteness extends DisplayableProduct {
   completeness: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; 
-  metadata?: Partial<DigitalProductPassport['metadata']>; // Ensure metadata is available
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
 }
 
 
@@ -106,6 +106,7 @@ export default function ProductsPage() {
     blockchainAnchored: "all", 
     isTextileProduct: undefined, 
     isConstructionProduct: undefined, 
+    onChainStatus: "All",
   });
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
@@ -184,6 +185,9 @@ export default function ProductsPage() {
     }
     if (filters.isConstructionProduct !== undefined) {
       tempProducts = tempProducts.filter(p => !!p.constructionProductInformation === filters.isConstructionProduct);
+    }
+    if (filters.onChainStatus && filters.onChainStatus !== "All") {
+      tempProducts = tempProducts.filter(p => p.metadata?.onChainStatus === filters.onChainStatus);
     }
 
 
