@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction, Wrench as WrenchIcon, KeyRound, Fingerprint, Link as LinkIcon } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import BasicInfoFormSection from "./form/BasicInfoFormSection";
@@ -27,6 +27,7 @@ import ScipNotificationFormSection from "./form/ScipNotificationFormSection";
 import EuCustomsDataFormSection from "./form/EuCustomsDataFormSection"; 
 import TextileInformationFormSection from "./form/TextileInformationFormSection"; 
 import ConstructionProductInformationFormSection from "./form/ConstructionProductInformationFormSection"; 
+import RepairabilityFormSection from "./form/RepairabilityFormSection"; 
 import {
   handleGenerateImageAI, 
 } from "@/utils/aiFormHelpers";
@@ -34,7 +35,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessa
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { CustomAttribute, BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp";
+import type { CustomAttribute, BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, OwnershipNftLink } from "@/types/dpp";
 
 
 const carbonFootprintSchema = z.object({
@@ -118,6 +119,20 @@ const constructionProductInformationSchema = z.object({
   essentialCharacteristics: z.array(essentialCharacteristicSchema).optional(),
 });
 
+const repairabilityScoreSchema = z.object({
+  value: z.coerce.number().min(0).max(10).nullable().optional(),
+  scale: z.coerce.number().min(0).max(10).nullable().optional(),
+  reportUrl: z.string().url().or(z.literal("")).optional(),
+  vcId: z.string().optional(),
+}).optional();
+
+const ownershipNftLinkSchema = z.object({
+  registryUrl: z.string().url("Must be a valid URL or leave empty.").optional().or(z.literal("")),
+  contractAddress: z.string().optional(),
+  tokenId: z.string().optional(),
+  chainName: z.string().optional(),
+}).optional();
+
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
   gtin: z.string().optional().describe("Global Trade Item Number"),
@@ -135,8 +150,18 @@ const formSchema = z.object({
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
   imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
   
+  productDetails: z.object({ 
+    repairabilityScore: repairabilityScoreSchema,
+    sparePartsAvailability: z.string().optional(),
+    repairManualUrl: z.string().url().or(z.literal("")).optional(),
+    disassemblyInstructionsUrl: z.string().url().or(z.literal("")).optional(),
+  }).optional(),
+
   batteryRegulation: batteryRegulationDetailsSchema.optional(),
   customAttributesJsonString: z.string().optional(),
+  
+  authenticationVcId: z.string().optional(), 
+  ownershipNftLink: ownershipNftLinkSchema, 
 
   compliance: z.object({
     eprel: z.object({ 
@@ -229,6 +254,13 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       onChainStatus: initialData?.onChainStatus || "Unknown", 
       onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", 
       
+      productDetails: { 
+        repairabilityScore: initialData?.productDetails?.repairabilityScore || { value: null, scale: null, reportUrl: "", vcId: "" },
+        sparePartsAvailability: initialData?.productDetails?.sparePartsAvailability || "",
+        repairManualUrl: initialData?.productDetails?.repairManualUrl || "",
+        disassemblyInstructionsUrl: initialData?.productDetails?.disassemblyInstructionsUrl || "",
+      },
+
       batteryRegulation: initialData?.batteryRegulation ? {
         status: initialData.batteryRegulation.status || "not_applicable",
         batteryChemistry: initialData.batteryRegulation.batteryChemistry || "",
@@ -256,6 +288,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       },
       customAttributesJsonString: initialData?.customAttributesJsonString || "",
       
+      authenticationVcId: initialData?.authenticationVcId || "", 
+      ownershipNftLink: initialData?.ownershipNftLink || { registryUrl: "", contractAddress: "", tokenId: "", chainName: "" }, 
+
       compliance: { 
         eprel: initialData?.compliance?.eprel || { status: "N/A", id: "", url: ""},
         esprConformity: initialData?.compliance?.esprConformity || { status: "pending_assessment" },
@@ -336,6 +371,12 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         imageHint: initialData.imageHint || "",
         onChainStatus: initialData.onChainStatus || "Unknown", 
         onChainLifecycleStage: initialData.onChainLifecycleStage || "Unknown", 
+        productDetails: {
+          repairabilityScore: initialData.productDetails?.repairabilityScore || { value: null, scale: null, reportUrl: "", vcId: "" },
+          sparePartsAvailability: initialData.productDetails?.sparePartsAvailability || "",
+          repairManualUrl: initialData.productDetails?.repairManualUrl || "",
+          disassemblyInstructionsUrl: initialData.productDetails?.disassemblyInstructionsUrl || "",
+        },
         batteryRegulation: initialData.batteryRegulation ? {
           status: initialData.batteryRegulation.status || "not_applicable",
           batteryChemistry: initialData.batteryRegulation.batteryChemistry || "",
@@ -362,6 +403,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           vcId: "",
         },
         customAttributesJsonString: initialData.customAttributesJsonString || "",
+        authenticationVcId: initialData.authenticationVcId || "", 
+        ownershipNftLink: initialData.ownershipNftLink || { registryUrl: "", contractAddress: "", tokenId: "", chainName: "" }, 
         compliance: {
           eprel: initialData.compliance?.eprel || { status: "N/A", id: "", url: ""},
           esprConformity: initialData.compliance?.esprConformity || { status: "pending_assessment" },
@@ -490,7 +533,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   };
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10', 'item-11']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10', 'item-11', 'item-12', 'item-13']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" />Basic Information</AccordionTrigger>
         <AccordionContent>
@@ -532,6 +575,13 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             isSubmittingForm={!!isSubmitting}
             toast={toast}
           />
+        </AccordionContent>
+      </AccordionItem>
+      
+      <AccordionItem value="item-12"> 
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><WrenchIcon className="mr-2 h-5 w-5 text-primary" />Repairability & End-of-Life</AccordionTrigger>
+        <AccordionContent>
+          <RepairabilityFormSection form={form} />
         </AccordionContent>
       </AccordionItem>
 
@@ -648,6 +698,33 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         </AccordionContent>
       </AccordionItem>
 
+      <AccordionItem value="item-13">
+        <AccordionTrigger className="text-lg font-semibold flex items-center">
+            <LinkIcon className="mr-2 h-5 w-5 text-primary" /> Authenticity & Ownership Links
+        </AccordionTrigger>
+        <AccordionContent className="space-y-6 pt-4">
+            <FormField
+                control={form.control}
+                name="authenticationVcId"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Authentication VC ID (Optional)</FormLabel>
+                        <FormControl><Input placeholder="e.g., vc:auth:example:product123" {...field} value={field.value || ""} /></FormControl>
+                        <FormDescription>Identifier for a Verifiable Credential attesting product authenticity.</FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <div className="p-4 border rounded-md space-y-3 bg-muted/30">
+                <h4 className="font-medium text-md text-primary">Ownership NFT Link (Optional)</h4>
+                <FormField control={form.control} name="ownershipNftLink.registryUrl" render={({ field }) => (<FormItem><FormLabel>Registry URL</FormLabel><FormControl><Input type="url" placeholder="e.g., https://opensea.io/assets/..." {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="ownershipNftLink.contractAddress" render={({ field }) => (<FormItem><FormLabel>Contract Address</FormLabel><FormControl><Input placeholder="e.g., 0x..." {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="ownershipNftLink.tokenId" render={({ field }) => (<FormItem><FormLabel>Token ID</FormLabel><FormControl><Input placeholder="e.g., 12345" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="ownershipNftLink.chainName" render={({ field }) => (<FormItem><FormLabel>Chain Name</FormLabel><FormControl><Input placeholder="e.g., Ethereum, Polygon" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>)} />
+            </div>
+        </AccordionContent>
+      </AccordionItem>
+
     </Accordion>
   );
 
@@ -677,5 +754,4 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-
 

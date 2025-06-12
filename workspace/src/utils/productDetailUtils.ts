@@ -281,4 +281,3 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
     
 
     
-

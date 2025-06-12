@@ -334,6 +334,7 @@ export interface PublicProductInfo {
   sku?: string;
   nfcTagId?: string;
   rfidTagId?: string;
+  gtin?: string; 
   anchorTransactionHash?: string;
   blockchainPlatform?: string;
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';

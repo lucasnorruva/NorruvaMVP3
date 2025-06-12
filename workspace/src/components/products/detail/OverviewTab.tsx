@@ -346,4 +346,3 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   );
 }
 
-    
