@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction, Wrench as WrenchIcon, KeyRound, Fingerprint, Link as LinkIcon } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction, Wrench as WrenchIcon, KeyRound, Fingerprint, Link as LinkIcon, Sigma, Layers as LayersIconShadcn } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import BasicInfoFormSection from "./form/BasicInfoFormSection";
@@ -32,6 +32,7 @@ import {
   handleGenerateImageAI, 
 } from "@/utils/aiFormHelpers";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -150,6 +151,9 @@ const formSchema = z.object({
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
   imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
   
+  onChainStatus: z.string().optional(), // New field for on-chain status
+  onChainLifecycleStage: z.string().optional(), // New field for on-chain lifecycle stage
+
   productDetails: z.object({ 
     repairabilityScore: repairabilityScoreSchema,
     sparePartsAvailability: z.string().optional(),
@@ -183,8 +187,6 @@ const formSchema = z.object({
   
   textileInformation: textileInformationSchema.optional(), 
   constructionProductInformation: constructionProductInformationSchema.optional(), 
-  onChainStatus: z.string().optional(), 
-  onChainLifecycleStage: z.string().optional(), 
 
   productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   productDescriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -229,8 +231,8 @@ interface ProductFormProps {
   initialData?: Partial<InitialProductFormData>;
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
-  isGeneratingImage?: boolean; // Added prop
-  setIsGeneratingImage?: (loading: boolean) => void; // Added prop
+  isGeneratingImage?: boolean; 
+  setIsGeneratingImage?: (loading: boolean) => void; 
   isStandalonePage?: boolean;
 }
 
@@ -239,8 +241,8 @@ export default function ProductForm({
   initialData, 
   onSubmit, 
   isSubmitting, 
-  isGeneratingImage, // Destructure new prop
-  setIsGeneratingImage, // Destructure new prop
+  isGeneratingImage, 
+  setIsGeneratingImage, 
   isStandalonePage = true 
 }: ProductFormProps) {
   const form = useForm<ProductFormData>({
@@ -340,7 +342,6 @@ export default function ProductForm({
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
   const [suggestedCustomAttributes, setSuggestedCustomAttributes] = useState<CustomAttribute[]>([]);
-  // Removed local isGeneratingImage state, will use prop
   const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
   const [currentCustomKey, setCurrentCustomKey] = useState("");
   const [currentCustomValue, setCurrentCustomValue] = useState("");
@@ -566,8 +567,8 @@ export default function ProductForm({
             aiImageHelper={handleGenerateImageAI} 
             initialImageUrlOrigin={initialData?.imageUrlOrigin}
             toast={toast}
-            isGeneratingImageState={!!isGeneratingImage} // Use prop
-            setIsGeneratingImageState={setIsGeneratingImage || (() => {})} // Use prop
+            isGeneratingImageState={!!isGeneratingImage} 
+            setIsGeneratingImageState={setIsGeneratingImage || (() => {})} 
             initialImageUrl={initialData?.imageUrl}
           />
         </AccordionContent>
@@ -670,7 +671,7 @@ export default function ProductForm({
       
        <AccordionItem value="item-11">
         <AccordionTrigger className="text-lg font-semibold flex items-center">
-            <Cpu className="mr-2 h-5 w-5 text-primary" /> Conceptual On-Chain State
+            <Sigma className="mr-2 h-5 w-5 text-primary" /> Conceptual On-Chain State
         </AccordionTrigger>
         <AccordionContent className="space-y-6 pt-4">
             <FormField
@@ -766,3 +767,4 @@ export default function ProductForm({
 }
 
 
+    

@@ -184,7 +184,7 @@ export default function AddNewProductPage() {
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<string>("invoice");
   const [isLoadingAi, setIsLoadingAi] = useState(false);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false); // Moved here
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false); 
   const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -315,6 +315,8 @@ export default function AddNewProductPage() {
         ...defaultFormState, 
         gtin: prev.gtin,
         productCategory: prev.productCategory,
+        onChainStatus: prev.onChainStatus, 
+        onChainLifecycleStage: prev.onChainLifecycleStage, 
         compliance: { ...defaultFormState.compliance }, 
         textileInformation: { ...defaultTextileInformationState }, 
         constructionProductInformation: { ...defaultConstructionProductInformationState }, 
@@ -587,8 +589,8 @@ export default function AddNewProductPage() {
             isSubmitting={isSubmittingProduct}
             onSubmit={handleProductFormSubmit}
             editProductId={editProductId}
-            isGeneratingImage={isGeneratingImage} // Pass down state
-            setIsGeneratingImage={setIsGeneratingImage} // Pass down setter
+            isGeneratingImage={isGeneratingImage} 
+            setIsGeneratingImage={setIsGeneratingImage} 
           />
         </TabsContent>
 
@@ -621,3 +623,4 @@ export default function AddNewProductPage() {
 }
 
 
+    
