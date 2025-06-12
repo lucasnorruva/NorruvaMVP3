@@ -19,8 +19,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       onChainStatus: "Active", 
       onChainLifecycleStage: "InUse", 
     },
-    authenticationVcId: "vc_auth_DPP001_mock123", // Added for Task 31
-    ownershipNftLink: { // Added for Task 31
+    authenticationVcId: "vc_auth_DPP001_mock123", 
+    ownershipNftLink: { 
         registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1",
         contractAddress: "0xNFTContractForDPP001",
         tokenId: "1",
@@ -39,6 +39,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Warranty Period", value: "5 Years"},
         {key: "Country of Origin", value: "Germany"}
       ],
+      repairabilityScore: { value: 8.5, scale: 10, reportUrl: "https://greentech.com/repair/X500-ECO-report.pdf", vcId: "vc:repair:greentech:dpp001" },
+      sparePartsAvailability: "7 years from date of purchase",
+      repairManualUrl: "https://greentech.com/manuals/X500-ECO-repair.pdf",
+      disassemblyInstructionsUrl: "https://greentech.com/manuals/X500-ECO-disassembly.pdf",
+      recyclabilityInformation: { instructionsUrl: "https://greentech.com/recycling/X500-ECO", recycledContentPercentage: 70, designForRecycling: true, vcId: "vc:recycle:greentech:dpp001"},
     },
     compliance: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
@@ -271,7 +276,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     consumerScans: 2100,
      productDetails: { description: "A recycled phone case."},
-     blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333"},
+     blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333", contractAddress: "0xContractForDPP003", tokenId: "NFT003"},
     documents: [],
     traceability: {
       originCountry: "CN",
@@ -492,7 +497,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       euCustomsData: {
         status: "Verified",
         declarationId: "CUST_CPR_DPP006",
-        hsCode: "68061000", // Slag wool, rock wool and similar mineral wools (cellulose based might differ, example)
+        hsCode: "68061000", 
         countryOfOrigin: "BE",
         netWeightKg: 5.5,
         grossWeightKg: 6.0,
@@ -513,3 +518,4 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     
     
     
+

@@ -19,7 +19,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     manufacturerWebsite: "#",
     brandLogoUrl: "https://placehold.co/150x50.png?text=GreenTech",
     learnMoreLink: "#",
-    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling directives. EPREL registered. EBSI verification completed for key claims. SCIP Notified. Customs Data Verified.",
+    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling directives. EPREL registered. EBSI verification completed for key claims. SCIP Notified (X500-CTRL-ASSY). Customs Data Verified.",
     category: "Appliances",
     modelNumber: "X500-ECO",
     sku: "SKU-X500",
@@ -77,7 +77,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     manufacturerWebsite: "#",
     brandLogoUrl: "https://placehold.co/150x50.png?text=EcoThreads",
     learnMoreLink: "#",
-    complianceSummary: "Complies with EU textile labelling regulations. GOTS certified. EBSI verification pending. SCIP Notification Pending.",
+    complianceSummary: "Complies with EU textile labelling regulations. GOTS certified. EBSI verification pending. SCIP Notification Pending (FAB-ORG-CTN-01). Customs Data Pending.",
     category: "Apparel",
     modelNumber: "ET-TS-ORG-M",
     blockchainPlatform: "MockChain (Polygon Layer 2)",
@@ -110,7 +110,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     },
     authenticationVcId: "vc_auth_DPP002_mock456",
   },
-  "PROD005": { // Maps to DPP005 (EV Battery)
+  "PROD005": { 
     passportId: "DPP005",
     productName: "High-Performance EV Battery",
     tagline: "Powering the Future of Mobility.",
@@ -125,7 +125,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     manufacturerName: "PowerVolt",
     manufacturerWebsite: "#",
     brandLogoUrl: "https://placehold.co/150x50.png?text=PowerVolt",
-    complianceSummary: "EU Battery Regulation data pending final review. SCIP notification submitted. Customs documentation in progress.",
+    complianceSummary: "EU Battery Regulation data pending final review. SCIP notification for 'EV Battery Module Assembly' submitted. Customs documentation in progress.",
     category: "Automotive Parts",
     modelNumber: "PV-EVB-75KWH",
     anchorTransactionHash: "0xevBatteryAnchorHash555AAA",
@@ -135,7 +135,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'pending_verification',
     onChainStatus: "Active",
     onChainLifecycleStage: "QualityAssurance",
-    batteryRegulation: { // Example of public-facing battery info
+    batteryRegulation: { 
         status: "pending",
         batteryChemistry: "NMC 811",
         batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
@@ -206,7 +206,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { iconName: "Paintbrush", text: "Low VOC Natural Oil Finish" }
     ],
     manufacturerName: "Artisan Woodworks",
-    complianceSummary: "TSCA Title VI Compliant (Formaldehyde). Currently undergoing additional certifications.",
+    complianceSummary: "TSCA Title VI Compliant (Formaldehyde). Currently undergoing additional certifications. SCIP Notification Not Required.",
     category: "Furniture",
     modelNumber: "CWC-001",
     ebsiStatus: 'not_verified',
@@ -230,8 +230,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         tokenId: "101",
         chainName: "MockUserChain",
     },
-    // Add mock Textile/Construction info for USER_PROD if relevant to its category
-    constructionProductInformation: { // Assuming a wooden chair can have some CPR-like info
+    constructionProductInformation: { 
         intendedUseDescription: "Indoor seating for residential use.",
         essentialCharacteristics: [
             { characteristicName: "Load Bearing Capacity", value: "120 kg", testMethod: "EN 12520" },
@@ -244,3 +243,4 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     
     
     
+
