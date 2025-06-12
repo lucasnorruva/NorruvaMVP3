@@ -5,7 +5,7 @@
 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails } from '@/types/dpp';
+import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp';
 import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 
 // Helper function to map DigitalProductPassport to SimpleProductDetail
@@ -24,14 +24,13 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const specificRegulations: ComplianceDetailItem[] = [];
     
-    // EU ESPR and US Scope 3 are examples of 'other' regulations now
     if (dpp.compliance.eu_espr) {
         specificRegulations.push({
             regulationName: "EU ESPR",
             status: dpp.compliance.eu_espr.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.eu_espr.reportUrl,
             verificationId: dpp.compliance.eu_espr.vcId,
-            lastChecked: dpp.metadata.last_updated, // Fallback, better if eu_espr has its own lastChecked
+            lastChecked: dpp.metadata.last_updated, 
         });
     }
     if (dpp.compliance.esprConformity) {
@@ -48,7 +47,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             status: dpp.compliance.us_scope3.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.us_scope3.reportUrl,
             verificationId: dpp.compliance.us_scope3.vcId,
-            lastChecked: dpp.metadata.last_updated, // Fallback
+            lastChecked: dpp.metadata.last_updated, 
         });
     }
 
@@ -82,6 +81,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const customAttributes = dpp.productDetails?.customAttributes || [];
     const mappedCertifications: SimpleCertification[] = dpp.certifications?.map(cert => ({
+        id: cert.id, // Ensure ID is mapped
         name: cert.name,
         authority: cert.issuer,
         standard: cert.standard,
@@ -150,6 +150,18 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         certifications: mappedCertifications,
         authenticationVcId: dpp.authenticationVcId,
         ownershipNftLink: dpp.ownershipNftLink,
+        blockchainPlatform: dpp.blockchainIdentifiers?.platform,
+        contractAddress: dpp.blockchainIdentifiers?.contractAddress,
+        tokenId: dpp.blockchainIdentifiers?.tokenId,
+        anchorTransactionHash: dpp.blockchainIdentifiers?.anchorTransactionHash,
+        ebsiStatus: dpp.ebsiVerification?.status, 
+        ebsiVerificationId: dpp.ebsiVerification?.verificationId, 
+        onChainStatus: dpp.metadata.onChainStatus,
+        onChainLifecycleStage: dpp.metadata.onChainLifecycleStage,
+        textileInformation: dpp.textileInformation, 
+        constructionProductInformation: dpp.constructionProductInformation, 
+        batteryRegulation: dpp.compliance.battery_regulation, // Directly map full battery_regulation
+        lastUpdated: dpp.metadata.last_updated,
     };
 }
 
@@ -176,7 +188,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             }
         }
         const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
-            id: `cert_user_${sc.name.replace(/\s+/g, '_')}`,
+            id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}_${Math.random().toString(36).slice(2, 7)}`, // Ensure ID exists
             name: sc.name,
             issuer: sc.authority,
             issueDate: sc.issueDate,
@@ -188,7 +200,6 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
         })) || [];
         
         const complianceSummaryFromStorage = userProductData.complianceSummary || { overallStatus: 'N/A' };
-
 
         foundDpp = {
           id: userProductData.id,
@@ -203,7 +214,9 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           metadata: {
             status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
             last_updated: userProductData.lastUpdated || new Date().toISOString(),
-            created_at: userProductData.lastUpdated || new Date().toISOString(), // Or a dedicated created_at if available
+            created_at: userProductData.lastUpdated || new Date().toISOString(), 
+            onChainStatus: userProductData.metadata?.onChainStatus,
+            onChainLifecycleStage: userProductData.metadata?.onChainLifecycleStage,
           },
           productDetails: {
             description: userProductData.productDescription,
@@ -212,14 +225,15 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
             materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
             energyLabel: userProductData.energyLabel,
-            specifications: userProductData.specifications, // Pass as string
-            customAttributes: parsedCustomAttributes, // Pass as array
+            specifications: userProductData.specifications, 
+            customAttributes: parsedCustomAttributes, 
           },
           compliance: { 
-            eprel: complianceSummaryFromStorage.eprel,
-            scipNotification: complianceSummaryFromStorage.scip, 
-            euCustomsData: complianceSummaryFromStorage.euCustomsData,
-            battery_regulation: complianceSummaryFromStorage.battery, // Directly assign from storage if structure matches
+            eprel: userProductData.complianceData?.eprel,
+            scipNotification: userProductData.complianceData?.scipNotification, 
+            euCustomsData: userProductData.complianceData?.euCustomsData,
+            battery_regulation: userProductData.complianceData?.battery_regulation, 
+            esprConformity: userProductData.complianceData?.esprConformity, 
           },
           ebsiVerification: complianceSummaryFromStorage.ebsi ? {
             status: complianceSummaryFromStorage.ebsi.status as EbsiVerificationDetails['status'],
@@ -235,8 +249,11 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           })),
           certifications: certificationsForUserProd,
           supplyChainLinks: userProductData.supplyChainLinks || [],
-          authenticationVcId: userProductData.authenticationVcId, // Map from StoredUserProduct
-          ownershipNftLink: userProductData.ownershipNftLink, // Map from StoredUserProduct
+          authenticationVcId: userProductData.authenticationVcId, 
+          ownershipNftLink: userProductData.ownershipNftLink, 
+          blockchainIdentifiers: userProductData.blockchainIdentifiers, 
+          textileInformation: userProductData.textileInformation, 
+          constructionProductInformation: userProductData.constructionProductInformation, 
         } as DigitalProductPassport;
       }
     }

@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails } from '@/types/dpp'; // Added EbsiVerificationDetails
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp'; // Added EbsiVerificationDetails
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -15,7 +15,9 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       created_at: "2024-01-01T10:00:00Z",
       last_updated: "2024-07-30T10:00:00Z",
       status: "published",
-      dppStandardVersion: "CIRPASS v0.9 Draft"
+      dppStandardVersion: "CIRPASS v0.9 Draft",
+      onChainStatus: "Active", 
+      onChainLifecycleStage: "InUse", 
     },
     authenticationVcId: "vc_auth_DPP001_mock123", // Added for Task 31
     ownershipNftLink: { // Added for Task 31
@@ -71,7 +73,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       issuanceDate: "2024-07-24T10:00:00Z", 
       lastChecked: "2024-07-25T00:00:00Z"
     } as EbsiVerificationDetails,
-    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef", contractAddress: "0xMOCK_CONTRACT_FOR_DPP001", tokenId: "MOCK_TOKENID_FOR_DPP001_mock1"},
+    blockchainIdentifiers: { 
+      platform: "MockChain", 
+      anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef", 
+      contractAddress: "0xMOCK_CONTRACT_FOR_DPP001", 
+      tokenId: "MOCK_TOKENID_FOR_DPP001_mock1"
+    },
     consumerScans: 1250,
     lifecycleEvents: [
       {id: "evt1", type: "Manufactured", timestamp: "2024-01-15T00:00:00Z", transactionHash: "0xabc...def", responsibleParty: "GreenTech Appliances"}
@@ -100,7 +107,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
             issuer: "did:ebsi:zTuvRheinland",
             issuanceDate: "2024-01-20T00:00:00Z",
             credentialSubject: {
-                productId: "DPP002", // Corrected to DPP001 if it's for DPP001
+                productId: "DPP001", 
                 standard: "ISO 14001:2015",
                 complianceStatus: "Conformant",
                 expiryDate: "2026-11-14"
@@ -134,9 +141,14 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Apparel",
     manufacturer: { name: "EcoThreads", eori: "FR987654321"},
     modelNumber: "ET-TS-ORG-M",
-    metadata: { last_updated: "2024-07-25T14:30:00Z", status: "draft", created_at: "2024-03-01T10:00:00Z" },
-    authenticationVcId: "vc_auth_DPP002_mock456", // Added for Task 31
-    // No ownershipNftLink for this one to show variability
+    metadata: { 
+      last_updated: "2024-07-25T14:30:00Z", 
+      status: "draft", 
+      created_at: "2024-03-01T10:00:00Z",
+      onChainStatus: "Pending Activation", 
+      onChainLifecycleStage: "Manufacturing", 
+    },
+    authenticationVcId: "vc_auth_DPP002_mock456", 
     productDetails: {
       description: "A sustainable t-shirt made from organic cotton.",
       imageUrl: "https://placehold.co/600x400.png",
@@ -145,11 +157,20 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
       customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}]
     },
+    textileInformation: {
+      fiberComposition: [
+        { fiberName: "Organic Cotton", percentage: 95 },
+        { fiberName: "Elastane", percentage: 5 }
+      ],
+      countryOfOriginLabeling: "India (Spinning, Weaving), Portugal (Making-up)",
+      careInstructionsUrl: "https://ecothreads.com/care/ET-TS-ORG-M",
+      isSecondHand: false,
+    },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-25T00:00:00Z" },
       eu_espr: { status: "pending" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z" }, 
+      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z", svhcListVersion: "N/A" }, 
       euCustomsData: { 
         status: 'Pending Documents', 
         hsCode: "61091000", 
@@ -162,7 +183,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-20T00:00:00Z"} as EbsiVerificationDetails,
     consumerScans: 300,
-    blockchainIdentifiers: { platform: "MockChain" }, 
+    blockchainIdentifiers: { 
+      platform: "MockChain", 
+      contractAddress: "0xSomeOtherContract", 
+      tokenId: "TOKEN_TSHIRT_002" 
+    }, 
     certifications: [
       {id: "cert3", name: "GOTS", issuer: "Control Union", issueDate: "2024-02-20", expiryDate: "2025-02-19", documentUrl: "#gots", standard: "Global Organic Textile Standard 6.0"},
     ],
@@ -204,7 +229,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Accessories",
     manufacturer: { name: "ReCase It", eori: "NL112233445"},
     modelNumber: "RC-POLY-IP15",
-    metadata: { last_updated: "2024-07-22T09:15:00Z", status: "flagged", created_at: "2024-04-10T10:00:00Z" },
+    metadata: { 
+      last_updated: "2024-07-22T09:15:00Z", 
+      status: "flagged", 
+      created_at: "2024-04-10T10:00:00Z",
+      onChainStatus: "FlaggedForReview", 
+      onChainLifecycleStage: "InUse" 
+    },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -256,7 +287,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Furniture",
     manufacturer: { name: "Comfy Living"},
     modelNumber: "CL-MODSOFA-01",
-    metadata: { last_updated: "2024-07-20T11:00:00Z", status: "archived", created_at: "2023-12-01T10:00:00Z" },
+    metadata: { 
+      last_updated: "2024-07-20T11:00:00Z", 
+      status: "archived", 
+      created_at: "2023-12-01T10:00:00Z",
+      onChainStatus: "Archived", 
+      onChainLifecycleStage: "EndOfLife" 
+    },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-20T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -297,7 +334,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Automotive Parts",
     manufacturer: { name: "PowerVolt", eori: "US567890123"},
     modelNumber: "PV-EVB-75KWH",
-    metadata: { last_updated: "2024-07-29T08:00:00Z", status: "pending_review", created_at: "2024-05-01T10:00:00Z" },
+    metadata: { 
+      last_updated: "2024-07-29T08:00:00Z", 
+      status: "pending_review", 
+      created_at: "2024-05-01T10:00:00Z",
+      onChainStatus: "Active",
+      onChainLifecycleStage: "QualityAssurance",
+    },
     productDetails: {
       description: "A high-performance EV battery module designed for long range and fast charging. Contains NMC 811 chemistry for optimal energy density.",
       imageUrl: "https://placehold.co/600x400.png",
@@ -318,9 +361,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       ]
     },
     compliance: {
-      eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, // EPREL not typically for EV batteries directly
+      eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, 
       battery_regulation: {
         status: "pending",
+        batteryChemistry: "NMC 811",
         batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
         carbonFootprint: { value: 85.5, unit: "kg CO2e/kWh", calculationMethod: "PEFCR for Batteries v1.2", vcId: "vc:cf:dpp005" },
         recycledContent: [
@@ -331,7 +375,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         stateOfHealth: {value: 100, unit: '%', measurementDate: "2024-07-15T00:00:00Z", vcId: "vc:soh:dpp005"},
         vcId: "vc:battreg:overall:dpp005"
       } as BatteryRegulationDetails,
-      eu_espr: { status: "pending" }, // General ESPR requirements might apply to EV components
+      eu_espr: { status: "pending" }, 
       scipNotification: { 
         status: 'Pending Notification', 
         svhcListVersion: '2024/01 (24.0.1)',
@@ -342,7 +386,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       },
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "85076000", // Example HS for lithium-ion batteries
+        hsCode: "85076000", 
         countryOfOrigin: "US",
         netWeightKg: 450.0,
         grossWeightKg: 465.0,
@@ -379,10 +423,79 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         }
       ]
     },
-    blockchainIdentifiers: { platform: "PowerChain Ledger", anchorTransactionHash: "0xevBatteryAnchorHash555AAA", contractAddress: "0xEV_BATTERY_REGISTRY", tokenId: "TOKEN_PV_EVB_75KWH_SN001"},
+    blockchainIdentifiers: { 
+      platform: "PowerChain Ledger", 
+      anchorTransactionHash: "0xevBatteryAnchorHash555AAA", 
+      contractAddress: "0xEV_BATTERY_REGISTRY", 
+      tokenId: "TOKEN_PV_EVB_75KWH_SN001"
+    },
     supplyChainLinks: []
   },
+  { 
+    id: "DPP006",
+    productName: "EcoSmart Insulation Panel R50",
+    category: "Construction Materials",
+    manufacturer: { name: "BuildGreen Systems", eori: "BE0123456789" },
+    modelNumber: "ESP-R50-1200",
+    metadata: {
+      created_at: "2024-07-01T00:00:00Z",
+      last_updated: "2024-08-01T10:00:00Z",
+      status: "published",
+      dppStandardVersion: "CPR EN 13163",
+      onChainStatus: "Active",
+      onChainLifecycleStage: "InUse",
+    },
+    productDetails: {
+      description: "High-performance, sustainable insulation panel made from recycled cellulose fibers and a bio-based binder. Provides excellent thermal resistance (R-value 50).",
+      imageUrl: "https://placehold.co/600x400.png",
+      imageHint: "insulation panel construction",
+      materials: [
+        { name: "Recycled Cellulose Fiber", percentage: 85, isRecycled: true },
+        { name: "Bio-based Binder", percentage: 10 },
+        { name: "Fire Retardant (Non-halogenated)", percentage: 5 }
+      ],
+      specifications: JSON.stringify({ "Thermal Resistance (R-value)": "50", "Thickness (mm)": "150", "Density (kg/m^3)": "35", "Fire Rating": "Euroclass B-s1, d0" }, null, 2),
+      customAttributes: [
+        {key: "Recycled Content Source", value: "Post-consumer paper"},
+        {key: "VOC Emissions", value: "Low (A+)"}
+      ]
+    },
+    constructionProductInformation: {
+      declarationOfPerformanceId: "DoP_ESP-R50-1200_001",
+      ceMarkingDetailsUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf",
+      intendedUseDescription: "Thermal insulation for building envelopes (walls, roofs, floors).",
+      essentialCharacteristics: [
+        { characteristicName: "Thermal Conductivity (λ)", value: "0.030", unit: "W/(m·K)", testMethod: "EN 12667" },
+        { characteristicName: "Reaction to Fire", value: "B-s1, d0", testMethod: "EN 13501-1" },
+        { characteristicName: "Water Vapour Diffusion Resistance (µ)", value: "3", testMethod: "EN 12086" }
+      ]
+    },
+    compliance: {
+      eprel: { status: "Not Applicable", lastChecked: "2024-08-01T00:00:00Z" },
+      battery_regulation: { status: "not_applicable" },
+      scipNotification: { status: 'Not Required', lastChecked: "2024-08-01T00:00:00Z", svhcListVersion: "N/A" },
+      esprConformity: { status: "conformant", assessmentId: "CPR_ASSESS_006", assessmentDate: "2024-07-15" },
+      euCustomsData: {
+        status: "Verified",
+        declarationId: "CUST_CPR_DPP006",
+        hsCode: "68061000", // Slag wool, rock wool and similar mineral wools
+        countryOfOrigin: "BE",
+        lastChecked: "2024-07-20T00:00:00Z"
+      }
+    },
+    ebsiVerification: { status: "pending_verification", lastChecked: "2024-08-01T00:00:00Z"} as EbsiVerificationDetails,
+    traceability: { originCountry: "BE" },
+    consumerScans: 15,
+    certifications: [
+      {id: "cert_cpr_01", name: "CE Marking (CPR)", issuer: "Notified Body 0123 (BE)", issueDate: "2024-07-15", documentUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf", standard: "EN 13163"},
+      {id: "cert_epd_01", name: "Environmental Product Declaration", issuer: "EPD Program Operator XYZ", issueDate: "2024-07-20", documentUrl: "https://buildgreen.com/epd/esp-r50.pdf", standard: "ISO 14025", vcId: "vc:epd:buildgreen:dpp006"}
+    ],
+  }
 ];
     
-
     
+    
+
+
+
+

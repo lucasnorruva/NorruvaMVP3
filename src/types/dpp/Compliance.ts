@@ -31,7 +31,7 @@ export interface ScipNotificationDetails {
   submittingLegalEntity?: string;
   articleName?: string;
   primaryArticleId?: string;
-  safeUseInstructionsLink?: string;
+  safeUseInstructionsLink?: string; // Should be a URL
   lastChecked?: string; // Not a form field, for display
 }
 
@@ -110,6 +110,7 @@ export interface ProductComplianceSummary {
 }
 
 export interface SimpleCertification {
+  id: string; // Made non-optional
   name: string;
   authority: string;
   standard?: string;
@@ -130,4 +131,31 @@ export interface PublicCertification {
   standard?: string;
   vcId?: string;
   transactionHash?: string;
+}
+
+// For ESPR specific product categories
+export interface FiberCompositionEntry {
+  fiberName: string;
+  percentage: number | null; // Allow null for form input
+}
+
+export interface TextileInformation {
+  fiberComposition?: FiberCompositionEntry[];
+  countryOfOriginLabeling?: string;
+  careInstructionsUrl?: string;
+  isSecondHand?: boolean;
+}
+
+export interface EssentialCharacteristic {
+  characteristicName: string;
+  value: string;
+  unit?: string;
+  testMethod?: string;
+}
+
+export interface ConstructionProductInformation {
+  declarationOfPerformanceId?: string;
+  ceMarkingDetailsUrl?: string;
+  intendedUseDescription?: string;
+  essentialCharacteristics?: EssentialCharacteristic[];
 }
