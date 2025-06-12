@@ -2407,7 +2407,6 @@ components:
         productDetails:
           description: "An eco friendly fridge."
           energyLabel: "A++"
-          repairabilityScore: { value: 8.5, scale: 10, reportUrl: "https://example.com/repairX500.pdf" }
           sparePartsAvailability: "Available for 7 years post-purchase."
           repairManualUrl: "https://example.com/manuals/repairX500.pdf"
           disassemblyInstructionsUrl: "https://example.com/manuals/disassemblyX500.pdf"
@@ -2833,7 +2832,7 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/DocumentReference'
-    UpdateOnChainStatusRequest: 
+    UpdateOnChainStatusRequest: # New schema for updating on-chain status
       type: object
       required:
         - status
@@ -2842,7 +2841,7 @@ components:
           type: string
           enum: ["active", "recalled", "flagged_for_review", "archived"]
           description: The new conceptual on-chain status for the DPP.
-    UpdateOnChainLifecycleStageRequest: 
+    UpdateOnChainLifecycleStageRequest: # New schema for updating on-chain lifecycle stage
       type: object
       required:
         - lifecycleStage
@@ -2851,7 +2850,7 @@ components:
           type: string
           description: The new conceptual on-chain lifecycle stage for the DPP.
           example: "Manufacturing"
-    LogCriticalEventRequest:
+    LogCriticalEventRequest: # New schema for logging a critical event
       type: object
       required:
         - eventDescription
@@ -2865,7 +2864,7 @@ components:
           nullable: true
           description: Severity of the event. Defaults to "High" if not provided by API.
           example: "High"
-    RegisterVcHashRequest: 
+    RegisterVcHashRequest: # New schema for registering a VC hash
       type: object
       required:
         - vcId
@@ -3346,3 +3345,5 @@ components:
       description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
     
 
+
+    
