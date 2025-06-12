@@ -21,7 +21,7 @@ import {
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock,
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone,
     Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIconPg, History, 
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash, Layers3
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash, Layers3, FileLock as FileLockIcon
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -259,6 +259,19 @@ export default function DeveloperPortalPage() {
   const [isGetTokenStatusLoading, setIsGetTokenStatusLoading] = useState(false);
   const [getTokenStatusSnippetLang, setGetTokenStatusSnippetLang] = useState("cURL");
 
+  const [issueAuthVcProductIdInput, setIssueAuthVcProductIdInput] = useState<string>("DPP001");
+  const [issueAuthVcResponse, setIssueAuthVcResponse] = useState<string | null>(null);
+  const [isIssueAuthVcLoading, setIsIssueAuthVcLoading] = useState(false);
+  const [issueAuthVcSnippetLang, setIssueAuthVcSnippetLang] = useState("cURL");
+
+  const [linkNftProductIdInput, setLinkNftProductIdInput] = useState<string>("DPP001");
+  const [linkNftBody, setLinkNftBody] = useState<string>(
+    JSON.stringify({ contractAddress: "0xNFTContractAddress", tokenId: "NFT123", chainName: "MockChain" }, null, 2)
+  );
+  const [linkNftResponse, setLinkNftResponse] = useState<string | null>(null);
+  const [isLinkNftLoading, setIsLinkNftLoading] = useState(false);
+  const [linkNftSnippetLang, setLinkNftSnippetLang] = useState("cURL");
+
 
   const [getProductCodeSnippet, setGetProductCodeSnippet] = useState("");
   const [listDppsCodeSnippet, setListDppsCodeSnippet] = useState("");
@@ -284,6 +297,8 @@ export default function DeveloperPortalPage() {
   const [mintTokenCodeSnippet, setMintTokenCodeSnippet] = useState("");
   const [updateTokenMetaCodeSnippet, setUpdateTokenMetaCodeSnippet] = useState("");
   const [getTokenStatusCodeSnippet, setGetTokenStatusCodeSnippet] = useState("");
+  const [issueAuthVcCodeSnippet, setIssueAuthVcCodeSnippet] = useState("");
+  const [linkNftCodeSnippet, setLinkNftCodeSnippet] = useState("");
 
 
   const updateSnippet = useCallback((
@@ -327,6 +342,10 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet), [mintTokenProductId, mintTokenBody, mintTokenSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet), [updateTokenMetaTokenId, updateTokenMetaBody, updateTokenMetaSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet), [getTokenStatusTokenId, getTokenStatusSnippetLang, updateSnippet]);
+
+  useEffect(() => updateSnippet("issueAuthVc", "POST", issueAuthVcSnippetLang, { productId: issueAuthVcProductIdInput }, null, setIssueAuthVcCodeSnippet), [issueAuthVcProductIdInput, issueAuthVcSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("linkNft", "POST", linkNftSnippetLang, { productId: linkNftProductIdInput }, linkNftBody, setLinkNftCodeSnippet), [linkNftProductIdInput, linkNftBody, linkNftSnippetLang, updateSnippet]);
+
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -484,6 +503,9 @@ export default function DeveloperPortalPage() {
   const handleMockMintToken = () => { updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet); makeApiCall(`/api/v1/token/mint/${mintTokenProductId}`, 'POST', mintTokenBody, setIsMintTokenLoading, setMintTokenResponsePlayground); }
   const handleMockUpdateTokenMetadata = () => { updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet); makeApiCall(`/api/v1/token/metadata/${updateTokenMetaTokenId}`, 'PATCH', updateTokenMetaBody, setIsUpdateTokenMetaLoading, setUpdateTokenMetaResponse); }
   const handleMockGetTokenStatus = () => { updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); makeApiCall(`/api/v1/token/status/${getTokenStatusTokenId}`, 'GET', null, setIsGetTokenStatusLoading, setGetTokenStatusResponse); }
+  
+  const handleMockIssueAuthVc = () => { updateSnippet("issueAuthVc", "POST", issueAuthVcSnippetLang, { productId: issueAuthVcProductIdInput }, null, setIssueAuthVcCodeSnippet); makeApiCall(`/api/v1/dpp/${issueAuthVcProductIdInput}/issue-auth-vc`, 'POST', null, setIsIssueAuthVcLoading, setIssueAuthVcResponse); }
+  const handleMockLinkNft = () => { updateSnippet("linkNft", "POST", linkNftSnippetLang, { productId: linkNftProductIdInput }, linkNftBody, setLinkNftCodeSnippet); makeApiCall(`/api/v1/dpp/${linkNftProductIdInput}/link-nft`, 'POST', linkNftBody, setIsLinkNftLoading, setLinkNftResponse); }
 
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python"];
@@ -1026,6 +1048,49 @@ export default function DeveloperPortalPage() {
       children: (
         <div><Label htmlFor="getTokenStatusTokenIdPlayground">Token ID (Path Parameter)</Label><Input id="getTokenStatusTokenIdPlayground" value={getTokenStatusTokenId} onChange={(e) => setGetTokenStatusTokenId(e.target.value)} placeholder="e.g., 101" /></div>
       )
+    },
+    {
+      id: 'issue-auth-vc',
+      section: 'auth-ownership',
+      title: 'POST /api/v1/dpp/{productId}/issue-auth-vc',
+      description: 'Conceptually issue an Authentication Verifiable Credential for a DPP.',
+      onSendRequest: handleMockIssueAuthVc,
+      isLoading: isIssueAuthVcLoading,
+      response: issueAuthVcResponse,
+      codeSnippet: issueAuthVcCodeSnippet,
+      snippetLanguage: issueAuthVcSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setIssueAuthVcSnippetLang(lang); updateSnippet('issueAuthVc', 'POST', lang, { productId: issueAuthVcProductIdInput }, null, setIssueAuthVcCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="issueAuthVcProductIdPlayground">Product ID (Path Parameter)</Label>
+          <Input id="issueAuthVcProductIdPlayground" value={issueAuthVcProductIdInput} onChange={(e) => setIssueAuthVcProductIdInput(e.target.value)} placeholder="e.g., DPP001" />
+        </div>
+      )
+    },
+    {
+      id: 'link-nft',
+      section: 'auth-ownership',
+      title: 'POST /api/v1/dpp/{productId}/link-nft',
+      description: 'Conceptually link an Ownership NFT to a DPP.',
+      onSendRequest: handleMockLinkNft,
+      isLoading: isLinkNftLoading,
+      response: linkNftResponse,
+      codeSnippet: linkNftCodeSnippet,
+      snippetLanguage: linkNftSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setLinkNftSnippetLang(lang); updateSnippet('linkNft', 'POST', lang, { productId: linkNftProductIdInput }, linkNftBody, setLinkNftCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="linkNftProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="linkNftProductIdPlayground" value={linkNftProductIdInput} onChange={(e) => setLinkNftProductIdInput(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="linkNftBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="linkNftBodyPlayground" value={linkNftBody} onChange={(e) => setLinkNftBody(e.target.value)} rows={5} className="font-mono text-xs" />
+            <p className="text-xs text-muted-foreground mt-1">Requires contractAddress, tokenId. See API Reference.</p>
+          </div>
+        </>
+      )
     }
   ] as const;
 
@@ -1213,6 +1278,19 @@ export default function DeveloperPortalPage() {
                     ))}
                   </AccordionContent>
                 </AccordionItem>
+                
+                <AccordionItem value="dpp-auth-ownership">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <FileLockIcon className="mr-2 h-5 w-5" /> Authenticity & Ownership Endpoints (Conceptual)
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'auth-ownership').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
 
                 <AccordionItem value="dpp-token">
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
@@ -1357,3 +1435,4 @@ export default function DeveloperPortalPage() {
   );
 }
 
+```
