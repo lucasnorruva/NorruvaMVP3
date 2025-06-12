@@ -225,11 +225,16 @@ export default function BlockchainPage() {
   const [isRegisteringVcHashLoading, setIsRegisteringVcHashLoading] = useState(false);
 
   const [authVcProductId, setAuthVcProductId] = useState<string>("");
+  const [issueAuthVcResponse, setIssueAuthVcResponse] = useState<string | null>(null);
+  const [isIssueAuthVcLoading, setIsIssueAuthVcLoading] = useState(false);
+
   const [nftProductId, setNftProductId] = useState<string>("");
   const [nftRegistryUrl, setNftRegistryUrl] = useState<string>("");
   const [nftContractAddress, setNftContractAddress] = useState<string>("");
   const [nftTokenId, setNftTokenId] = useState<string>("");
   const [nftChainName, setNftChainName] = useState<string>("");
+  const [linkNftResponse, setLinkNftResponse] = useState<string | null>(null);
+  const [isLinkNftLoading, setIsLinkNftLoading] = useState(false);
 
   // New state for DAO Transfer
   const [daoTransferTokenId, setDaoTransferTokenId] = useState<string>("");
@@ -343,6 +348,8 @@ export default function BlockchainPage() {
     // setParsedTokenStatus(null); // Do not clear parsedTokenStatus here, it's needed for DAO transfer prefill
     setViewTokenMetadataResponse(null);
     setDaoTransferResponse(null);
+    setIssueAuthVcResponse(null);
+    setLinkNftResponse(null);
   };
 
   const updateDppLocally = (updated: DigitalProductPassport) => {
@@ -716,7 +723,8 @@ export default function BlockchainPage() {
       toast({ title: "Product ID Required", description: "Please enter a Product ID to issue an Auth VC for.", variant: "destructive" });
       return;
     }
-    setIsActionLoading("issueAuthVc");
+    setIsIssueAuthVcLoading(true);
+    setIssueAuthVcResponse(null);
     try {
       const res = await fetch(`/api/v1/dpp/${authVcProductId}/issue-auth-vc`, {
         method: "POST",
@@ -724,6 +732,7 @@ export default function BlockchainPage() {
         body: JSON.stringify({}), 
       });
       const data = await res.json();
+      setIssueAuthVcResponse(JSON.stringify(data, null, 2));
       if (res.ok) {
         toast({ title: "Authentication VC Issued (Mock)", description: data.message });
         if (data.updatedProduct) updateDppLocally(data.updatedProduct);
@@ -732,9 +741,10 @@ export default function BlockchainPage() {
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
+      setIssueAuthVcResponse(JSON.stringify({ error: "Client-side error", message: errorMsg }, null, 2));
       toast({ title: "Issuing Auth VC Failed", description: errorMsg, variant: "destructive" });
     }
-    setIsActionLoading(false);
+    setIsIssueAuthVcLoading(false);
   };
   
   const handleLinkNft = async (e: FormEvent) => {
@@ -743,7 +753,8 @@ export default function BlockchainPage() {
       toast({ title: "Required Fields Missing", description: "Product ID, NFT Contract Address, and Token ID are required.", variant: "destructive" });
       return;
     }
-    setIsActionLoading("linkNft");
+    setIsLinkNftLoading(true);
+    setLinkNftResponse(null);
     const payload: OwnershipNftLink & { registryUrl?: string | null } = { 
         contractAddress: nftContractAddress,
         tokenId: nftTokenId,
@@ -757,6 +768,7 @@ export default function BlockchainPage() {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
+      setLinkNftResponse(JSON.stringify(data, null, 2));
       if (res.ok) {
         toast({ title: "Ownership NFT Linked (Mock)", description: data.message });
         if (data.updatedProduct) updateDppLocally(data.updatedProduct);
@@ -765,9 +777,10 @@ export default function BlockchainPage() {
       }
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
+        setLinkNftResponse(JSON.stringify({ error: "Client-side error", message: errorMsg }, null, 2));
         toast({ title: "Linking NFT Failed", description: errorMsg, variant: "destructive" });
     }
-    setIsActionLoading(false);
+    setIsLinkNftLoading(false);
   };
 
   const handleDaoTransferToken = async (e: FormEvent) => {
@@ -1090,6 +1103,7 @@ export default function BlockchainPage() {
                                     {isUpdatingOnChainStatusLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sigma className="mr-2 h-4 w-4" />}
                                     {isUpdatingOnChainStatusLoading ? "Submitting..." : "Update Mock Status"}
                                   </Button>
+                                  {renderApiResult("On-Chain Status Update", selected?.metadata.onChainStatus === onChainStatusUpdate ? {message:"Status already set to this value."} : null, false)}
                                 </form>
                                 
                                 {/* Update On-Chain Lifecycle Stage Form */}
@@ -1108,6 +1122,7 @@ export default function BlockchainPage() {
                                     {isUpdatingLifecycleStageLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Layers3 className="mr-2 h-4 w-4" />}
                                     {isUpdatingLifecycleStageLoading ? "Updating..." : "Update Mock Stage"}
                                   </Button>
+                                  {renderApiResult("On-Chain Lifecycle Update", selected?.metadata.onChainLifecycleStage === onChainLifecycleStage ? {message:"Lifecycle already set to this value."} : null, false)}
                                 </form>
                                 
                                 {/* Log Critical Event Form */}
@@ -1144,10 +1159,11 @@ export default function BlockchainPage() {
                                   <h4 className="font-medium text-sm flex items-center"><FileLock className="h-4 w-4 mr-1.5 text-primary"/>Issue Authentication VC (Mock)</h4>
                                   <p className="text-xs text-muted-foreground">Simulate issuing a Verifiable Credential attesting to product authenticity.</p>
                                   <Input value={authVcProductId} onChange={e => setAuthVcProductId(e.target.value)} placeholder="Product ID (pre-filled)" />
-                                  <Button type="submit" size="sm" disabled={isActionLoading === "issueAuthVc" || !authVcProductId}>
-                                    {isActionLoading === "issueAuthVc" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileLock className="mr-2 h-4 w-4" />}
-                                    {isActionLoading === "issueAuthVc" ? "Issuing..." : "Issue Auth VC"}
+                                  <Button type="submit" size="sm" disabled={isIssueAuthVcLoading || !authVcProductId}>
+                                    {isIssueAuthVcLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileLock className="mr-2 h-4 w-4" />}
+                                    {isIssueAuthVcLoading ? "Issuing..." : "Issue Auth VC"}
                                   </Button>
+                                  {renderApiResult("Auth VC Issuance", issueAuthVcResponse)}
                                 </form>
                                 <form onSubmit={handleLinkNft} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><Tag className="h-4 w-4 mr-1.5 text-primary"/>Link Ownership NFT (Mock)</h4>
@@ -1157,10 +1173,11 @@ export default function BlockchainPage() {
                                   <Input value={nftContractAddress} onChange={e => setNftContractAddress(e.target.value)} placeholder="NFT Contract Address (e.g., 0x...)" />
                                   <Input value={nftTokenId} onChange={e => setNftTokenId(e.target.value)} placeholder="NFT Token ID (e.g., 123)" />
                                   <Input value={nftChainName} onChange={e => setNftChainName(e.target.value)} placeholder="Blockchain Name (e.g., Ethereum)" />
-                                  <Button type="submit" size="sm" disabled={isActionLoading === "linkNft" || !nftProductId || !nftContractAddress || !nftTokenId}>
-                                    {isActionLoading === "linkNft" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Tag className="mr-2 h-4 w-4" />}
-                                    {isActionLoading === "linkNft" ? "Linking..." : "Link Ownership NFT"}
+                                  <Button type="submit" size="sm" disabled={isLinkNftLoading || !nftProductId || !nftContractAddress || !nftTokenId}>
+                                    {isLinkNftLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Tag className="mr-2 h-4 w-4" />}
+                                    {isLinkNftLoading ? "Linking..." : "Link Ownership NFT"}
                                   </Button>
+                                  {renderApiResult("Link NFT", linkNftResponse)}
                                 </form>
                               </CardContent>
                             </Card>
@@ -1313,4 +1330,5 @@ export default function BlockchainPage() {
 }
       
     
+
 
