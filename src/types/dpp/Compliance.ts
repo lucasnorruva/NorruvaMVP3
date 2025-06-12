@@ -133,7 +133,7 @@ export interface PublicCertification {
   transactionHash?: string;
 }
 
-// For ESPR specific product categories
+
 export interface FiberCompositionEntry {
   fiberName: string;
   percentage: number | null; // Allow null for form input

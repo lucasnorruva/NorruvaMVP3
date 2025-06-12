@@ -325,7 +325,7 @@ export interface PublicProductInfo {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; 
+  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
 }
 
 export interface Supplier {
@@ -378,7 +378,7 @@ export interface DisplayableProduct {
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; 
+  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
 }
 
 export interface AnchorResult {
@@ -421,7 +421,7 @@ export interface TransitProduct {
   name: string;
   stage: string;
   eta: string; 
-  dppStatus: ProductComplianceSummary['overallStatus']; 
+  dppStatus: ProductComplianceSummary['overallStatus']; // Changed to use overallStatus type
   transport: "Ship" | "Truck" | "Plane";
   origin: string; 
   destination: string; 
@@ -445,4 +445,3 @@ export interface InspectionEvent {
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
   badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }
-    

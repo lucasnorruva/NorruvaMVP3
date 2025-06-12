@@ -678,4 +678,3 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-
