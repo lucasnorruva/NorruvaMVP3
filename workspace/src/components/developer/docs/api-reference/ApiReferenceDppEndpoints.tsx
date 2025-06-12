@@ -8,8 +8,9 @@ import {
   ExtendDigitalProductPassport,
   AddLifecycleEventToDpp,
   ArchiveDigitalProductPassport,
-  IssueDppAuthVc, // Added import
-  LinkDppOwnershipNft, // Added import
+  IssueDppAuthVc, 
+  LinkDppOwnershipNft,
+  AnchorDpp, // Added import
 } from "./index"; // Import all from index
 import {
   Card,
@@ -312,6 +313,13 @@ export default function ApiReferenceDppEndpoints(props: DppEndpointsProps) {
         error404={props.error404}
         error500={props.error500}
       />
+      <AnchorDpp
+        exampleAnchorDppResponse={props.exampleUpdatedDppResponse} // Assuming updated DPP is a good example
+        error400={props.error400_general}
+        error401={props.error401}
+        error404={props.error404}
+        error500={props.error500}
+      />
       <IssueDppAuthVc 
         exampleDppResponse={props.exampleUpdatedDppResponse}
         error401={props.error401}
@@ -364,3 +372,4 @@ export default function ApiReferenceDppEndpoints(props: DppEndpointsProps) {
 ApiReferenceDppEndpoints.defaultProps = {
   error400_general: JSON.stringify({ error: { code: 400, message: "Invalid request body or parameters." } }, null, 2)
 };
+
