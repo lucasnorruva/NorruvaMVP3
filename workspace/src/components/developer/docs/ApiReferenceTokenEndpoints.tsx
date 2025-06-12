@@ -237,7 +237,8 @@ export default function ApiReferenceTokenEndpoints({
               <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/token/dao-transfer/{"{tokenId}"}</code>
             </span>
             <br />
-            Simulates a DAO-controlled or admin-initiated transfer of a DPP token (NFT) from its current owner to a new owner. This bypasses standard soulbound restrictions.
+            Simulates a DAO-controlled or admin-initiated transfer of a DPP token (NFT)
+            from its current owner to a new owner. This bypasses standard soulbound restrictions.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -302,3 +303,4 @@ export default function ApiReferenceTokenEndpoints({
     </section>
   );
 }
+
