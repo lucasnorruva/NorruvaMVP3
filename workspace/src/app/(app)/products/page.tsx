@@ -29,7 +29,7 @@ import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ProductListRow } from "@/components/products/ProductListRow";
 import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils";
 import { cn } from "@/lib/utils";
-import { MOCK_DPPS as InitialMockDppsData } from '@/data'; // Use a different name for initial import
+import { MOCK_DPPS as InitialMockDppsData } from '@/data'; 
 
 const initialMockProductsData: RichMockProduct[] = InitialMockDppsData.map(dpp => ({
   ...dpp,
@@ -104,6 +104,8 @@ export default function ProductsPage() {
     compliance: "All",
     category: "All",
     blockchainAnchored: "all", 
+    isTextileProduct: undefined, // Initialize new filter
+    isConstructionProduct: undefined, // Initialize new filter
   });
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
@@ -118,8 +120,8 @@ export default function ProductsPage() {
       complianceSummary: p.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: p.lastUpdated }, ebsi: { status: 'N/A', lastChecked: p.lastUpdated } },
       lifecycleEvents: p.lifecycleEvents || [],
       supplyChainLinks: p.supplyChainLinks || [],
-      completeness: calculateDppCompletenessForList(p as DisplayableProduct),
-      metadata: p.metadata, // Include metadata for onChainStatus access
+      completeness: calculateDppCompletenessForList(p as DisplayableProduct), // Calculate completeness
+      metadata: p.metadata, 
     }));
 
     const initialDisplayable: ProductWithCompleteness[] = initialMockProductsData.map(mock => ({
@@ -130,7 +132,7 @@ export default function ProductsPage() {
       supplyChainLinks: mock.supplyChainLinks || [],
       completeness: calculateDppCompletenessForList(mock as DisplayableProduct), 
       blockchainIdentifiers: mock.blockchainIdentifiers, 
-      metadata: mock.metadata, // Include metadata for onChainStatus access
+      metadata: mock.metadata, 
     }));
 
     const combined = [
@@ -177,6 +179,17 @@ export default function ProductsPage() {
       }
     }
 
+    // Conceptual acknowledgment of new filters; actual data filtering based on these would need backend support
+    if (filters.isTextileProduct !== undefined) {
+      // console.log("Filtering for textile products (conceptual):", filters.isTextileProduct);
+      // tempProducts = tempProducts.filter(p => !!p.textileInformation === filters.isTextileProduct); // This would be the actual logic
+    }
+    if (filters.isConstructionProduct !== undefined) {
+      // console.log("Filtering for construction products (conceptual):", filters.isConstructionProduct);
+      // tempProducts = tempProducts.filter(p => !!p.constructionProductInformation === filters.isConstructionProduct); // This would be the actual logic
+    }
+
+
     const getValue = (product: ProductWithCompleteness, key: SortableProductKeys) => {
       if (key === 'category') {
         return product.category || product.productCategory;
@@ -184,7 +197,7 @@ export default function ProductsPage() {
       if (key === 'completenessScore') {
         return product.completeness.score;
       }
-      if (key === 'metadata.onChainStatus') { // Handle nested key for sorting
+      if (key === 'metadata.onChainStatus') { 
         return product.metadata?.onChainStatus;
       }
       return product[key as keyof ProductWithCompleteness];
