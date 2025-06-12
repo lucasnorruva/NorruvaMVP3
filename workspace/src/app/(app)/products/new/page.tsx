@@ -184,6 +184,7 @@ export default function AddNewProductPage() {
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<string>("invoice");
   const [isLoadingAi, setIsLoadingAi] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false); // Moved here
   const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -586,6 +587,8 @@ export default function AddNewProductPage() {
             isSubmitting={isSubmittingProduct}
             onSubmit={handleProductFormSubmit}
             editProductId={editProductId}
+            isGeneratingImage={isGeneratingImage} // Pass down state
+            setIsGeneratingImage={setIsGeneratingImage} // Pass down setter
           />
         </TabsContent>
 

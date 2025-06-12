@@ -229,10 +229,20 @@ interface ProductFormProps {
   initialData?: Partial<InitialProductFormData>;
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
+  isGeneratingImage?: boolean; // Added prop
+  setIsGeneratingImage?: (loading: boolean) => void; // Added prop
   isStandalonePage?: boolean;
 }
 
-export default function ProductForm({ id, initialData, onSubmit, isSubmitting, isStandalonePage = true }: ProductFormProps) {
+export default function ProductForm({ 
+  id, 
+  initialData, 
+  onSubmit, 
+  isSubmitting, 
+  isGeneratingImage, // Destructure new prop
+  setIsGeneratingImage, // Destructure new prop
+  isStandalonePage = true 
+}: ProductFormProps) {
   const form = useForm<ProductFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -330,7 +340,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
   const [suggestedCustomAttributes, setSuggestedCustomAttributes] = useState<CustomAttribute[]>([]);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  // Removed local isGeneratingImage state, will use prop
   const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
   const [currentCustomKey, setCurrentCustomKey] = useState("");
   const [currentCustomValue, setCurrentCustomValue] = useState("");
@@ -556,8 +566,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             aiImageHelper={handleGenerateImageAI} 
             initialImageUrlOrigin={initialData?.imageUrlOrigin}
             toast={toast}
-            isGeneratingImageState={isGeneratingImage}
-            setIsGeneratingImageState={setIsGeneratingImage}
+            isGeneratingImageState={!!isGeneratingImage} // Use prop
+            setIsGeneratingImageState={setIsGeneratingImage || (() => {})} // Use prop
             initialImageUrl={initialData?.imageUrl}
           />
         </AccordionContent>
@@ -739,8 +749,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             </CardHeader>
             <CardContent>{formContent}</CardContent>
           </Card>
-          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={!!isSubmitting || isGeneratingImage}>
-            {(!!isSubmitting || isGeneratingImage) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={!!isSubmitting || !!isGeneratingImage}>
+            {(!!isSubmitting || !!isGeneratingImage) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? "Saving..." : (isGeneratingImage ? "AI Processing..." : "Save Product")}
           </Button>
         </form>
@@ -754,4 +764,5 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
+
 
