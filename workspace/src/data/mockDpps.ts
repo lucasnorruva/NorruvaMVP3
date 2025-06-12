@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp'; // Added EbsiVerificationDetails
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, OwnershipNftLink } from '@/types/dpp'; // Added OwnershipNftLink
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -518,4 +518,5 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     
     
     
+
 
