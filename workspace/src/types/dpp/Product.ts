@@ -3,7 +3,7 @@
 // Description: Product related type definitions and mock data.
 
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle'; // Ensure IconName is exported or defined if used here
-import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails } from './Compliance';
+import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from './Compliance';
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
@@ -51,32 +51,12 @@ export interface DocumentReference {
   addedTimestamp: string;
 }
 
-export interface FiberCompositionEntry {
-  fiberName: string;
-  percentage: number | null; // Allow null for form input
+export interface OwnershipNftLink {
+  registryUrl?: string;
+  contractAddress: string;
+  tokenId: string;
+  chainName?: string;
 }
-
-export interface TextileInformation {
-  fiberComposition?: FiberCompositionEntry[];
-  countryOfOriginLabeling?: string;
-  careInstructionsUrl?: string;
-  isSecondHand?: boolean;
-}
-
-export interface EssentialCharacteristic {
-  characteristicName: string;
-  value: string;
-  unit?: string;
-  testMethod?: string;
-}
-
-export interface ConstructionProductInformation {
-  declarationOfPerformanceId?: string;
-  ceMarkingDetailsUrl?: string;
-  intendedUseDescription?: string;
-  essentialCharacteristics?: EssentialCharacteristic[];
-}
-
 
 export interface DigitalProductPassport {
   id: string;
@@ -112,13 +92,8 @@ export interface DigitalProductPassport {
     anchorTransactionHash?: string;
   };
 
-  authenticationVcId?: string;
-  ownershipNftLink?: {
-    registryUrl?: string;
-    contractAddress: string;
-    tokenId: string;
-    chainName?: string;
-  };
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
 
   productDetails?: {
     description?: string;
@@ -127,7 +102,10 @@ export interface DigitalProductPassport {
     materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
     sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
     energyLabel?: string;
-    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string; 
+    repairManualUrl?: string; 
+    disassemblyInstructionsUrl?: string; 
     recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
     specifications?: string; 
     customAttributes?: CustomAttribute[];
@@ -155,7 +133,7 @@ export interface DigitalProductPassport {
     };
     eu_espr?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
     us_scope3?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
-    battery_regulation?: BatteryRegulationDetails; // Using imported type
+    battery_regulation?: BatteryRegulationDetails; 
     scipNotification?: ScipNotificationDetails;
     euCustomsData?: EuCustomsDataDetails;
   };
@@ -204,15 +182,18 @@ export interface SimpleProductDetail {
   customAttributes?: CustomAttribute[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
-  repairability?: { score: number; scale: number; detailsUrl?: string };
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   complianceSummary?: ProductComplianceSummary;
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   blockchainPlatform?: string;
   contractAddress?: string;
   tokenId?: string;
@@ -223,8 +204,14 @@ export interface SimpleProductDetail {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
+  batteryRegulation?: BatteryRegulationDetails; 
   lastUpdated?: string; 
+  productDetails?: { 
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
 }
 
 export interface StoredUserProduct {
@@ -262,6 +249,16 @@ export interface StoredUserProduct {
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributesJsonString?: string;
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
+  productDetails?: { 
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
   complianceData?: { 
     eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
     esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
@@ -270,8 +267,8 @@ export interface StoredUserProduct {
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
@@ -308,11 +305,15 @@ export interface RichMockProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[];
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
 }
 
 export interface PublicProductInfo {
@@ -341,15 +342,19 @@ export interface PublicProductInfo {
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
   documents?: DocumentReference[];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   contractAddress?: string;
   tokenId?: string;
   onChainStatus?: string;
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
+  batteryRegulation?: BatteryRegulationDetails; 
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
 }
 
 export interface Supplier {
@@ -397,12 +402,22 @@ export interface DisplayableProduct {
   customAttributes?: CustomAttribute[];
   customAttributesJsonString?: string;
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
+  batteryRegulation?: BatteryRegulationDetails; 
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
+  productDetails?: { 
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
 }
 
 export interface AnchorResult {
@@ -460,13 +475,6 @@ export interface CustomsAlert {
   regulation?: string;
 }
 
-export interface InspectionEvent {
-  id: string;
-  icon: React.ElementType;
-  title: string;
-  timestamp: string; // ISO Date string or human-readable
-  description: string;
-  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
-  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
-}
+// InspectionEvent is already defined in Lifecycle.ts and re-exported by index.ts
+// No need to redefine here.
     

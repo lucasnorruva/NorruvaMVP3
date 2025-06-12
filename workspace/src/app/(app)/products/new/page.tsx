@@ -10,7 +10,7 @@ import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp"; 
+import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, OwnershipNftLink } from "@/types/dpp"; 
 import { fileToDataUri } from '@/utils/fileUtils';
 import AiExtractionSection from "@/components/products/new/AiExtractionSection";
 import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";
@@ -40,7 +40,7 @@ interface BatteryRegulationOrigin {
   vcIdOrigin?: AiOrigin;
 }
 
-export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRegulation' | 'compliance'> {
+export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails' | 'ownershipNftLink'> {
   productNameOrigin?: AiOrigin;
   productDescriptionOrigin?: AiOrigin;
   manufacturerOrigin?: AiOrigin;
@@ -50,8 +50,16 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
   energyLabelOrigin?: AiOrigin;
   specificationsOrigin?: AiOrigin;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual' | undefined;
+  productDetails?: {
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
   batteryRegulationOrigin?: BatteryRegulationOrigin;
+  authenticationVcId?: string; 
+  ownershipNftLink?: Partial<OwnershipNftLink>; 
   compliance?: {
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
@@ -66,7 +74,7 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
 }
 
 
-export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance'> {
+export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails' | 'ownershipNftLink'> {
   id: string;
   status: string; 
   compliance: string; 
@@ -76,12 +84,20 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   keyCompliancePoints?: string[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
-  repairability?: { score: number; scale: number; detailsUrl?: string };
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary; 
-  
+  productDetails?: { 
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
   complianceData?: { 
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
@@ -90,6 +106,8 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
+  authenticationVcId?: string; 
+  ownershipNftLink?: Partial<OwnershipNftLink>; 
   textileInformation?: Partial<TextileInformation>; 
   constructionProductInformation?: Partial<ConstructionProductInformation>; 
   metadata?: { 
@@ -145,6 +163,17 @@ const defaultConstructionProductInformationState: Partial<ConstructionProductInf
   essentialCharacteristics: [],
 };
 
+const defaultProductDetailsState = {
+  repairabilityScore: { value: null, scale: null, reportUrl: "", vcId: "" },
+  sparePartsAvailability: "",
+  repairManualUrl: "",
+  disassemblyInstructionsUrl: "",
+};
+
+const defaultOwnershipNftLinkState: Partial<OwnershipNftLink> = {
+  registryUrl: "", contractAddress: "", tokenId: "", chainName: ""
+};
+
 
 export default function AddNewProductPage() {
   const router = useRouter();
@@ -167,8 +196,11 @@ export default function AddNewProductPage() {
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
     onChainStatus: "Unknown", 
     onChainLifecycleStage: "Unknown", 
+    productDetails: { ...defaultProductDetailsState },
     batteryRegulation: { ...defaultBatteryRegulationState },
     customAttributesJsonString: "",
+    authenticationVcId: "", 
+    ownershipNftLink: { ...defaultOwnershipNftLinkState }, 
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
     modelNumberOrigin: undefined, materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined,
     energyLabelOrigin: undefined, specificationsOrigin: undefined,
@@ -196,6 +228,14 @@ export default function AddNewProductPage() {
           ...productToEdit,
           onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", 
           onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", 
+          productDetails: {
+            ...defaultProductDetailsState, 
+            ...(productToEdit.productDetails || {}), 
+            repairabilityScore: productToEdit.repairabilityScore || productToEdit.productDetails?.repairabilityScore || defaultProductDetailsState.repairabilityScore,
+            sparePartsAvailability: productToEdit.sparePartsAvailability || productToEdit.productDetails?.sparePartsAvailability || defaultProductDetailsState.sparePartsAvailability,
+            repairManualUrl: productToEdit.repairManualUrl || productToEdit.productDetails?.repairManualUrl || defaultProductDetailsState.repairManualUrl,
+            disassemblyInstructionsUrl: productToEdit.disassemblyInstructionsUrl || productToEdit.productDetails?.disassemblyInstructionsUrl || defaultProductDetailsState.disassemblyInstructionsUrl,
+          },
           batteryRegulation: {
             ...defaultBatteryRegulationState,
             ...(productToEdit.batteryRegulation || {}),
@@ -211,6 +251,8 @@ export default function AddNewProductPage() {
               ? productToEdit.batteryRegulation.recycledContent
               : [],
           },
+          authenticationVcId: productToEdit.authenticationVcId || "", 
+          ownershipNftLink: { ...defaultOwnershipNftLinkState, ...(productToEdit.ownershipNftLink || {}) }, 
           compliance: {
             eprel: { ...(defaultFormState.compliance?.eprel || {}), ...(productToEdit.complianceData?.eprel || {}) },
             esprConformity: { ...(defaultFormState.compliance?.esprConformity || {}), ...(productToEdit.complianceData?.esprConformity || {}) },
@@ -275,6 +317,8 @@ export default function AddNewProductPage() {
         compliance: { ...defaultFormState.compliance }, 
         textileInformation: { ...defaultTextileInformationState }, 
         constructionProductInformation: { ...defaultConstructionProductInformationState }, 
+        authenticationVcId: prev.authenticationVcId, 
+        ownershipNftLink: prev.ownershipNftLink,     
       }));
       setError(null);
       setAiExtractionAppliedSuccessfully(false);
@@ -295,6 +339,7 @@ export default function AddNewProductPage() {
       const result = await extractProductData({ documentDataUri, documentType });
 
       const aiInitialFormData: Partial<InitialProductFormData> = {
+        productDetails: { ...defaultProductDetailsState },
         batteryRegulation: { ...defaultBatteryRegulationState },
         batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState },
         compliance: { 
@@ -306,6 +351,8 @@ export default function AddNewProductPage() {
         },
         textileInformation: { ...defaultTextileInformationState }, 
         constructionProductInformation: { ...defaultConstructionProductInformationState }, 
+        authenticationVcId: "", 
+        ownershipNftLink: { ...defaultOwnershipNftLinkState }, 
       };
 
       if (result.productName) { aiInitialFormData.productName = result.productName; aiInitialFormData.productNameOrigin = 'AI_EXTRACTED'; }
@@ -405,6 +452,12 @@ export default function AddNewProductPage() {
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
         
+        productDetails: { 
+            repairabilityScore: formDataFromForm.productDetails?.repairabilityScore,
+            sparePartsAvailability: formDataFromForm.productDetails?.sparePartsAvailability,
+            repairManualUrl: formDataFromForm.productDetails?.repairManualUrl,
+            disassemblyInstructionsUrl: formDataFromForm.productDetails?.disassemblyInstructionsUrl,
+        },
         complianceData: {
           eprel: formDataFromForm.compliance?.eprel,
           esprConformity: formDataFromForm.compliance?.esprConformity,
@@ -413,6 +466,8 @@ export default function AddNewProductPage() {
           battery_regulation: formDataFromForm.compliance?.battery_regulation,
         },
         batteryRegulation: formDataFromForm.batteryRegulation,
+        authenticationVcId: formDataFromForm.authenticationVcId, 
+        ownershipNftLink: formDataFromForm.ownershipNftLink, 
         textileInformation: formDataFromForm.textileInformation, 
         constructionProductInformation: formDataFromForm.constructionProductInformation, 
         metadata: { 

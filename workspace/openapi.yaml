@@ -1993,7 +1993,7 @@ components:
           type: integer
           nullable: true
           description: Conceptual version number of the DPP after this change.
-    OwnershipNftLink: # Schema for Ownership NFT Link object
+    OwnershipNftLink: 
       type: object
       properties:
         registryUrl:
@@ -2014,7 +2014,7 @@ components:
       required:
         - contractAddress
         - tokenId
-    OwnershipNftLinkRequestBody: # Request body schema for linking NFT
+    OwnershipNftLinkRequestBody: 
       type: object
       properties:
         registryUrl:
@@ -2182,14 +2182,31 @@ components:
               properties:
                 value:
                   type: number
+                  nullable: true
                 scale:
                   type: number
+                  nullable: true
                 reportUrl:
                   type: string
+                  format: url
                   nullable: true
                 vcId:
                   type: string
                   nullable: true
+            sparePartsAvailability:
+              type: string
+              nullable: true
+              description: "Information on spare parts availability, e.g., 'Up to 7 years'."
+            repairManualUrl:
+              type: string
+              format: url
+              nullable: true
+              description: "URL to the product's repair manual."
+            disassemblyInstructionsUrl:
+              type: string
+              format: url
+              nullable: true
+              description: "URL to the product's disassembly instructions."
             recyclabilityInformation:
               type: object
               nullable: true
@@ -2398,9 +2415,18 @@ components:
           anchorTransactionHash: "0x123abc..."
           contractAddress: "0xContract123"
           tokenId: "Token789"
+        authenticationVcId: "vc_auth_DPP001_mock123"
+        ownershipNftLink:
+          registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1"
+          contractAddress: "0xNFTContractForDPP001"
+          tokenId: "1"
+          chainName: "MockEthereum"
         productDetails:
           description: "An eco friendly fridge."
           energyLabel: "A++"
+          sparePartsAvailability: "Available for 7 years post-purchase."
+          repairManualUrl: "https://example.com/manuals/repairX500.pdf"
+          disassemblyInstructionsUrl: "https://example.com/manuals/disassemblyX500.pdf"
     LifecycleEvent:
       type: object
       properties:
@@ -2616,6 +2642,16 @@ components:
             imageHint:
               type: string
               nullable: true
+            repairabilityScore:
+              type: object
+              nullable: true
+              properties:
+                value: { type: number , nullable: true }
+                scale: { type: number , nullable: true }
+                reportUrl: { type: string, format: url, nullable: true }
+            sparePartsAvailability: { type: string, nullable: true }
+            repairManualUrl: { type: string, format: url, nullable: true }
+            disassemblyInstructionsUrl: { type: string, format: url, nullable: true }
         textileInformation:
           $ref: '#/components/schemas/TextileInformation'
           nullable: true
@@ -2650,6 +2686,9 @@ components:
             battery_regulation:
               $ref: '#/components/schemas/BatteryRegulationDetails'
               nullable: true
+        ownershipNftLink: 
+            $ref: '#/components/schemas/OwnershipNftLinkRequestBody'
+            nullable: true
     UpdateDppRequestBody:
       type: object
       properties:
@@ -2744,6 +2783,16 @@ components:
             imageHint:
               type: string
               nullable: true
+            repairabilityScore:
+              type: object
+              nullable: true
+              properties:
+                value: { type: number , nullable: true }
+                scale: { type: number , nullable: true }
+                reportUrl: { type: string, format: url, nullable: true }
+            sparePartsAvailability: { type: string, nullable: true }
+            repairManualUrl: { type: string, format: url, nullable: true }
+            disassemblyInstructionsUrl: { type: string, format: url, nullable: true }
         textileInformation:
           $ref: '#/components/schemas/TextileInformation'
           nullable: true
@@ -2803,6 +2852,12 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/DocumentReference'
+        authenticationVcId: 
+            type: string
+            nullable: true
+        ownershipNftLink: 
+            $ref: '#/components/schemas/OwnershipNftLinkRequestBody'
+            nullable: true
     UpdateOnChainStatusRequest: 
       type: object
       required:
@@ -2932,7 +2987,7 @@ components:
         metadataUri: "ipfs://dpp_metadata_for_DPP001"
         lastTransactionHash: "0xlast_tx_mock_randomhash"
         status: "active"
-    DetailedSupplierAttestation: # Conceptual Schema for Private Layer
+    DetailedSupplierAttestation: 
       type: object
       properties:
         attestationId: { type: string, example: "attest_sup001_compA_batchXYZ_20240815" }
@@ -2954,7 +3009,7 @@ components:
         - supplierId
         - attestationType
         - attestationStatement
-    B2BComponentTransferRecord: # Conceptual Schema for Private Layer
+    B2BComponentTransferRecord: 
       type: object
       properties:
         transferId: { type: string, example: "transfer_compA_sup001_to_mfg002_20240820" }
@@ -2975,7 +3030,7 @@ components:
         - transferDate
         - fromParty
         - toParty
-    ConfidentialMaterialComposition: # Conceptual Schema for Private Layer
+    ConfidentialMaterialComposition: 
       type: object
       properties:
         confidentialMaterialId: { type: string, example: "cm_dpp001_proprietary_alloy_X1" }
@@ -2992,7 +3047,7 @@ components:
         - productId
         - materialName
         - composition
-    ZkpSubmissionRequest: # Conceptual Schema for ZKP Layer
+    ZkpSubmissionRequest: 
       type: object
       properties:
         claimType:
@@ -3003,7 +3058,7 @@ components:
           example: "material_compliance_svhc_lead_less_0.1"
         proofData:
           type: string
-          format: byte # Typically base64 encoded ZKP data
+          format: byte 
           description: The actual Zero-Knowledge Proof data, specific to the ZKP scheme used.
           example: "0xabcdef123456..."
         publicInputs:
@@ -3017,7 +3072,7 @@ components:
       required:
         - claimType
         - proofData
-    ZkpSubmissionResponse: # Conceptual Schema for ZKP Layer
+    ZkpSubmissionResponse: 
       type: object
       properties:
         dppId:
@@ -3040,7 +3095,7 @@ components:
           type: string
           format: date-time
           description: Timestamp of the submission.
-    ZkpVerificationResponse: # Conceptual Schema for ZKP Layer
+    ZkpVerificationResponse: 
       type: object
       properties:
         dppId:
@@ -3152,26 +3207,33 @@ components:
         notificationId:
           type: string
           nullable: true
+          description: SCIP database notification number.
         svhcListVersion:
           type: string
           nullable: true
+          description: Version of the ECHA Candidate List used for assessment.
         submittingLegalEntity:
           type: string
           nullable: true
+          description: Name or identifier of the legal entity that submitted the notification.
         articleName:
           type: string
           nullable: true
+          description: Name of the article as notified to SCIP.
         primaryArticleId:
           type: string
           nullable: true
+          description: Primary identifier of the article (e.g., EAN, TARIC code).
         safeUseInstructionsLink:
           type: string
           format: url
           nullable: true
+          description: Link to safe use instructions, if SVHCs are present.
         lastChecked:
           type: string
           format: date-time
           nullable: true
+          readOnly: true
     EuCustomsDataDetails: 
       type: object
       properties:
@@ -3182,21 +3244,26 @@ components:
         declarationId:
           type: string
           nullable: true
+          description: Customs declaration reference number.
         hsCode:
           type: string
           nullable: true
+          description: Harmonized System (HS) code for customs classification.
         countryOfOrigin:
           type: string
           format: "ISO3166-1-Alpha-2"
           nullable: true
+          description: ISO 3166-1 alpha-2 country code of origin.
         netWeightKg:
           type: number
           format: float
           nullable: true
+          description: Net weight of the product in kilograms.
         grossWeightKg:
           type: number
           format: float
           nullable: true
+          description: Gross weight of the product in kilograms.
         customsValuation:
           type: object
           nullable: true
@@ -3204,15 +3271,16 @@ components:
             value:
               type: number
               format: float
-              nullable: true
+              nullable: true 
             currency:
               type: string
-              format: "ISO4217"
-              nullable: true
+              format: "ISO4217" 
+              nullable: true 
         lastChecked:
           type: string
           format: date-time
           nullable: true
+          readOnly: true
     FiberCompositionEntry: # New schema for textile fiber composition
       type: object
       required:
@@ -3304,3 +3372,4 @@ components:
 
 
     
+

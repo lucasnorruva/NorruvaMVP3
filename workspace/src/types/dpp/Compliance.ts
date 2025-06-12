@@ -133,3 +133,29 @@ export interface PublicCertification {
   transactionHash?: string;
 }
 
+
+export interface FiberCompositionEntry {
+  fiberName: string;
+  percentage: number | null; // Allow null for form input
+}
+
+export interface TextileInformation {
+  fiberComposition?: FiberCompositionEntry[];
+  countryOfOriginLabeling?: string;
+  careInstructionsUrl?: string;
+  isSecondHand?: boolean;
+}
+
+export interface EssentialCharacteristic {
+  characteristicName: string;
+  value: string;
+  unit?: string;
+  testMethod?: string;
+}
+
+export interface ConstructionProductInformation {
+  declarationOfPerformanceId?: string;
+  ceMarkingDetailsUrl?: string;
+  intendedUseDescription?: string;
+  essentialCharacteristics?: EssentialCharacteristic[];
+}
