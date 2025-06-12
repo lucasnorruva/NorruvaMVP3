@@ -9,6 +9,7 @@ import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiRefe
 import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
 import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints';
 import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferenceZkpLayerEndpoints';
+import ApiReferenceGraphEndpoints from "@/components/developer/docs/api-reference/ApiReferenceGraphEndpoints"; // Added import
 import type { DigitalProductPassport } from "@/types/dpp";
 
 export default function ApiReferencePage() {
@@ -464,6 +465,21 @@ export default function ApiReferencePage() {
     message: "Mock ZKP for claim 'material_compliance_svhc_lead_less_0.1' is considered valid for this DPP."
   }, null, 2);
 
+  const exampleGraphResponse = JSON.stringify({
+    nodes: [
+      { id: "DPP001", label: "EcoSmart Refrigerator X500", type: "product" },
+      { id: "mfg_GreenTech_Appliances", label: "GreenTech Appliances", type: "manufacturer" },
+      { id: "sup_SUP001", label: "GreenCompress Ltd.", type: "supplier" },
+      { id: "comp_DPP001_Compressor_Unit_XJ-500_0", label: "Compressor Unit XJ-500", type: "component" },
+      { id: "event_DPP001_evt1", label: "Manufactured", type: "lifecycle_event" },
+    ],
+    edges: [
+      { id: "edge_mfg_GreenTech_Appliances_prod_DPP001", source: "mfg_GreenTech_Appliances", target: "DPP001", label: "manufactured_by" },
+      { id: "edge_sup_SUP001_comp_comp_DPP001_Compressor_Unit_XJ-500_0", source: "sup_SUP001", target: "comp_DPP001_Compressor_Unit_XJ-500_0", label: "supplies_item" },
+      { id: "edge_comp_comp_DPP001_Compressor_Unit_XJ-500_0_prod_DPP001", source: "comp_DPP001_Compressor_Unit_XJ-500_0", target: "DPP001", label: "is_part_of" },
+      { id: "edge_prod_DPP001_event_evt1", source: "DPP001", target: "event_DPP001_evt1", label: "underwent_event" },
+    ]
+  }, null, 2);
 
   return (
     <DocsPageLayout
@@ -498,6 +514,12 @@ export default function ApiReferencePage() {
         error400_patch_dpp={error400_patch_dpp}
         error400_lifecycle_event={error400_lifecycle_event}
         error400_general={error400_general} 
+      />
+      <ApiReferenceGraphEndpoints // Added this component
+        exampleGraphResponse={exampleGraphResponse}
+        error401={error401}
+        error404={error404}
+        error500={error500}
       />
       <ApiReferenceTokenEndpoints
         mintRequest={mintTokenRequest}

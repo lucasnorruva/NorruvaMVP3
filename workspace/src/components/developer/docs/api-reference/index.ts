@@ -10,6 +10,7 @@ export { default as ApiReferencePrivateLayerEndpoints } from './ApiReferencePriv
 export { default as ApiReferenceZkpLayerEndpoints } from './ApiReferenceZkpLayerEndpoints'; 
 export { default as IssueDppAuthVc } from './IssueDppAuthVc';
 export { default as LinkDppOwnershipNft } from './LinkDppOwnershipNft';
+export { default as ApiReferenceGraphEndpoints } from './ApiReferenceGraphEndpoints'; // Added export
 
 // Ensure ApiReferenceDppEndpoints is also exported if it's the main aggregator,
 // or export the new components directly if they are separate files.

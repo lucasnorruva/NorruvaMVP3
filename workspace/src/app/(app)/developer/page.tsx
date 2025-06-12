@@ -21,7 +21,7 @@ import {
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock,
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone,
     Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIconPg, History, 
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash, Layers3, FileLock as FileLockIcon
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash, Layers3, FileLock as FileLockIcon, Users2 as Users2Icon
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -301,6 +301,12 @@ export default function DeveloperPortalPage() {
   const [isLinkNftLoading, setIsLinkNftLoading] = useState(false);
   const [linkNftSnippetLang, setLinkNftSnippetLang] = useState("cURL");
 
+  const [daoTransferTokenIdPlayground, setDaoTransferTokenIdPlayground] = useState<string>("101");
+  const [daoTransferNewOwnerAddressPlayground, setDaoTransferNewOwnerAddressPlayground] = useState<string>("0xNEW_OWNER_MOCK_ADDRESS");
+  const [daoTransferResponsePlayground, setDaoTransferResponsePlayground] = useState<string | null>(null);
+  const [isDaoTransferLoadingPlayground, setIsDaoTransferLoadingPlayground] = useState(false);
+  const [daoTransferSnippetLang, setDaoTransferSnippetLang] = useState("cURL");
+
 
   const [getProductCodeSnippet, setGetProductCodeSnippet] = useState("");
   const [listDppsCodeSnippet, setListDppsCodeSnippet] = useState("");
@@ -314,7 +320,7 @@ export default function DeveloperPortalPage() {
   const [verifyDppCodeSnippet, setVerifyDppCodeSnippet] = useState("");
   const [getDppHistoryCodeSnippet, setGetDppHistoryCodeSnippet] = useState("");
   const [importDppsCodeSnippet, setImportDppsCodeSnippet] = useState("");
-  const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState("");
+  const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState(""); // New snippet state
   const [getStatusCodeSnippet, setGetStatusCodeSnippet] = useState("");
   const [postOnchainStatusCodeSnippet, setPostOnchainStatusCodeSnippet] = useState("");
   const [postOnchainLifecycleCodeSnippet, setPostOnchainLifecycleCodeSnippet] = useState("");
@@ -328,6 +334,7 @@ export default function DeveloperPortalPage() {
   const [getTokenStatusCodeSnippet, setGetTokenStatusCodeSnippet] = useState("");
   const [issueAuthVcCodeSnippet, setIssueAuthVcCodeSnippet] = useState("");
   const [linkNftCodeSnippet, setLinkNftCodeSnippet] = useState("");
+  const [daoTransferCodeSnippet, setDaoTransferCodeSnippet] = useState("");
 
 
   const updateSnippet = useCallback((
@@ -371,6 +378,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet), [mintTokenProductId, mintTokenBody, mintTokenSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet), [updateTokenMetaTokenId, updateTokenMetaBody, updateTokenMetaSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet), [getTokenStatusTokenId, getTokenStatusSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("daoTransferToken", "POST", daoTransferSnippetLang, { tokenId: daoTransferTokenIdPlayground }, JSON.stringify({newOwnerAddress: daoTransferNewOwnerAddressPlayground}), setDaoTransferCodeSnippet), [daoTransferTokenIdPlayground, daoTransferNewOwnerAddressPlayground, daoTransferSnippetLang, updateSnippet]);
 
   useEffect(() => updateSnippet("issueAuthVc", "POST", issueAuthVcSnippetLang, { productId: issueAuthVcProductIdInput }, null, setIssueAuthVcCodeSnippet), [issueAuthVcProductIdInput, issueAuthVcSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("linkNft", "POST", linkNftSnippetLang, { productId: linkNftProductIdInput }, linkNftBody, setLinkNftCodeSnippet), [linkNftProductIdInput, linkNftBody, linkNftSnippetLang, updateSnippet]);
@@ -535,6 +543,12 @@ export default function DeveloperPortalPage() {
   
   const handleMockIssueAuthVc = () => { updateSnippet("issueAuthVc", "POST", issueAuthVcSnippetLang, { productId: issueAuthVcProductIdInput }, null, setIssueAuthVcCodeSnippet); makeApiCall(`/api/v1/dpp/${issueAuthVcProductIdInput}/issue-auth-vc`, 'POST', null, setIsIssueAuthVcLoading, setIssueAuthVcResponse); }
   const handleMockLinkNft = () => { updateSnippet("linkNft", "POST", linkNftSnippetLang, { productId: linkNftProductIdInput }, linkNftBody, setLinkNftCodeSnippet); makeApiCall(`/api/v1/dpp/${linkNftProductIdInput}/link-nft`, 'POST', linkNftBody, setIsLinkNftLoading, setLinkNftResponse); }
+
+  const handleMockDaoTransferToken = () => {
+    const body = JSON.stringify({newOwnerAddress: daoTransferNewOwnerAddressPlayground});
+    updateSnippet("daoTransferToken", "POST", daoTransferSnippetLang, { tokenId: daoTransferTokenIdPlayground }, body, setDaoTransferCodeSnippet);
+    makeApiCall(`/api/v1/token/dao-transfer/${daoTransferTokenIdPlayground}`, 'POST', body, setIsDaoTransferLoadingPlayground, setDaoTransferResponsePlayground);
+  };
 
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python"];
@@ -707,6 +721,24 @@ export default function DeveloperPortalPage() {
         </div>
       )
     },
+     { // Added Graph Endpoint Card
+      id: 'get-graph',
+      section: 'utility',
+      title: 'GET /api/v1/dpp/graph/{productId}',
+      description: 'Retrieve data for supply chain visualization.',
+      onSendRequest: handleMockGetGraph,
+      isLoading: isGetGraphLoading,
+      response: getGraphResponse,
+      codeSnippet: getDppGraphCodeSnippet,
+      snippetLanguage: getDppGraphSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setGetDppGraphSnippetLang(lang); updateSnippet('getDppGraph','GET',lang,{productId: getGraphProductId},null,setGetDppGraphCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="graphProductIdInput">Product ID (Path Parameter)</Label>
+          <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
+        </div>
+      )
+    },
     {
       id: 'qr-validate',
       section: 'utility',
@@ -838,24 +870,6 @@ export default function DeveloperPortalPage() {
           </div>
           <p className="text-xs text-muted-foreground mt-1">For this mock, 'data' field is simulated. See API Reference.</p>
         </>
-      )
-    },
-    {
-      id: 'get-graph',
-      section: 'utility',
-      title: 'GET /api/v1/dpp/graph/{productId}',
-      description: 'Retrieve data for supply chain visualization.',
-      onSendRequest: handleMockGetGraph,
-      isLoading: isGetGraphLoading,
-      response: getGraphResponse,
-      codeSnippet: getDppGraphCodeSnippet,
-      snippetLanguage: getDppGraphSnippetLang,
-      onSnippetLanguageChange: (lang: string) => { setGetDppGraphSnippetLang(lang); updateSnippet('getDppGraph','GET',lang,{productId: getGraphProductId},null,setGetDppGraphCodeSnippet); },
-      children: (
-        <div>
-          <Label htmlFor="graphProductIdInput">Product ID (Path Parameter)</Label>
-          <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
-        </div>
       )
     },
     {
@@ -1076,6 +1090,34 @@ export default function DeveloperPortalPage() {
       onSnippetLanguageChange: (lang: string) => { setGetTokenStatusSnippetLang(lang); updateSnippet('getTokenStatus', 'GET', lang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); },
       children: (
         <div><Label htmlFor="getTokenStatusTokenIdPlayground">Token ID (Path Parameter)</Label><Input id="getTokenStatusTokenIdPlayground" value={getTokenStatusTokenId} onChange={(e) => setGetTokenStatusTokenId(e.target.value)} placeholder="e.g., 101" /></div>
+      )
+    },
+     {
+      id: 'dao-transfer-token',
+      section: 'token',
+      title: 'POST /api/v1/token/dao-transfer/{tokenId}',
+      description: 'Simulates a DAO-controlled transfer of a DPP token.',
+      onSendRequest: handleMockDaoTransferToken,
+      isLoading: isDaoTransferLoadingPlayground,
+      response: daoTransferResponsePlayground,
+      codeSnippet: daoTransferCodeSnippet,
+      snippetLanguage: daoTransferSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { 
+        const body = JSON.stringify({newOwnerAddress: daoTransferNewOwnerAddressPlayground});
+        setDaoTransferSnippetLang(lang); 
+        updateSnippet('daoTransferToken', 'POST', lang, { tokenId: daoTransferTokenIdPlayground }, body, setDaoTransferCodeSnippet); 
+      },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="daoTransferTokenIdPlaygroundInput">Token ID (Path Parameter)</Label>
+            <Input id="daoTransferTokenIdPlaygroundInput" value={daoTransferTokenIdPlayground} onChange={(e) => setDaoTransferTokenIdPlayground(e.target.value)} placeholder="e.g., 101" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="daoTransferNewOwnerPlaygroundInput">New Owner Address (Request Body)</Label>
+            <Input id="daoTransferNewOwnerPlaygroundInput" value={daoTransferNewOwnerAddressPlayground} onChange={(e) => setDaoTransferNewOwnerAddressPlayground(e.target.value)} placeholder="e.g., 0xNEW_OWNER_ADDRESS" />
+          </div>
+        </>
       )
     },
     {
@@ -1389,7 +1431,7 @@ export default function DeveloperPortalPage() {
         <TabsContent value="settings_usage" className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="shadow-lg lg:col-span-2">
                 <CardHeader>
-                <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
+                <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage & Reporting</CardTitle>
                 <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data for <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment for <Badge variant="outline">{mockOrganizationName}</Badge>).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
