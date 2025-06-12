@@ -782,25 +782,33 @@ export default function BlockchainPage() {
     }
     setIsDaoTransferLoading(true);
     setDaoTransferResponse(null);
-    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
-
-    // Simulate update of local token status if available
-    if (parsedTokenStatus && parsedTokenStatus.tokenId === daoTransferTokenId) {
-      setParsedTokenStatus(prev => prev ? { ...prev, ownerAddress: daoTransferNewOwnerAddress.trim() } : null);
-      setDaoTransferCurrentOwner(daoTransferNewOwnerAddress.trim()); // Update display
-    }
     
-    const mockTx = `0xdaotransfer_mock_${Date.now().toString(16).slice(-8)}`;
-    const responseMessage = `Conceptual DAO token transfer for token ${daoTransferTokenId} to ${daoTransferNewOwnerAddress.trim()} simulated successfully. Mock Tx: ${mockTx}`;
-    setDaoTransferResponse(JSON.stringify({
-      message: "DAO Token Transfer Simulated",
-      tokenId: daoTransferTokenId,
-      newOwner: daoTransferNewOwnerAddress.trim(),
-      mockTxHash: mockTx,
-    }, null, 2));
-    toast({ title: "DAO Token Transfer Simulated", description: responseMessage });
-    setDaoTransferNewOwnerAddress(""); // Clear input
-    setIsDaoTransferLoading(false);
+    try {
+      const res = await fetch(`/api/v1/token/dao-transfer/${daoTransferTokenId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
+        body: JSON.stringify({ newOwnerAddress: daoTransferNewOwnerAddress.trim() }),
+      });
+      const data = await res.json();
+      setDaoTransferResponse(JSON.stringify(data, null, 2));
+
+      if (res.ok) {
+        if (parsedTokenStatus && parsedTokenStatus.tokenId === daoTransferTokenId) {
+          setParsedTokenStatus(prev => prev ? { ...prev, ownerAddress: daoTransferNewOwnerAddress.trim() } : null);
+          setDaoTransferCurrentOwner(daoTransferNewOwnerAddress.trim());
+        }
+        toast({ title: "DAO Token Transfer Simulated", description: data.message || `Conceptual DAO token transfer for token ${daoTransferTokenId} to ${daoTransferNewOwnerAddress.trim()} simulated.` });
+        setDaoTransferNewOwnerAddress(""); // Clear input
+      } else {
+        handleApiError(res, "DAO Token Transfer");
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
+      setDaoTransferResponse(JSON.stringify({ error: "Client-side error", message: errorMsg }, null, 2));
+      toast({ title: "DAO Token Transfer Failed", description: errorMsg, variant: "destructive" });
+    } finally {
+      setIsDaoTransferLoading(false);
+    }
   };
 
 
@@ -1068,16 +1076,14 @@ export default function BlockchainPage() {
                                 <CardDescription className="text-xs">Simulate direct interactions with a DPP smart contract or public layer operations.</CardDescription>
                               </CardHeader>
                               <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-8">
+                                {/* Update On-Chain Status Form */}
                                 <form onSubmit={handleUpdateOnChainStatus} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><Sigma className="h-4 w-4 mr-1.5 text-primary"/>Update On-Chain DPP Status</h4>
-                                  <p className="text-xs text-muted-foreground">Simulate updating the product's status on the blockchain (e.g., after recall).</p>
+                                  <p className="text-xs text-muted-foreground">Simulate updating the product's status on the blockchain.</p>
                                   <Select value={onChainStatusUpdate} onValueChange={setOnChainStatusUpdate}>
                                     <SelectTrigger><SelectValue placeholder="Select On-Chain Status" /></SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="active">Active</SelectItem>
-                                      <SelectItem value="recalled">Recalled</SelectItem>
-                                      <SelectItem value="flagged_for_review">Flagged for Review</SelectItem>
-                                      <SelectItem value="archived">Archived (End of Life)</SelectItem>
+                                      {["active", "recalled", "flagged_for_review", "archived"].map(s => <SelectItem key={`ocs-${s}`} value={s} className="capitalize">{s.replace('_', ' ')}</SelectItem>)}
                                     </SelectContent>
                                   </Select>
                                   <Button type="submit" size="sm" disabled={isUpdatingOnChainStatusLoading || !selected}>
@@ -1086,6 +1092,7 @@ export default function BlockchainPage() {
                                   </Button>
                                 </form>
                                 
+                                {/* Update On-Chain Lifecycle Stage Form */}
                                 <form onSubmit={handleUpdateOnChainLifecycleStage} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><Layers className="h-4 w-4 mr-1.5 text-primary"/>Update DPP On-Chain Lifecycle Stage</h4>
                                   <p className="text-xs text-muted-foreground">Simulate updating the product's on-chain lifecycle stage.</p>
@@ -1103,6 +1110,7 @@ export default function BlockchainPage() {
                                   </Button>
                                 </form>
                                 
+                                {/* Log Critical Event Form */}
                                 <form onSubmit={handleLogCriticalEvent} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><MessageSquareWarning className="h-4 w-4 mr-1.5 text-primary"/>Log Critical Event On-Chain</h4>
                                   <p className="text-xs text-muted-foreground">Simulate recording a critical event (e.g., major defect, safety recall details).</p>
@@ -1121,6 +1129,7 @@ export default function BlockchainPage() {
                                   </Button>
                                 </form>
 
+                                {/* Register VC Hash Form */}
                                 <form onSubmit={handleRegisterVcHash} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><Hash className="h-4 w-4 mr-1.5 text-primary"/>Register Verifiable Credential Hash On-Chain</h4>
                                   <p className="text-xs text-muted-foreground">Simulate registering a VC hash on the blockchain for integrity verification.</p>
@@ -1251,6 +1260,7 @@ export default function BlockchainPage() {
                                             </form>
                                         </CardContent>
                                     </Card>
+                                     {/* DAO Token Transfer Card */}
                                     <Card className="bg-background">
                                         <CardHeader>
                                             <CardTitle className="text-md flex items-center"><Users2Icon className="h-4 w-4 mr-1.5 text-primary"/>Transfer Token Ownership (DAO/Admin Action)</CardTitle>
@@ -1260,17 +1270,17 @@ export default function BlockchainPage() {
                                             <form onSubmit={handleDaoTransferToken} className="space-y-3">
                                                 <div>
                                                     <Label htmlFor="daoTransferTokenId" className="text-xs">Token ID</Label>
-                                                    <Input id="daoTransferTokenId" value={daoTransferTokenId} readOnly disabled className="font-mono text-xs bg-muted/50" />
+                                                    <Input id="daoTransferTokenId" value={daoTransferTokenId} readOnly disabled className="font-mono text-xs bg-muted/50"/>
                                                 </div>
                                                 <div>
-                                                    <Label htmlFor="daoTransferCurrentOwner" className="text-xs">Current On-Chain Owner</Label>
-                                                    <Input id="daoTransferCurrentOwner" value={daoTransferCurrentOwner} readOnly disabled className="font-mono text-xs bg-muted/50" />
+                                                    <Label htmlFor="daoTransferCurrentOwner" className="text-xs">Current On-Chain Owner (from Get Token Status)</Label>
+                                                    <Input id="daoTransferCurrentOwner" value={daoTransferCurrentOwner} readOnly disabled className="font-mono text-xs bg-muted/50"/>
                                                 </div>
                                                 <div>
                                                     <Label htmlFor="daoTransferNewOwnerAddress" className="text-xs">New Owner Address</Label>
                                                     <Input id="daoTransferNewOwnerAddress" value={daoTransferNewOwnerAddress} onChange={e => setDaoTransferNewOwnerAddress(e.target.value)} placeholder="e.g., 0xNEW_OWNER_ADDRESS" />
                                                 </div>
-                                                <Button type="submit" size="sm" disabled={isDaoTransferLoading || !selected || daoTransferTokenId === "N/A (Mint Token First)"}>
+                                                <Button type="submit" size="sm" disabled={isDaoTransferLoading || !selected || daoTransferTokenId === "N/A (Mint Token First)" || !daoTransferNewOwnerAddress.trim()}>
                                                     {isDaoTransferLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                                                     {isDaoTransferLoading ? "Transferring..." : "Simulate DAO Transfer"}
                                                 </Button>
@@ -1303,3 +1313,4 @@ export default function BlockchainPage() {
 }
       
     
+
