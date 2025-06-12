@@ -557,7 +557,7 @@ export default function BlockchainPage() {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` },
         });
         const data: TokenStatusResponse = await res.json();
-        setStatusTokenResponse(JSON.stringify(data, null, 2));
+        setStatusTokenResponse(JSON.stringify(data, null, 2)); // Keep raw for details view
         if (res.ok) {
           setParsedTokenStatus(data); 
           if(selected && selected.blockchainIdentifiers?.tokenId === statusTokenId){
@@ -577,23 +577,24 @@ export default function BlockchainPage() {
 
   const handleViewTokenMetadata = async (e: FormEvent) => {
     e.preventDefault();
-    if (!viewTokenId && !parsedTokenStatus?.metadataUri) {
-      toast({ title: "Token ID or URI Required", description: "Please ensure a Token ID is entered or Get Token Status was run.", variant: "destructive" });
+    const effectiveTokenId = viewTokenId || parsedTokenStatus?.tokenId; // Prioritize input, then parsed status
+    if (!effectiveTokenId && !parsedTokenStatus?.metadataUri) {
+      toast({ title: "Token ID or Metadata URI Required", description: "Please enter a Token ID or fetch token status first.", variant: "destructive" });
       return;
     }
     setIsViewingTokenMetadata(true);
     setViewTokenMetadataResponse(null);
     await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY / 2));
 
-    const metadataUriToFetch = parsedTokenStatus?.metadataUri || `ipfs://dpp_metadata_for_${viewTokenId || selected?.id}`;
+    const metadataUriToFetch = parsedTokenStatus?.metadataUri || `ipfs://dpp_metadata_for_${effectiveTokenId || selected?.id}`;
     
     const mockMetadata = {
-      name: `DPP Token for ${selected?.productName || viewTokenId || 'Product'}`,
+      name: `DPP Token for ${selected?.productName || effectiveTokenId || 'Product'}`,
       description: `Verifiable Digital Product Passport for ${selected?.productName || 'Unknown Product'}. Category: ${selected?.category || 'N/A'}.`,
       image: selected?.productDetails?.imageUrl || "https://placehold.co/300x300.png?text=DPP+NFT",
       external_url: selected ? `https://norruva.example.com/passport/${selected.id}` : "https://norruva.example.com",
       attributes: [
-        { trait_type: "Product ID", value: selected?.id || viewTokenId },
+        { trait_type: "Product ID", value: selected?.id || effectiveTokenId },
         { trait_type: "Category", value: selected?.category || "N/A" },
         { trait_type: "Manufacturer", value: selected?.manufacturer?.name || "N/A" },
         { trait_type: "GTIN", value: selected?.gtin || "N/A" },
@@ -1302,3 +1303,4 @@ export default function BlockchainPage() {
 }
       
     
+
