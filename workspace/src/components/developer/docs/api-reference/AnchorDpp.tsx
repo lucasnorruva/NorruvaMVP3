@@ -1,4 +1,3 @@
-
 // --- File: src/components/developer/docs/api-reference/AnchorDpp.tsx ---
 import {
   Card,
@@ -46,7 +45,7 @@ export default function AnchorDpp({
             </code>
           </span>
           <br />
-          Creates a conceptual blockchain anchor for the specified DPP. Also sets a mock contract address and token ID.
+          Creates a conceptual blockchain anchor for the specified DPP. Also sets a mock contract address and token ID in the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">blockchainIdentifiers</code> object of the product.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

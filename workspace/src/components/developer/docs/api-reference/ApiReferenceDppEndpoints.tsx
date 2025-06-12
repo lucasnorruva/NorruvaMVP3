@@ -10,8 +10,8 @@ import {
   ArchiveDigitalProductPassport,
   IssueDppAuthVc, 
   LinkDppOwnershipNft,
-  AnchorDpp, // Added import
-} from "./index"; // Import all from index
+  AnchorDpp, 
+} from "./index"; 
 import {
   Card,
   CardContent,
@@ -239,13 +239,12 @@ interface DppEndpointsProps {
   conceptualPatchDppExtendResponseBody: string;
   addLifecycleEventRequestBodyExample: string;
   addLifecycleEventResponseExample: string;
-  // Props for new conceptual on-chain operations
   exampleUpdateOnChainStatusRequestBody: string;
   exampleUpdateOnChainLifecycleStageRequestBody: string;
   exampleLogCriticalEventRequestBody: string;
   exampleRegisterVcHashRequestBody: string;
   exampleUpdatedDppResponse: string; 
-  // Error responses
+  exampleAnchorDppResponse: string; // Added for AnchorDpp
   error401: string;
   error404: string;
   error500: string;
@@ -314,7 +313,7 @@ export default function ApiReferenceDppEndpoints(props: DppEndpointsProps) {
         error500={props.error500}
       />
       <AnchorDpp
-        exampleAnchorDppResponse={props.exampleUpdatedDppResponse} // Assuming updated DPP is a good example
+        exampleAnchorDppResponse={props.exampleAnchorDppResponse} 
         error400={props.error400_general}
         error401={props.error401}
         error404={props.error404}
@@ -370,6 +369,4 @@ export default function ApiReferenceDppEndpoints(props: DppEndpointsProps) {
 }
 
 ApiReferenceDppEndpoints.defaultProps = {
-  error400_general: JSON.stringify({ error: { code: 400, message: "Invalid request body or parameters." } }, null, 2)
-};
-
+  error400_general: JSON.stringify({ error: { code: 400, message: "Invalid
