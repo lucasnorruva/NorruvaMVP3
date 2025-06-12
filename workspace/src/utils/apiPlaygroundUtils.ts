@@ -6,6 +6,7 @@
 interface ApiPlaygroundParams {
   productId?: string;
   productIdPath?: string; // For endpoints where productId is part of the path but not a direct query/body param e.g. /verify/{productId}
+  supplierId?: string; // Added for supplier-specific endpoints
   status?: string;
   category?: string;
   searchQuery?: string;
@@ -58,6 +59,7 @@ export const generateMockCodeSnippet = (
     case "onchainLifecycleStage": urlPath = `/dpp/${params.productId || '{productId}'}/onchain-lifecycle-stage`; break;
     case "logCriticalEvent": urlPath = `/dpp/${params.productId || '{productId}'}/log-critical-event`; break;
     case "registerVcHash": urlPath = `/dpp/${params.productId || '{productId}'}/register-vc-hash`; break;
+    case "getPrivateSupplierAttestations": urlPath = `/private/dpp/${params.productId || '{productId}'}/supplier/${params.supplierId || '{supplierId}'}/attestations`; break; // New case
     case "postComponentTransfer": urlPath = `/private/dpp/${params.productId || '{productId}'}/component-transfer`; break;
     case "zkpSubmitProof": urlPath = `/zkp/submit-proof/${params.dppId || '{dppId}'}`; break;
     case "zkpVerifyClaim":
@@ -71,7 +73,7 @@ export const generateMockCodeSnippet = (
     case "mintToken": urlPath = `/token/mint/${params.productId || '{productId}'}`; break;
     case "updateTokenMetadata": urlPath = `/token/metadata/${params.tokenId || '{tokenId}'}`; break;
     case "getTokenStatus": urlPath = `/token/status/${params.tokenId || '{tokenId}'}`; break;
-    case "daoTransferToken": urlPath = `/token/dao-transfer/${params.tokenId || '{tokenId}'}`; break; // New case
+    case "daoTransferToken": urlPath = `/token/dao-transfer/${params.tokenId || '{tokenId}'}`; break; 
     default: urlPath = "/unknown-endpoint";
   }
 

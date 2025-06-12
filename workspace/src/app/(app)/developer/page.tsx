@@ -122,17 +122,6 @@ export default function DeveloperPortalPage() {
       productDetails: {
         description: "A fantastic new widget with pro features."
       }
-      // To add textile info (optional):
-      // "textileInformation": {
-      //   "fiberComposition": [{ "fiberName": "Organic Cotton", "percentage": 100 }],
-      //   "countryOfOriginLabeling": "Made in EU",
-      //   "isSecondHand": false
-      // },
-      // To add construction product info (optional):
-      // "constructionProductInformation": {
-      //   "declarationOfPerformanceId": "DoP-XYZ-001",
-      //   "intendedUseDescription": "For structural support in residential buildings."
-      // }
     }, null, 2)
   );
   const [postDppResponse, setPostDppResponse] = useState<string | null>(null);
@@ -170,14 +159,6 @@ export default function DeveloperPortalPage() {
     JSON.stringify({
       productDetails: { description: "Updated description with enhanced features." },
       metadata: { status: "pending_review" }
-      // Example textile update (optional):
-      // "textileInformation": {
-      //   "careInstructionsUrl": "https://example.com/newcare"
-      // },
-      // Example construction update (optional):
-      // "constructionProductInformation": {
-      //   "ceMarkingDetailsUrl": "https://example.com/newCE"
-      // }
     }, null, 2)
   );
   const [putProductResponse, setPutProductResponse] = useState<string | null>(null);
@@ -242,6 +223,14 @@ export default function DeveloperPortalPage() {
   const [postRegisterVcHashResponse, setPostRegisterVcHashResponse] = useState<string | null>(null);
   const [isPostRegisterVcHashLoading, setIsPostRegisterVcHashLoading] = useState(false);
   const [postRegisterVcHashSnippetLang, setPostRegisterVcHashSnippetLang] = useState("cURL");
+
+  // New state for GET Private Supplier Attestations
+  const [getAttestationsProductId, setGetAttestationsProductId] = useState<string>("DPP001");
+  const [getAttestationsSupplierId, setGetAttestationsSupplierId] = useState<string>("SUP001");
+  const [getAttestationsResponse, setGetAttestationsResponse] = useState<string | null>(null);
+  const [isGetAttestationsLoading, setIsGetAttestationsLoading] = useState(false);
+  const [getAttestationsSnippetLang, setGetAttestationsSnippetLang] = useState("cURL");
+  const [getAttestationsCodeSnippet, setGetAttestationsCodeSnippet] = useState("");
 
   const [postComponentTransferProductId, setPostComponentTransferProductId] = useState<string>("DPP001");
   const [postComponentTransferBody, setPostComponentTransferBody] = useState<string>(
@@ -320,7 +309,7 @@ export default function DeveloperPortalPage() {
   const [verifyDppCodeSnippet, setVerifyDppCodeSnippet] = useState("");
   const [getDppHistoryCodeSnippet, setGetDppHistoryCodeSnippet] = useState("");
   const [importDppsCodeSnippet, setImportDppsCodeSnippet] = useState("");
-  const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState(""); 
+  const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState("");
   const [getStatusCodeSnippet, setGetStatusCodeSnippet] = useState("");
   const [postOnchainStatusCodeSnippet, setPostOnchainStatusCodeSnippet] = useState("");
   const [postOnchainLifecycleCodeSnippet, setPostOnchainLifecycleCodeSnippet] = useState("");
@@ -370,6 +359,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet), [postLogCriticalEventProductId, postLogCriticalEventBody, postLogCriticalEventSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet), [postRegisterVcHashProductId, postRegisterVcHashBody, postRegisterVcHashSnippetLang, updateSnippet]);
   
+  useEffect(() => updateSnippet("getPrivateSupplierAttestations", "GET", getAttestationsSnippetLang, { productId: getAttestationsProductId, supplierId: getAttestationsSupplierId }, null, setGetAttestationsCodeSnippet), [getAttestationsProductId, getAttestationsSupplierId, getAttestationsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet), [postComponentTransferProductId, postComponentTransferBody, postComponentTransferSnippetLang, updateSnippet]);
 
   useEffect(() => updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet), [zkpSubmitDppId, zkpSubmitBody, zkpSubmitSnippetLang, updateSnippet]);
@@ -532,6 +522,7 @@ export default function DeveloperPortalPage() {
   const handleMockLogCriticalEvent = () => { updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLogCriticalEventProductId}/log-critical-event`, 'POST', postLogCriticalEventBody, setIsPostLogCriticalEventLoading, setPostLogCriticalEventResponse); }
   const handleMockRegisterVcHash = () => { updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet); makeApiCall(`/api/v1/dpp/${postRegisterVcHashProductId}/register-vc-hash`, 'POST', postRegisterVcHashBody, setIsPostRegisterVcHashLoading, setPostRegisterVcHashResponse); }
   
+  const handleMockGetPrivateSupplierAttestations = () => { updateSnippet("getPrivateSupplierAttestations", "GET", getAttestationsSnippetLang, { productId: getAttestationsProductId, supplierId: getAttestationsSupplierId }, null, setGetAttestationsCodeSnippet); makeApiCall(`/api/v1/private/dpp/${getAttestationsProductId}/supplier/${getAttestationsSupplierId}/attestations`, 'GET', null, setIsGetAttestationsLoading, setGetAttestationsResponse); }
   const handleMockPostComponentTransfer = () => { updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet); makeApiCall(`/api/v1/private/dpp/${postComponentTransferProductId}/component-transfer`, 'POST', postComponentTransferBody, setIsPostComponentTransferLoading, setPostComponentTransferResponse); }
 
   const handleMockZkpSubmitProof = () => { updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet); makeApiCall(`/api/v1/zkp/submit-proof/${zkpSubmitDppId}`, 'POST', zkpSubmitBody, setIsZkpSubmitLoading, setZkpSubmitResponse); }
@@ -966,6 +957,30 @@ export default function DeveloperPortalPage() {
             <Textarea id="registerVcHashBodyPlayground" value={postRegisterVcHashBody} onChange={(e) => setPostRegisterVcHashBody(e.target.value)} rows={3} className="font-mono text-xs" />
           </div>
         </>
+      )
+    },
+    {
+      id: 'get-private-supplier-attestations',
+      section: 'private',
+      title: 'GET /api/v1/private/dpp/{productId}/supplier/{supplierId}/attestations',
+      description: '[Private Layer] Retrieve private supplier attestations.',
+      onSendRequest: handleMockGetPrivateSupplierAttestations,
+      isLoading: isGetAttestationsLoading,
+      response: getAttestationsResponse,
+      codeSnippet: getAttestationsCodeSnippet,
+      snippetLanguage: getAttestationsSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setGetAttestationsSnippetLang(lang); updateSnippet('getPrivateSupplierAttestations','GET',lang,{productId: getAttestationsProductId, supplierId: getAttestationsSupplierId},null,setGetAttestationsCodeSnippet); },
+      children: (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <Label htmlFor="getAttestationsProductIdPlayground">Product ID (Path Parameter)</Label>
+                <Input id="getAttestationsProductIdPlayground" value={getAttestationsProductId} onChange={(e) => setGetAttestationsProductId(e.target.value)} placeholder="e.g., DPP001" />
+            </div>
+            <div>
+                <Label htmlFor="getAttestationsSupplierIdPlayground">Supplier ID (Path Parameter)</Label>
+                <Input id="getAttestationsSupplierIdPlayground" value={getAttestationsSupplierId} onChange={(e) => setGetAttestationsSupplierId(e.target.value)} placeholder="e.g., SUP001" />
+            </div>
+        </div>
       )
     },
     {
