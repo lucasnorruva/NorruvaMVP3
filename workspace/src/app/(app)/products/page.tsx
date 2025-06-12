@@ -104,8 +104,8 @@ export default function ProductsPage() {
     compliance: "All",
     category: "All",
     blockchainAnchored: "all", 
-    isTextileProduct: undefined, // Initialize new filter
-    isConstructionProduct: undefined, // Initialize new filter
+    isTextileProduct: undefined, 
+    isConstructionProduct: undefined, 
   });
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
@@ -120,7 +120,7 @@ export default function ProductsPage() {
       complianceSummary: p.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: p.lastUpdated }, ebsi: { status: 'N/A', lastChecked: p.lastUpdated } },
       lifecycleEvents: p.lifecycleEvents || [],
       supplyChainLinks: p.supplyChainLinks || [],
-      completeness: calculateDppCompletenessForList(p as DisplayableProduct), // Calculate completeness
+      completeness: calculateDppCompletenessForList(p as DisplayableProduct), 
       metadata: p.metadata, 
     }));
 
@@ -179,14 +179,11 @@ export default function ProductsPage() {
       }
     }
 
-    // Conceptual acknowledgment of new filters; actual data filtering based on these would need backend support
     if (filters.isTextileProduct !== undefined) {
-      // console.log("Filtering for textile products (conceptual):", filters.isTextileProduct);
-      // tempProducts = tempProducts.filter(p => !!p.textileInformation === filters.isTextileProduct); // This would be the actual logic
+      tempProducts = tempProducts.filter(p => !!p.textileInformation === filters.isTextileProduct);
     }
     if (filters.isConstructionProduct !== undefined) {
-      // console.log("Filtering for construction products (conceptual):", filters.isConstructionProduct);
-      // tempProducts = tempProducts.filter(p => !!p.constructionProductInformation === filters.isConstructionProduct); // This would be the actual logic
+      tempProducts = tempProducts.filter(p => !!p.constructionProductInformation === filters.isConstructionProduct);
     }
 
 

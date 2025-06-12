@@ -44,6 +44,19 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
   });
 
   const onChainStatusDisplay = product.metadata?.onChainStatus || "Unknown";
+  const onChainStatusBadgeVariant = 
+    onChainStatusDisplay === "Active" ? "default" :
+    onChainStatusDisplay === "Pending Activation" ? "outline" :
+    onChainStatusDisplay === "Recalled" ? "destructive" :
+    onChainStatusDisplay === "Flagged for Review" ? "outline" : 
+    "secondary";
+
+  const onChainStatusBadgeClasses = 
+    onChainStatusDisplay === "Active" ? "bg-blue-100 text-blue-700 border-blue-300" :
+    onChainStatusDisplay === "Pending Activation" ? "bg-yellow-100 text-yellow-700 border-yellow-300" :
+    onChainStatusDisplay === "Recalled" ? "bg-red-100 text-red-700 border-red-300" :
+    onChainStatusDisplay === "Flagged for Review" ? "bg-orange-100 text-orange-700 border-orange-300" : 
+    "bg-muted text-muted-foreground";
 
 
   return (
@@ -82,7 +95,7 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
         <TooltipProvider>
           <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
-              <Badge variant={onChainStatusDisplay === "Active" ? "default" : "outline"} className={`capitalize ${onChainStatusDisplay === "Active" ? 'bg-blue-100 text-blue-700 border-blue-300' : onChainStatusDisplay === "Recalled" ? 'bg-red-100 text-red-700 border-red-300' : 'bg-muted text-muted-foreground'}`}>
+              <Badge variant={onChainStatusBadgeVariant} className={`capitalize ${onChainStatusBadgeClasses}`}>
                 <Sigma className="mr-1 h-3.5 w-3.5" />
                 {onChainStatusDisplay.replace(/_/g, ' ')}
               </Badge>
