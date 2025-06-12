@@ -1103,7 +1103,6 @@ export default function BlockchainPage() {
                                     {isUpdatingOnChainStatusLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sigma className="mr-2 h-4 w-4" />}
                                     {isUpdatingOnChainStatusLoading ? "Submitting..." : "Update Mock Status"}
                                   </Button>
-                                  {renderApiResult("On-Chain Status Update", selected?.metadata.onChainStatus === onChainStatusUpdate ? {message:"Status already set to this value."} : null, false)}
                                 </form>
                                 
                                 {/* Update On-Chain Lifecycle Stage Form */}
@@ -1122,7 +1121,6 @@ export default function BlockchainPage() {
                                     {isUpdatingLifecycleStageLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Layers3 className="mr-2 h-4 w-4" />}
                                     {isUpdatingLifecycleStageLoading ? "Updating..." : "Update Mock Stage"}
                                   </Button>
-                                  {renderApiResult("On-Chain Lifecycle Update", selected?.metadata.onChainLifecycleStage === onChainLifecycleStage ? {message:"Lifecycle already set to this value."} : null, false)}
                                 </form>
                                 
                                 {/* Log Critical Event Form */}
