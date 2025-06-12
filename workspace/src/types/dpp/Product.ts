@@ -153,6 +153,8 @@ export interface DashboardFiltersState {
   category: 'all' | string;
   searchQuery?: string;
   blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
+  isTextileProduct?: boolean;
+  isConstructionProduct?: boolean;
 }
 
 export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus';
