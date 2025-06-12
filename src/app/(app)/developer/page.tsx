@@ -20,8 +20,8 @@ import {
     ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Rocket, Settings2, PackageSearch, Layers,
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock,
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone,
-    Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIconPg, History, // Renamed FileText to FileTextIconPg
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2
+    Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIconPg, History, 
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash, Layers3, FileLock as FileLockIcon, Users2 as Users2Icon
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +32,7 @@ import WebhooksManager, { type WebhookEntry } from '@/components/developer/Webho
 import DeveloperEndpointCard from '@/components/developer/DeveloperEndpointCard';
 import { cn } from '@/lib/utils';
 import { generateMockCodeSnippet } from '@/utils/apiPlaygroundUtils'; 
-import ResourcesTab from '@/components/developer/ResourcesTab'; // Import new ResourcesTab
+import ResourcesTab from '@/components/developer/ResourcesTab'; 
 
 // Import new dashboard section components
 import ApiMetricsCard from '@/components/developer/dashboard/ApiMetricsCard';
@@ -43,9 +43,9 @@ import QuickActionsCard from '@/components/developer/dashboard/QuickActionsCard'
 
 
 const initialMockApiKeys: ApiKey[] = [
-  { id: "key_sandbox_1", key: "sand_sk_xxxx1234ABCD", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
+  { id: "key_sandbox_1", key: "SANDBOX_KEY_123", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
   { id: "key_prod_req_1", key: "N/A (Request Pending)", type: "Production", created: "2024-07-25", lastUsed: "N/A", status: "Pending Approval" },
-  { id: "key_prod_active_1", key: "prod_sk_xxxx5678EFGH", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active" },
+  { id: "key_prod_active_1", key: "PROD_KEY_456", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active" },
   { id: "key_sandbox_revoked_1", key: "sand_sk_xxxxWXYZrevoked", type: "Sandbox", created: "2024-05-10", lastUsed: "2024-05-12", status: "Revoked" },
 ];
 
@@ -81,10 +81,11 @@ const systemStatusData = [
 ];
 
 const dashboardQuickActions = [
-  { label: "View My API Keys", href: "#", targetTab: "api_keys", icon: KeyRound },
-  { label: "Explore API Reference", href: "/developer/docs/api-reference", icon: BookText },
-  { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook },
-  { label: "Check API Status", href: "#", targetTab: "dashboard", icon: ServerCrash, tooltip: "View API Status on Dashboard" },
+  { label: "View My API Keys", href: "#", targetTab: "api_keys", icon: KeyRound, tooltip: "Manage your API access keys" },
+  { label: "Explore API Reference", href: "/developer/docs/api-reference", icon: BookText, tooltip: "Detailed API endpoint documentation" },
+  { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook, tooltip: "Configure event notifications" },
+  { label: "Tutorials & Resources", href: "#", targetTab: "resources", icon: Lightbulb, tooltip: "Access SDKs, tutorials, and developer guides" },
+  { label: "Check API Status", href: "#", targetTab: "dashboard", icon: ServerCrash, tooltip: "View current API and system status" },
 ];
 
 
@@ -99,7 +100,6 @@ export default function DeveloperPortalPage() {
   const [activeTopTab, setActiveTopTab] = useState("dashboard");
 
   useEffect(() => {
-    // This effect runs only on the client side
     setLastStatusCheckTime(new Date().toLocaleTimeString());
   }, []);
 
@@ -115,7 +115,25 @@ export default function DeveloperPortalPage() {
   const [listDppsSnippetLang, setListDppsSnippetLang] = useState("cURL");
 
   const [postDppBody, setPostDppBody] = useState<string>(
-    JSON.stringify({ productName: "New Widget Pro", category: "Gadgets", gtin: "1234500000123" }, null, 2)
+    JSON.stringify({
+      productName: "New Widget Pro",
+      category: "Gadgets",
+      gtin: "1234500000123",
+      productDetails: {
+        description: "A fantastic new widget with pro features."
+      }
+      // To add textile info (optional):
+      // "textileInformation": {
+      //   "fiberComposition": [{ "fiberName": "Organic Cotton", "percentage": 100 }],
+      //   "countryOfOriginLabeling": "Made in EU",
+      //   "isSecondHand": false
+      // },
+      // To add construction product info (optional):
+      // "constructionProductInformation": {
+      //   "declarationOfPerformanceId": "DoP-XYZ-001",
+      //   "intendedUseDescription": "For structural support in residential buildings."
+      // }
+    }, null, 2)
   );
   const [postDppResponse, setPostDppResponse] = useState<string | null>(null);
   const [isPostDppLoading, setIsPostDppLoading] = useState(false);
@@ -149,7 +167,18 @@ export default function DeveloperPortalPage() {
 
   const [putProductId, setPutProductId] = useState<string>("DPP001");
   const [putProductBody, setPutProductBody] = useState<string>(
-    JSON.stringify({ productDetails: { description: "Updated description with enhanced features." }, metadata: { status: "pending_review"} }, null, 2)
+    JSON.stringify({
+      productDetails: { description: "Updated description with enhanced features." },
+      metadata: { status: "pending_review" }
+      // Example textile update (optional):
+      // "textileInformation": {
+      //   "careInstructionsUrl": "https://example.com/newcare"
+      // },
+      // Example construction update (optional):
+      // "constructionProductInformation": {
+      //   "ceMarkingDetailsUrl": "https://example.com/newCE"
+      // }
+    }, null, 2)
   );
   const [putProductResponse, setPutProductResponse] = useState<string | null>(null);
   const [isPutProductLoading, setIsPutProductLoading] = useState(false);
@@ -190,6 +219,94 @@ export default function DeveloperPortalPage() {
   const [isGetStatusLoading, setIsGetStatusLoading] = useState(false);
   const [getStatusSnippetLang, setGetStatusSnippetLang] = useState("cURL");
 
+  const [postOnchainStatusProductId, setPostOnchainStatusProductId] = useState<string>("DPP001");
+  const [postOnchainStatusBody, setPostOnchainStatusBody] = useState<string>(JSON.stringify({ status: "active" }, null, 2));
+  const [postOnchainStatusResponse, setPostOnchainStatusResponse] = useState<string | null>(null);
+  const [isPostOnchainStatusLoading, setIsPostOnchainStatusLoading] = useState(false);
+  const [postOnchainStatusSnippetLang, setPostOnchainStatusSnippetLang] = useState("cURL");
+
+  const [postOnchainLifecycleProductId, setPostOnchainLifecycleProductId] = useState<string>("DPP001");
+  const [postOnchainLifecycleBody, setPostOnchainLifecycleBody] = useState<string>(JSON.stringify({ lifecycleStage: "Manufacturing" }, null, 2));
+  const [postOnchainLifecycleResponse, setPostOnchainLifecycleResponse] = useState<string | null>(null);
+  const [isPostOnchainLifecycleLoading, setIsPostOnchainLifecycleLoading] = useState(false);
+  const [postOnchainLifecycleSnippetLang, setPostOnchainLifecycleSnippetLang] = useState("cURL");
+
+  const [postLogCriticalEventProductId, setPostLogCriticalEventProductId] = useState<string>("DPP001");
+  const [postLogCriticalEventBody, setPostLogCriticalEventBody] = useState<string>(JSON.stringify({ eventDescription: "Safety recall initiated for batch XYZ.", severity: "High" }, null, 2));
+  const [postLogCriticalEventResponse, setPostLogCriticalEventResponse] = useState<string | null>(null);
+  const [isPostLogCriticalEventLoading, setIsPostLogCriticalEventLoading] = useState(false);
+  const [postLogCriticalEventSnippetLang, setPostLogCriticalEventSnippetLang] = useState("cURL");
+  
+  const [postRegisterVcHashProductId, setPostRegisterVcHashProductId] = useState<string>("DPP001");
+  const [postRegisterVcHashBody, setPostRegisterVcHashBody] = useState<string>(JSON.stringify({ vcId: "urn:uuid:example-vc-id-123", vcHash: "a1b2c3d4e5f6..." }, null, 2));
+  const [postRegisterVcHashResponse, setPostRegisterVcHashResponse] = useState<string | null>(null);
+  const [isPostRegisterVcHashLoading, setIsPostRegisterVcHashLoading] = useState(false);
+  const [postRegisterVcHashSnippetLang, setPostRegisterVcHashSnippetLang] = useState("cURL");
+
+  const [postComponentTransferProductId, setPostComponentTransferProductId] = useState<string>("DPP001");
+  const [postComponentTransferBody, setPostComponentTransferBody] = useState<string>(
+    JSON.stringify({
+      componentId: "COMP_XYZ_123",
+      quantity: 100,
+      transferDate: new Date().toISOString(),
+      fromParty: { participantId: "SUP001", role: "Supplier" },
+      toParty: { participantId: "MFG001", role: "Manufacturer" }
+    }, null, 2)
+  );
+  const [postComponentTransferResponse, setPostComponentTransferResponse] = useState<string | null>(null);
+  const [isPostComponentTransferLoading, setIsPostComponentTransferLoading] = useState(false);
+  const [postComponentTransferSnippetLang, setPostComponentTransferSnippetLang] = useState("cURL");
+
+  const [zkpSubmitDppId, setZkpSubmitDppId] = useState<string>("DPP001");
+  const [zkpSubmitBody, setZkpSubmitBody] = useState<string>(
+    JSON.stringify({ claimType: "material_compliance_svhc_lead_less_0.1", proofData: "0xMockProofData...", publicInputs: { productBatchId: "BATCH123" } }, null, 2)
+  );
+  const [zkpSubmitResponse, setZkpSubmitResponse] = useState<string | null>(null);
+  const [isZkpSubmitLoading, setIsZkpSubmitLoading] = useState(false);
+  const [zkpSubmitSnippetLang, setZkpSubmitSnippetLang] = useState("cURL");
+
+  const [zkpVerifyDppId, setZkpVerifyDppId] = useState<string>("DPP001");
+  const [zkpVerifyClaimType, setZkpVerifyClaimType] = useState<string>("material_compliance_svhc_lead_less_0.1");
+  const [zkpVerifyResponse, setZkpVerifyResponse] = useState<string | null>(null);
+  const [isZkpVerifyLoading, setIsZkpVerifyLoading] = useState(false);
+  const [zkpVerifySnippetLang, setZkpVerifySnippetLang] = useState("cURL");
+
+  const [mintTokenProductId, setMintTokenProductId] = useState<string>("DPP001");
+  const [mintTokenBody, setMintTokenBody] = useState<string>(JSON.stringify({ contractAddress: "0xMOCK_DPP_TOKEN_CONTRACT", recipientAddress: "0xRECIPIENT_MOCK_ADDRESS", metadataUri: "ipfs://example_metadata_cid" }, null, 2));
+  const [mintTokenResponsePlayground, setMintTokenResponsePlayground] = useState<string | null>(null);
+  const [isMintTokenLoading, setIsMintTokenLoading] = useState(false);
+  const [mintTokenSnippetLang, setMintTokenSnippetLang] = useState("cURL");
+
+  const [updateTokenMetaTokenId, setUpdateTokenMetaTokenId] = useState<string>("101");
+  const [updateTokenMetaBody, setUpdateTokenMetaBody] = useState<string>(JSON.stringify({ metadataUri: "ipfs://new_example_metadata_cid" }, null, 2));
+  const [updateTokenMetaResponse, setUpdateTokenMetaResponse] = useState<string | null>(null);
+  const [isUpdateTokenMetaLoading, setIsUpdateTokenMetaLoading] = useState(false);
+  const [updateTokenMetaSnippetLang, setUpdateTokenMetaSnippetLang] = useState("cURL");
+
+  const [getTokenStatusTokenId, setGetTokenStatusTokenId] = useState<string>("101");
+  const [getTokenStatusResponse, setGetTokenStatusResponse] = useState<string | null>(null);
+  const [isGetTokenStatusLoading, setIsGetTokenStatusLoading] = useState(false);
+  const [getTokenStatusSnippetLang, setGetTokenStatusSnippetLang] = useState("cURL");
+
+  const [issueAuthVcProductIdInput, setIssueAuthVcProductIdInput] = useState<string>("DPP001");
+  const [issueAuthVcResponse, setIssueAuthVcResponse] = useState<string | null>(null);
+  const [isIssueAuthVcLoading, setIsIssueAuthVcLoading] = useState(false);
+  const [issueAuthVcSnippetLang, setIssueAuthVcSnippetLang] = useState("cURL");
+
+  const [linkNftProductIdInput, setLinkNftProductIdInput] = useState<string>("DPP001");
+  const [linkNftBody, setLinkNftBody] = useState<string>(
+    JSON.stringify({ contractAddress: "0xNFTContractAddress", tokenId: "NFT123", chainName: "MockChain" }, null, 2)
+  );
+  const [linkNftResponse, setLinkNftResponse] = useState<string | null>(null);
+  const [isLinkNftLoading, setIsLinkNftLoading] = useState(false);
+  const [linkNftSnippetLang, setLinkNftSnippetLang] = useState("cURL");
+
+  const [daoTransferTokenIdPlayground, setDaoTransferTokenIdPlayground] = useState<string>("101");
+  const [daoTransferNewOwnerAddressPlayground, setDaoTransferNewOwnerAddressPlayground] = useState<string>("0xNEW_OWNER_MOCK_ADDRESS");
+  const [daoTransferResponsePlayground, setDaoTransferResponsePlayground] = useState<string | null>(null);
+  const [isDaoTransferLoadingPlayground, setIsDaoTransferLoadingPlayground] = useState(false);
+  const [daoTransferSnippetLang, setDaoTransferSnippetLang] = useState("cURL");
+
 
   const [getProductCodeSnippet, setGetProductCodeSnippet] = useState("");
   const [listDppsCodeSnippet, setListDppsCodeSnippet] = useState("");
@@ -205,6 +322,19 @@ export default function DeveloperPortalPage() {
   const [importDppsCodeSnippet, setImportDppsCodeSnippet] = useState("");
   const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState("");
   const [getStatusCodeSnippet, setGetStatusCodeSnippet] = useState("");
+  const [postOnchainStatusCodeSnippet, setPostOnchainStatusCodeSnippet] = useState("");
+  const [postOnchainLifecycleCodeSnippet, setPostOnchainLifecycleCodeSnippet] = useState("");
+  const [postLogCriticalEventCodeSnippet, setPostLogCriticalEventCodeSnippet] = useState("");
+  const [postRegisterVcHashCodeSnippet, setPostRegisterVcHashCodeSnippet] = useState("");
+  const [postComponentTransferCodeSnippet, setPostComponentTransferCodeSnippet] = useState("");
+  const [zkpSubmitCodeSnippet, setZkpSubmitCodeSnippet] = useState("");
+  const [zkpVerifyCodeSnippet, setZkpVerifyCodeSnippet] = useState("");
+  const [mintTokenCodeSnippet, setMintTokenCodeSnippet] = useState("");
+  const [updateTokenMetaCodeSnippet, setUpdateTokenMetaCodeSnippet] = useState("");
+  const [getTokenStatusCodeSnippet, setGetTokenStatusCodeSnippet] = useState("");
+  const [issueAuthVcCodeSnippet, setIssueAuthVcCodeSnippet] = useState("");
+  const [linkNftCodeSnippet, setLinkNftCodeSnippet] = useState("");
+  const [daoTransferCodeSnippet, setDaoTransferCodeSnippet] = useState("");
 
 
   const updateSnippet = useCallback((
@@ -234,6 +364,25 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType, sourceDescription: postImportSourceDescription }, JSON.stringify({fileType: postImportFileType, data: "mock_base64_data", sourceDescription: postImportSourceDescription }), setImportDppsCodeSnippet), [postImportFileType, postImportSourceDescription, importDppsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet), [getStatusProductId, getStatusSnippetLang, updateSnippet]);
+
+  useEffect(() => updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet), [postOnchainStatusProductId, postOnchainStatusBody, postOnchainStatusSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet), [postOnchainLifecycleProductId, postOnchainLifecycleBody, postOnchainLifecycleSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet), [postLogCriticalEventProductId, postLogCriticalEventBody, postLogCriticalEventSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet), [postRegisterVcHashProductId, postRegisterVcHashBody, postRegisterVcHashSnippetLang, updateSnippet]);
+  
+  useEffect(() => updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet), [postComponentTransferProductId, postComponentTransferBody, postComponentTransferSnippetLang, updateSnippet]);
+
+  useEffect(() => updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet), [zkpSubmitDppId, zkpSubmitBody, zkpSubmitSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet), [zkpVerifyDppId, zkpVerifyClaimType, zkpVerifySnippetLang, updateSnippet]);
+
+  useEffect(() => updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet), [mintTokenProductId, mintTokenBody, mintTokenSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet), [updateTokenMetaTokenId, updateTokenMetaBody, updateTokenMetaSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet), [getTokenStatusTokenId, getTokenStatusSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("daoTransferToken", "POST", daoTransferSnippetLang, { tokenId: daoTransferTokenIdPlayground }, JSON.stringify({newOwnerAddress: daoTransferNewOwnerAddressPlayground}), setDaoTransferCodeSnippet), [daoTransferTokenIdPlayground, daoTransferNewOwnerAddressPlayground, daoTransferSnippetLang, updateSnippet]);
+
+  useEffect(() => updateSnippet("issueAuthVc", "POST", issueAuthVcSnippetLang, { productId: issueAuthVcProductIdInput }, null, setIssueAuthVcCodeSnippet), [issueAuthVcProductIdInput, issueAuthVcSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("linkNft", "POST", linkNftSnippetLang, { productId: linkNftProductIdInput }, linkNftBody, setLinkNftCodeSnippet), [linkNftProductIdInput, linkNftBody, linkNftSnippetLang, updateSnippet]);
+
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -299,7 +448,6 @@ export default function DeveloperPortalPage() {
   };
 
   const handleEditWebhook = (webhookId: string) => {
-    // In a real app, this would open a dialog pre-filled with the webhook's data
     const webhookToEdit = webhooks.find(wh => wh.id === webhookId);
     if (webhookToEdit) {
         const newUrl = prompt(`Enter new URL for webhook ${webhookId}:`, webhookToEdit.url);
@@ -325,42 +473,47 @@ export default function DeveloperPortalPage() {
   ) => {
     setLoading(true);
     setResponse(null);
-    toast({ title: "Sending Mock API Request...", description: `${method} ${url}` });
+    
+    const apiKeyToUse = "SANDBOX_KEY_123"; 
+
+    toast({ 
+      title: `Sending API Request (via Playground)...`, 
+      description: `${method} ${url}` 
+    });
+
     try {
       const options: RequestInit = {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer YOUR_${currentEnvironment.toUpperCase()}_API_KEY`
+          'Authorization': `Bearer ${apiKeyToUse}` 
         }
       };
       if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
         options.body = typeof body === 'string' ? body : JSON.stringify(body);
       }
 
-      await new Promise(resolve => setTimeout(resolve, 500)); 
-
-      const res = await fetch(url, options);
+      const res = await fetch(url, options); 
       const responseData = await res.json();
 
       if (!res.ok) {
-        setResponse(JSON.stringify({ status: res.status, error: responseData }, null, 2));
-        toast({ title: `Mock API Error: ${res.status}`, description: responseData.error?.message || 'A mock API error occurred.', variant: "destructive" });
+        setResponse(JSON.stringify({ status: res.status, error: responseData.error || responseData }, null, 2));
+        toast({ title: `API Error: ${res.status}`, description: responseData.error?.message || 'An API error occurred.', variant: "destructive" });
       } else {
         setResponse(JSON.stringify(responseData, null, 2));
-        toast({ title: "Mock API Response Received", description: `${method} request to ${url} was successful (simulated).`, variant: "default"});
+        toast({ title: "API Response Received", description: `${method} request to ${url} was successful.`, variant: "default"});
       }
     } catch (e) {
       const errorMsg = e instanceof Error ? e.message : String(e);
-      setResponse(JSON.stringify({ error: "Network or parsing error during mock call", details: errorMsg }, null, 2));
-      toast({ title: "Mock Request Failed", description: errorMsg, variant: "destructive" });
+      setResponse(JSON.stringify({ error: "Client-side error during API call", details: errorMsg }, null, 2));
+      toast({ title: "Request Failed (Client Error)", description: errorMsg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleMockGetProductDetails = () => { updateSnippet("getProduct", "GET", getProductSnippetLang, { productId: getProductId }, null, setGetProductCodeSnippet); makeApiCall(`/api/v1/dpp/${getProductId}`, 'GET', null, setIsGetProductLoading, setGetProductResponse); }
-  const handleMockListProducts = () => { const queryParams = new URLSearchParams(); if (listDppFilters.status !== 'all') queryParams.append('status', listDppFilters.status); if (listDppFilters.category !== 'all') queryParams.append('category', listDppFilters.category); if (listDppFilters.searchQuery) queryParams.append('searchQuery', listDppFilters.searchQuery); if (listDppFilters.blockchainAnchored !== 'all') queryParams.append('blockchainAnchored', listDppFilters.blockchainAnchored); const url = `/api/v1/dpp?${queryParams.toString()}`; updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet); makeApiCall(url, 'GET', null, setIsListProductsLoading, setListProductsResponse); };
+  const handleMockListProducts = () => { const queryParams = new URLSearchParams(); if (listDppFilters.status !== 'all') queryParams.append('status', listDppFilters.status); if (listDppFilters.category !== 'all') queryParams.append('category', listDppFilters.category); if (listDppFilters.searchQuery) queryParams.append('searchQuery', listDppFilters.searchQuery); if (listDppFilters.blockchainAnchored !== 'all') queryParams.append('blockchainAnchored', listDppFilters.blockchainAnchored); const url = `/api/v1/dpp${queryParams.toString() ? `?${queryParams.toString()}`: ''}`; updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet); makeApiCall(url, 'GET', null, setIsListProductsLoading, setListProductsResponse); };
   const handleMockPostDpp = () => { updateSnippet("createDpp", "POST", createDppSnippetLang, {}, postDppBody, setCreateDppCodeSnippet); makeApiCall('/api/v1/dpp', 'POST', postDppBody, setIsPostDppLoading, setPostDppResponse); }
   const handleMockPutProduct = () => { updateSnippet("updateDpp", "PUT", updateDppSnippetLang, { productId: putProductId }, putProductBody, setUpdateDppCodeSnippet); makeApiCall(`/api/v1/dpp/${putProductId}`, 'PUT', putProductBody, setIsPutProductLoading, setPutProductResponse); }
   const handleMockPatchDppExtend = () => { updateSnippet("patchDppExtend", "PATCH", patchDppExtendSnippetLang, { productId: patchDppExtendProductId }, patchDppExtendBody, setPatchDppExtendCodeSnippet); makeApiCall(`/api/v1/dpp/extend/${patchDppExtendProductId}`, 'PATCH', patchDppExtendBody, setIsPatchDppExtendLoading, setPatchDppExtendResponse); }
@@ -373,6 +526,29 @@ export default function DeveloperPortalPage() {
   const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded", sourceDescription: postImportSourceDescription }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
   const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
   const handleMockGetStatus = () => { updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet); makeApiCall(`/api/v1/dpp/status/${getStatusProductId}`, 'GET', null, setIsGetStatusLoading, setGetStatusResponse); }
+
+  const handleMockUpdateOnChainStatus = () => { updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainStatusProductId}/onchain-status`, 'POST', postOnchainStatusBody, setIsPostOnchainStatusLoading, setPostOnchainStatusResponse); }
+  const handleMockUpdateOnChainLifecycleStage = () => { updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainLifecycleProductId}/onchain-lifecycle-stage`, 'POST', postOnchainLifecycleBody, setIsPostOnchainLifecycleLoading, setPostOnchainLifecycleResponse); }
+  const handleMockLogCriticalEvent = () => { updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLogCriticalEventProductId}/log-critical-event`, 'POST', postLogCriticalEventBody, setIsPostLogCriticalEventLoading, setPostLogCriticalEventResponse); }
+  const handleMockRegisterVcHash = () => { updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet); makeApiCall(`/api/v1/dpp/${postRegisterVcHashProductId}/register-vc-hash`, 'POST', postRegisterVcHashBody, setIsPostRegisterVcHashLoading, setPostRegisterVcHashResponse); }
+  
+  const handleMockPostComponentTransfer = () => { updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet); makeApiCall(`/api/v1/private/dpp/${postComponentTransferProductId}/component-transfer`, 'POST', postComponentTransferBody, setIsPostComponentTransferLoading, setPostComponentTransferResponse); }
+
+  const handleMockZkpSubmitProof = () => { updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet); makeApiCall(`/api/v1/zkp/submit-proof/${zkpSubmitDppId}`, 'POST', zkpSubmitBody, setIsZkpSubmitLoading, setZkpSubmitResponse); }
+  const handleMockZkpVerifyClaim = () => { updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet); makeApiCall(`/api/v1/zkp/verify-claim/${zkpVerifyDppId}?claimType=${encodeURIComponent(zkpVerifyClaimType)}`, 'GET', null, setIsZkpVerifyLoading, setZkpVerifyResponse); }
+
+  const handleMockMintToken = () => { updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet); makeApiCall(`/api/v1/token/mint/${mintTokenProductId}`, 'POST', mintTokenBody, setIsMintTokenLoading, setMintTokenResponsePlayground); }
+  const handleMockUpdateTokenMetadata = () => { updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet); makeApiCall(`/api/v1/token/metadata/${updateTokenMetaTokenId}`, 'PATCH', updateTokenMetaBody, setIsUpdateTokenMetaLoading, setUpdateTokenMetaResponse); }
+  const handleMockGetTokenStatus = () => { updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); makeApiCall(`/api/v1/token/status/${getTokenStatusTokenId}`, 'GET', null, setIsGetTokenStatusLoading, setGetTokenStatusResponse); }
+  
+  const handleMockIssueAuthVc = () => { updateSnippet("issueAuthVc", "POST", issueAuthVcSnippetLang, { productId: issueAuthVcProductIdInput }, null, setIssueAuthVcCodeSnippet); makeApiCall(`/api/v1/dpp/${issueAuthVcProductIdInput}/issue-auth-vc`, 'POST', null, setIsIssueAuthVcLoading, setIssueAuthVcResponse); }
+  const handleMockLinkNft = () => { updateSnippet("linkNft", "POST", linkNftSnippetLang, { productId: linkNftProductIdInput }, linkNftBody, setLinkNftCodeSnippet); makeApiCall(`/api/v1/dpp/${linkNftProductIdInput}/link-nft`, 'POST', linkNftBody, setIsLinkNftLoading, setLinkNftResponse); }
+  
+  const handleMockDaoTransferToken = () => {
+    const body = JSON.stringify({ newOwnerAddress: daoTransferNewOwnerAddressPlayground });
+    updateSnippet("daoTransferToken", "POST", daoTransferSnippetLang, { tokenId: daoTransferTokenIdPlayground }, body, setDaoTransferCodeSnippet);
+    makeApiCall(`/api/v1/token/dao-transfer/${daoTransferTokenIdPlayground}`, 'POST', body, setIsDaoTransferLoadingPlayground, setDaoTransferResponsePlayground);
+  };
 
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python"];
@@ -454,8 +630,8 @@ export default function DeveloperPortalPage() {
       children: (
         <div>
           <Label htmlFor="postDppBody">Request Body (JSON)</Label>
-          <Textarea id="postDppBody" value={postDppBody} onChange={(e) => setPostDppBody(e.target.value)} rows={5} className="font-mono text-xs" />
-          <p className="text-xs text-muted-foreground mt-1">Example required fields: productName, category. See API Reference for full schema.</p>
+          <Textarea id="postDppBody" value={postDppBody} onChange={(e) => setPostDppBody(e.target.value)} rows={10} className="font-mono text-xs" />
+          <p className="text-xs text-muted-foreground mt-1">Example required fields: productName, category. See API Reference for full schema including textile/construction.</p>
         </div>
       )
     },
@@ -478,8 +654,8 @@ export default function DeveloperPortalPage() {
           </div>
           <div className="mt-2">
             <Label htmlFor="putProductBody">Request Body (JSON)</Label>
-            <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={4} className="font-mono text-xs" />
-            <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields.</p>
+            <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={8} className="font-mono text-xs" />
+            <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields including textile/construction.</p>
           </div>
         </>
       )
@@ -695,6 +871,297 @@ export default function DeveloperPortalPage() {
           <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
         </div>
       )
+    },
+    {
+      id: 'update-onchain-status',
+      section: 'onchain',
+      title: 'POST /api/v1/dpp/{productId}/onchain-status',
+      description: 'Conceptually update the on-chain status of a DPP.',
+      onSendRequest: handleMockUpdateOnChainStatus,
+      isLoading: isPostOnchainStatusLoading,
+      response: postOnchainStatusResponse,
+      codeSnippet: postOnchainStatusCodeSnippet,
+      snippetLanguage: postOnchainStatusSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostOnchainStatusSnippetLang(lang); updateSnippet('onchainStatus','POST',lang,{productId: postOnchainStatusProductId},postOnchainStatusBody,setPostOnchainStatusCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="onchainStatusProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="onchainStatusProductIdPlayground" value={postOnchainStatusProductId} onChange={(e) => setPostOnchainStatusProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="onchainStatusBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="onchainStatusBodyPlayground" value={postOnchainStatusBody} onChange={(e) => setPostOnchainStatusBody(e.target.value)} rows={3} className="font-mono text-xs" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'update-onchain-lifecycle-stage',
+      section: 'onchain',
+      title: 'POST /api/v1/dpp/{productId}/onchain-lifecycle-stage',
+      description: 'Conceptually update the on-chain lifecycle stage of a DPP.',
+      onSendRequest: handleMockUpdateOnChainLifecycleStage,
+      isLoading: isPostOnchainLifecycleLoading,
+      response: postOnchainLifecycleResponse,
+      codeSnippet: postOnchainLifecycleCodeSnippet,
+      snippetLanguage: postOnchainLifecycleSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostOnchainLifecycleSnippetLang(lang); updateSnippet('onchainLifecycleStage','POST',lang,{productId: postOnchainLifecycleProductId},postOnchainLifecycleBody,setPostOnchainLifecycleCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="onchainLifecycleProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="onchainLifecycleProductIdPlayground" value={postOnchainLifecycleProductId} onChange={(e) => setPostOnchainLifecycleProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="onchainLifecycleBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="onchainLifecycleBodyPlayground" value={postOnchainLifecycleBody} onChange={(e) => setPostOnchainLifecycleBody(e.target.value)} rows={3} className="font-mono text-xs" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'log-critical-event',
+      section: 'onchain',
+      title: 'POST /api/v1/dpp/{productId}/log-critical-event',
+      description: 'Conceptually log a critical event on-chain for a DPP.',
+      onSendRequest: handleMockLogCriticalEvent,
+      isLoading: isPostLogCriticalEventLoading,
+      response: postLogCriticalEventResponse,
+      codeSnippet: postLogCriticalEventCodeSnippet,
+      snippetLanguage: postLogCriticalEventSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostLogCriticalEventSnippetLang(lang); updateSnippet('logCriticalEvent','POST',lang,{productId: postLogCriticalEventProductId},postLogCriticalEventBody,setPostLogCriticalEventCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="logCriticalEventProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="logCriticalEventProductIdPlayground" value={postLogCriticalEventProductId} onChange={(e) => setPostLogCriticalEventProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="logCriticalEventBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="logCriticalEventBodyPlayground" value={postLogCriticalEventBody} onChange={(e) => setPostLogCriticalEventBody(e.target.value)} rows={3} className="font-mono text-xs" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'register-vc-hash',
+      section: 'onchain',
+      title: 'POST /api/v1/dpp/{productId}/register-vc-hash',
+      description: "Conceptually register a VC's hash on-chain for a DPP.",
+      onSendRequest: handleMockRegisterVcHash,
+      isLoading: isPostRegisterVcHashLoading,
+      response: postRegisterVcHashResponse,
+      codeSnippet: postRegisterVcHashCodeSnippet,
+      snippetLanguage: postRegisterVcHashSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostRegisterVcHashSnippetLang(lang); updateSnippet('registerVcHash','POST',lang,{productId: postRegisterVcHashProductId},postRegisterVcHashBody,setPostRegisterVcHashCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="registerVcHashProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="registerVcHashProductIdPlayground" value={postRegisterVcHashProductId} onChange={(e) => setPostRegisterVcHashProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="registerVcHashBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="registerVcHashBodyPlayground" value={postRegisterVcHashBody} onChange={(e) => setPostRegisterVcHashBody(e.target.value)} rows={3} className="font-mono text-xs" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'post-component-transfer',
+      section: 'private',
+      title: 'POST /api/v1/private/dpp/{productId}/component-transfer',
+      description: '[Private Layer] Record a private B2B component transfer.',
+      onSendRequest: handleMockPostComponentTransfer,
+      isLoading: isPostComponentTransferLoading,
+      response: postComponentTransferResponse,
+      codeSnippet: postComponentTransferCodeSnippet,
+      snippetLanguage: postComponentTransferSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostComponentTransferSnippetLang(lang); updateSnippet('postComponentTransfer','POST',lang,{productId: postComponentTransferProductId},postComponentTransferBody,setPostComponentTransferCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="componentTransferProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="componentTransferProductIdPlayground" value={postComponentTransferProductId} onChange={(e) => setPostComponentTransferProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="componentTransferBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="componentTransferBodyPlayground" value={postComponentTransferBody} onChange={(e) => setPostComponentTransferBody(e.target.value)} rows={8} className="font-mono text-xs" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'zkp-submit-proof',
+      section: 'zkp',
+      title: 'POST /api/v1/zkp/submit-proof/{dppId}',
+      description: '[ZKP Layer] Submit a Zero-Knowledge Proof for a DPP (Mock).',
+      onSendRequest: handleMockZkpSubmitProof,
+      isLoading: isZkpSubmitLoading,
+      response: zkpSubmitResponse,
+      codeSnippet: zkpSubmitCodeSnippet,
+      snippetLanguage: zkpSubmitSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setZkpSubmitSnippetLang(lang); updateSnippet('zkpSubmitProof','POST',lang,{dppId: zkpSubmitDppId},zkpSubmitBody,setZkpSubmitCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="zkpSubmitDppIdPlayground">DPP ID (Path Parameter)</Label>
+            <Input id="zkpSubmitDppIdPlayground" value={zkpSubmitDppId} onChange={(e) => setZkpSubmitDppId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="zkpSubmitBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="zkpSubmitBodyPlayground" value={zkpSubmitBody} onChange={(e) => setZkpSubmitBody(e.target.value)} rows={5} className="font-mono text-xs" />
+            <p className="text-xs text-muted-foreground mt-1">Body should include claimType, proofData, publicInputs. See API Reference.</p>
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'zkp-verify-claim',
+      section: 'zkp',
+      title: 'GET /api/v1/zkp/verify-claim/{dppId}',
+      description: '[ZKP Layer] Verify a ZKP claim for a DPP (Mock).',
+      onSendRequest: handleMockZkpVerifyClaim,
+      isLoading: isZkpVerifyLoading,
+      response: zkpVerifyResponse,
+      codeSnippet: zkpVerifyCodeSnippet,
+      snippetLanguage: zkpVerifySnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setZkpVerifySnippetLang(lang); updateSnippet('zkpVerifyClaim','GET',lang,{dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType},null,setZkpVerifyCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="zkpVerifyDppIdPlayground">DPP ID (Path Parameter)</Label>
+            <Input id="zkpVerifyDppIdPlayground" value={zkpVerifyDppId} onChange={(e) => setZkpVerifyDppId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="zkpVerifyClaimTypePlayground">Claim Type (Query Parameter)</Label>
+            <Input id="zkpVerifyClaimTypePlayground" value={zkpVerifyClaimType} onChange={(e) => setZkpVerifyClaimType(e.target.value)} placeholder="e.g., material_compliance_svhc_lead_less_0.1" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'mint-token',
+      section: 'token',
+      title: 'POST /api/v1/token/mint/{productId}',
+      description: 'Mints a blockchain token representing the specified DPP.',
+      onSendRequest: handleMockMintToken,
+      isLoading: isMintTokenLoading,
+      response: mintTokenResponsePlayground,
+      codeSnippet: mintTokenCodeSnippet,
+      snippetLanguage: mintTokenSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setMintTokenSnippetLang(lang); updateSnippet('mintToken', 'POST', lang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet); },
+      children: (
+        <>
+          <div><Label htmlFor="mintTokenProductIdPlayground">Product ID (Path Parameter)</Label><Input id="mintTokenProductIdPlayground" value={mintTokenProductId} onChange={(e) => setMintTokenProductId(e.target.value)} placeholder="e.g., DPP001" /></div>
+          <div className="mt-2"><Label htmlFor="mintTokenBodyPlayground">Request Body (JSON)</Label><Textarea id="mintTokenBodyPlayground" value={mintTokenBody} onChange={(e) => setMintTokenBody(e.target.value)} rows={4} className="font-mono text-xs" /></div>
+        </>
+      )
+    },
+    {
+      id: 'update-token-metadata',
+      section: 'token',
+      title: 'PATCH /api/v1/token/metadata/{tokenId}',
+      description: 'Updates the on-chain metadata URI for a minted DPP token.',
+      onSendRequest: handleMockUpdateTokenMetadata,
+      isLoading: isUpdateTokenMetaLoading,
+      response: updateTokenMetaResponse,
+      codeSnippet: updateTokenMetaCodeSnippet,
+      snippetLanguage: updateTokenMetaSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setUpdateTokenMetaSnippetLang(lang); updateSnippet('updateTokenMetadata', 'PATCH', lang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet); },
+      children: (
+        <>
+          <div><Label htmlFor="updateTokenMetaTokenIdPlayground">Token ID (Path Parameter)</Label><Input id="updateTokenMetaTokenIdPlayground" value={updateTokenMetaTokenId} onChange={(e) => setUpdateTokenMetaTokenId(e.target.value)} placeholder="e.g., 101" /></div>
+          <div className="mt-2"><Label htmlFor="updateTokenMetaBodyPlayground">Request Body (JSON)</Label><Textarea id="updateTokenMetaBodyPlayground" value={updateTokenMetaBody} onChange={(e) => setUpdateTokenMetaBody(e.target.value)} rows={3} className="font-mono text-xs" /></div>
+        </>
+      )
+    },
+    {
+      id: 'get-token-status',
+      section: 'token',
+      title: 'GET /api/v1/token/status/{tokenId}',
+      description: 'Retrieves on-chain information for a DPP token.',
+      onSendRequest: handleMockGetTokenStatus,
+      isLoading: isGetTokenStatusLoading,
+      response: getTokenStatusResponse,
+      codeSnippet: getTokenStatusCodeSnippet,
+      snippetLanguage: getTokenStatusSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setGetTokenStatusSnippetLang(lang); updateSnippet('getTokenStatus', 'GET', lang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); },
+      children: (
+        <div><Label htmlFor="getTokenStatusTokenIdPlayground">Token ID (Path Parameter)</Label><Input id="getTokenStatusTokenIdPlayground" value={getTokenStatusTokenId} onChange={(e) => setGetTokenStatusTokenId(e.target.value)} placeholder="e.g., 101" /></div>
+      )
+    },
+     {
+      id: 'dao-transfer-token',
+      section: 'token',
+      title: 'POST /api/v1/token/dao-transfer/{tokenId}',
+      description: 'Simulates a DAO-controlled transfer of a DPP token.',
+      onSendRequest: handleMockDaoTransferToken,
+      isLoading: isDaoTransferLoadingPlayground,
+      response: daoTransferResponsePlayground,
+      codeSnippet: daoTransferCodeSnippet,
+      snippetLanguage: daoTransferSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { 
+        const body = JSON.stringify({newOwnerAddress: daoTransferNewOwnerAddressPlayground});
+        setDaoTransferSnippetLang(lang); 
+        updateSnippet('daoTransferToken', 'POST', lang, { tokenId: daoTransferTokenIdPlayground }, body, setDaoTransferCodeSnippet); 
+      },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="daoTransferTokenIdPlaygroundInput">Token ID (Path Parameter)</Label>
+            <Input id="daoTransferTokenIdPlaygroundInput" value={daoTransferTokenIdPlayground} onChange={(e) => setDaoTransferTokenIdPlayground(e.target.value)} placeholder="e.g., 101" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="daoTransferNewOwnerPlaygroundInput">New Owner Address (Request Body)</Label>
+            <Input id="daoTransferNewOwnerPlaygroundInput" value={daoTransferNewOwnerAddressPlayground} onChange={(e) => setDaoTransferNewOwnerAddressPlayground(e.target.value)} placeholder="e.g., 0xNEW_OWNER_ADDRESS" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'issue-auth-vc',
+      section: 'auth-ownership',
+      title: 'POST /api/v1/dpp/{productId}/issue-auth-vc',
+      description: 'Conceptually issue an Authentication Verifiable Credential for a DPP.',
+      onSendRequest: handleMockIssueAuthVc,
+      isLoading: isIssueAuthVcLoading,
+      response: issueAuthVcResponse,
+      codeSnippet: issueAuthVcCodeSnippet,
+      snippetLanguage: issueAuthVcSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setIssueAuthVcSnippetLang(lang); updateSnippet('issueAuthVc', 'POST', lang, { productId: issueAuthVcProductIdInput }, null, setIssueAuthVcCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="issueAuthVcProductIdPlayground">Product ID (Path Parameter)</Label>
+          <Input id="issueAuthVcProductIdPlayground" value={issueAuthVcProductIdInput} onChange={(e) => setIssueAuthVcProductIdInput(e.target.value)} placeholder="e.g., DPP001" />
+        </div>
+      )
+    },
+    {
+      id: 'link-nft',
+      section: 'auth-ownership',
+      title: 'POST /api/v1/dpp/{productId}/link-nft',
+      description: 'Conceptually link an Ownership NFT to a DPP.',
+      onSendRequest: handleMockLinkNft,
+      isLoading: isLinkNftLoading,
+      response: linkNftResponse,
+      codeSnippet: linkNftCodeSnippet,
+      snippetLanguage: linkNftSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setLinkNftSnippetLang(lang); updateSnippet('linkNft', 'POST', lang, { productId: linkNftProductIdInput }, linkNftBody, setLinkNftCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="linkNftProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="linkNftProductIdPlayground" value={linkNftProductIdInput} onChange={(e) => setLinkNftProductIdInput(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="linkNftBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="linkNftBodyPlayground" value={linkNftBody} onChange={(e) => setLinkNftBody(e.target.value)} rows={5} className="font-mono text-xs" />
+            <p className="text-xs text-muted-foreground mt-1">Requires contractAddress, tokenId. See API Reference.</p>
+          </div>
+        </>
+      )
     }
   ] as const;
 
@@ -835,10 +1302,10 @@ export default function DeveloperPortalPage() {
         <TabsContent value="playground" className="mt-6 space-y-6">
           <Alert variant="default" className="bg-info/10 border-info/50 text-info-foreground">
             <InfoIconLucide className="h-5 w-5 text-info" />
-            <AlertTitle className="font-semibold text-info">Mock API Environment</AlertTitle>
+            <AlertTitle className="font-semibold text-info">API Playground Environment</AlertTitle>
             <AlertDescription>
-              This playground interacts with a <strong>mock API backend</strong>. Responses are simulated based on predefined data (like MOCK_DPPS) and conceptual API logic.
-              This is for testing and exploration in the <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment.
+              This playground interacts with the application's <strong>mock API backend</strong>. Responses are simulated based on predefined data (like MOCK_DPPS) and the logic in your <code className="text-xs bg-info/20 p-0.5 rounded-sm">/api/v1/...</code> routes.
+              Using API Key: <Badge variant="outline" className="capitalize bg-info/20 border-info/40">SANDBOX_KEY_123</Badge> (This is used for all playground requests regardless of the environment dropdown above).
             </AlertDescription>
           </Alert>
           <Card className="shadow-xl border-primary/20">
@@ -869,6 +1336,72 @@ export default function DeveloperPortalPage() {
                     ))}
                   </AccordionContent>
                 </AccordionItem>
+
+                <AccordionItem value="dpp-onchain">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <Sigma className="mr-2 h-5 w-5" /> Conceptual On-Chain DPP Operations
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'onchain').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="dpp-auth-ownership">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <FileLockIcon className="mr-2 h-5 w-5" /> Authenticity & Ownership Endpoints (Conceptual)
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'auth-ownership').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="dpp-token">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <KeyRound className="mr-2 h-5 w-5" /> DPP Token Operations (Conceptual)
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'token').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="private-layer">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <Layers3 className="mr-2 h-5 w-5" /> Private Layer Endpoints (Conceptual)
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'private').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="zkp-layer">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <ZapIcon className="mr-2 h-5 w-5" /> ZKP Layer Endpoints (Conceptual)
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'zkp').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+
               </Accordion>
             </CardContent>
         </Card>
@@ -957,7 +1490,7 @@ export default function DeveloperPortalPage() {
                 </Card>
                  <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle className="font-headline flex items-center"><HelpCircle className="mr-3 h-6 w-6 text-primary" /> Support & Feedback</CardTitle>
+                        <CardTitle className="font-headline flex items-center"><HelpCircle className="mr-3 h-6 w-6 text-primary" /> Support &amp; Feedback</CardTitle>
                         <CardDescription>Get help and share your thoughts.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -972,3 +1505,4 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
