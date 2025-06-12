@@ -52,7 +52,7 @@ export const generateMockCodeSnippet = (
     case "verifyDpp": urlPath = `/dpp/verify/${params.productIdPath || '{productId}'}`; break;
     case "getDppHistory": urlPath = `/dpp/history/${params.productId || '{productId}'}`; break;
     case "importDpps": urlPath = "/dpp/import"; break;
-    case "getDppGraph": urlPath = `/dpp/graph/${params.productId || '{productId}'}`; break; // Added this case
+    case "getDppGraph": urlPath = `/dpp/graph/${params.productId || '{productId}'}`; break; 
     case "getDppStatus": urlPath = `/dpp/status/${params.productId || '{productId}'}`; break;
     case "onchainStatus": urlPath = `/dpp/${params.productId || '{productId}'}/onchain-status`; break;
     case "onchainLifecycleStage": urlPath = `/dpp/${params.productId || '{productId}'}/onchain-lifecycle-stage`; break;
@@ -71,7 +71,7 @@ export const generateMockCodeSnippet = (
     case "mintToken": urlPath = `/token/mint/${params.productId || '{productId}'}`; break;
     case "updateTokenMetadata": urlPath = `/token/metadata/${params.tokenId || '{tokenId}'}`; break;
     case "getTokenStatus": urlPath = `/token/status/${params.tokenId || '{tokenId}'}`; break;
-    case "daoTransferToken": urlPath = `/token/dao-transfer/${params.tokenId || '{tokenId}'}`; break;
+    case "daoTransferToken": urlPath = `/token/dao-transfer/${params.tokenId || '{tokenId}'}`; break; // New case
     default: urlPath = "/unknown-endpoint";
   }
 

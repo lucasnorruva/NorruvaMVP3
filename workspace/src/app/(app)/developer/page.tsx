@@ -320,7 +320,7 @@ export default function DeveloperPortalPage() {
   const [verifyDppCodeSnippet, setVerifyDppCodeSnippet] = useState("");
   const [getDppHistoryCodeSnippet, setGetDppHistoryCodeSnippet] = useState("");
   const [importDppsCodeSnippet, setImportDppsCodeSnippet] = useState("");
-  const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState(""); // New snippet state
+  const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState(""); 
   const [getStatusCodeSnippet, setGetStatusCodeSnippet] = useState("");
   const [postOnchainStatusCodeSnippet, setPostOnchainStatusCodeSnippet] = useState("");
   const [postOnchainLifecycleCodeSnippet, setPostOnchainLifecycleCodeSnippet] = useState("");
@@ -543,7 +543,7 @@ export default function DeveloperPortalPage() {
   
   const handleMockIssueAuthVc = () => { updateSnippet("issueAuthVc", "POST", issueAuthVcSnippetLang, { productId: issueAuthVcProductIdInput }, null, setIssueAuthVcCodeSnippet); makeApiCall(`/api/v1/dpp/${issueAuthVcProductIdInput}/issue-auth-vc`, 'POST', null, setIsIssueAuthVcLoading, setIssueAuthVcResponse); }
   const handleMockLinkNft = () => { updateSnippet("linkNft", "POST", linkNftSnippetLang, { productId: linkNftProductIdInput }, linkNftBody, setLinkNftCodeSnippet); makeApiCall(`/api/v1/dpp/${linkNftProductIdInput}/link-nft`, 'POST', linkNftBody, setIsLinkNftLoading, setLinkNftResponse); }
-
+  
   const handleMockDaoTransferToken = () => {
     const body = JSON.stringify({newOwnerAddress: daoTransferNewOwnerAddressPlayground});
     updateSnippet("daoTransferToken", "POST", daoTransferSnippetLang, { tokenId: daoTransferTokenIdPlayground }, body, setDaoTransferCodeSnippet);
@@ -721,7 +721,7 @@ export default function DeveloperPortalPage() {
         </div>
       )
     },
-     { // Added Graph Endpoint Card
+    { 
       id: 'get-graph',
       section: 'utility',
       title: 'GET /api/v1/dpp/graph/{productId}',
