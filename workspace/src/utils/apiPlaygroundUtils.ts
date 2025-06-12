@@ -16,6 +16,7 @@ interface ApiPlaygroundParams {
   dppId?: string; // For ZKP endpoints
   claimType?: string; // For ZKP verify
   tokenId?: string; // For token operations
+  platform?: string; // For Anchor DPP
 }
 
 export const generateMockCodeSnippet = (
@@ -55,11 +56,12 @@ export const generateMockCodeSnippet = (
     case "importDpps": urlPath = "/dpp/import"; break;
     case "getDppGraph": urlPath = `/dpp/graph/${params.productId || '{productId}'}`; break; 
     case "getDppStatus": urlPath = `/dpp/status/${params.productId || '{productId}'}`; break;
+    case "anchorDpp": urlPath = `/dpp/anchor/${params.productId || '{productId}'}`; break; // Added
     case "onchainStatus": urlPath = `/dpp/${params.productId || '{productId}'}/onchain-status`; break;
     case "onchainLifecycleStage": urlPath = `/dpp/${params.productId || '{productId}'}/onchain-lifecycle-stage`; break;
     case "logCriticalEvent": urlPath = `/dpp/${params.productId || '{productId}'}/log-critical-event`; break;
     case "registerVcHash": urlPath = `/dpp/${params.productId || '{productId}'}/register-vc-hash`; break;
-    case "getPrivateSupplierAttestations": urlPath = `/private/dpp/${params.productId || '{productId}'}/supplier/${params.supplierId || '{supplierId}'}/attestations`; break; // New case
+    case "getPrivateSupplierAttestations": urlPath = `/private/dpp/${params.productId || '{productId}'}/supplier/${params.supplierId || '{supplierId}'}/attestations`; break; 
     case "postComponentTransfer": urlPath = `/private/dpp/${params.productId || '{productId}'}/component-transfer`; break;
     case "zkpSubmitProof": urlPath = `/zkp/submit-proof/${params.dppId || '{dppId}'}`; break;
     case "zkpVerifyClaim":

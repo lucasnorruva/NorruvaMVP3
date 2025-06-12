@@ -21,7 +21,7 @@ import {
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock,
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone,
     Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIconPg, History, 
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash, Layers3, FileLock as FileLockIcon, Users2 as Users2Icon
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash, Layers3, FileLock as FileLockIcon, Users2 as Users2Icon, Anchor as AnchorIcon
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -200,6 +200,13 @@ export default function DeveloperPortalPage() {
   const [isGetStatusLoading, setIsGetStatusLoading] = useState(false);
   const [getStatusSnippetLang, setGetStatusSnippetLang] = useState("cURL");
 
+  const [anchorDppProductId, setAnchorDppProductId] = useState<string>("DPP001"); // New state
+  const [anchorDppPlatform, setAnchorDppPlatform] = useState<string>("EBSI Mock Ledger"); // New state
+  const [anchorDppResponse, setAnchorDppResponse] = useState<string | null>(null); // New state
+  const [isAnchorDppLoading, setIsAnchorDppLoading] = useState(false); // New state
+  const [anchorDppCodeSnippet, setAnchorDppCodeSnippet] = useState(""); // New state
+  const [anchorDppSnippetLang, setAnchorDppSnippetLang] = useState("cURL"); // New state
+
   const [postOnchainStatusProductId, setPostOnchainStatusProductId] = useState<string>("DPP001");
   const [postOnchainStatusBody, setPostOnchainStatusBody] = useState<string>(JSON.stringify({ status: "active" }, null, 2));
   const [postOnchainStatusResponse, setPostOnchainStatusResponse] = useState<string | null>(null);
@@ -224,13 +231,14 @@ export default function DeveloperPortalPage() {
   const [isPostRegisterVcHashLoading, setIsPostRegisterVcHashLoading] = useState(false);
   const [postRegisterVcHashSnippetLang, setPostRegisterVcHashSnippetLang] = useState("cURL");
 
-  // New state for GET Private Supplier Attestations
+  // State for GET Private Supplier Attestations
   const [getAttestationsProductId, setGetAttestationsProductId] = useState<string>("DPP001");
   const [getAttestationsSupplierId, setGetAttestationsSupplierId] = useState<string>("SUP001");
   const [getAttestationsResponse, setGetAttestationsResponse] = useState<string | null>(null);
   const [isGetAttestationsLoading, setIsGetAttestationsLoading] = useState(false);
   const [getAttestationsSnippetLang, setGetAttestationsSnippetLang] = useState("cURL");
   const [getAttestationsCodeSnippet, setGetAttestationsCodeSnippet] = useState("");
+
 
   const [postComponentTransferProductId, setPostComponentTransferProductId] = useState<string>("DPP001");
   const [postComponentTransferBody, setPostComponentTransferBody] = useState<string>(
@@ -354,6 +362,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet), [getStatusProductId, getStatusSnippetLang, updateSnippet]);
 
+  useEffect(() => updateSnippet("anchorDpp", "POST", anchorDppSnippetLang, { productId: anchorDppProductId, platform: anchorDppPlatform }, JSON.stringify({ platform: anchorDppPlatform }), setAnchorDppCodeSnippet), [anchorDppProductId, anchorDppPlatform, anchorDppSnippetLang, updateSnippet]); // New useEffect for Anchor DPP
   useEffect(() => updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet), [postOnchainStatusProductId, postOnchainStatusBody, postOnchainStatusSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet), [postOnchainLifecycleProductId, postOnchainLifecycleBody, postOnchainLifecycleSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet), [postLogCriticalEventProductId, postLogCriticalEventBody, postLogCriticalEventSnippetLang, updateSnippet]);
@@ -479,9 +488,12 @@ export default function DeveloperPortalPage() {
           'Authorization': `Bearer ${apiKeyToUse}` 
         }
       };
-      if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-        options.body = typeof body === 'string' ? body : JSON.stringify(body);
+      if (body && (method === "POST" || method === "PUT" || method === "PATCH") && typeof body !== 'string') {
+        options.body = JSON.stringify(body);
+      } else if (body && (method === "POST" || method === "PUT" || method === "PATCH") && typeof body === 'string') {
+        options.body = body; // Assume body is already a JSON string
       }
+
 
       const res = await fetch(url, options); 
       const responseData = await res.json();
@@ -517,6 +529,7 @@ export default function DeveloperPortalPage() {
   const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
   const handleMockGetStatus = () => { updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet); makeApiCall(`/api/v1/dpp/status/${getStatusProductId}`, 'GET', null, setIsGetStatusLoading, setGetStatusResponse); }
 
+  const handleMockAnchorDpp = () => { const body = { platform: anchorDppPlatform }; updateSnippet("anchorDpp", "POST", anchorDppSnippetLang, { productId: anchorDppProductId, platform: anchorDppPlatform }, JSON.stringify(body), setAnchorDppCodeSnippet); makeApiCall(`/api/v1/dpp/anchor/${anchorDppProductId}`, 'POST', body, setIsAnchorDppLoading, setAnchorDppResponse); }
   const handleMockUpdateOnChainStatus = () => { updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainStatusProductId}/onchain-status`, 'POST', postOnchainStatusBody, setIsPostOnchainStatusLoading, setPostOnchainStatusResponse); }
   const handleMockUpdateOnChainLifecycleStage = () => { updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainLifecycleProductId}/onchain-lifecycle-stage`, 'POST', postOnchainLifecycleBody, setIsPostOnchainLifecycleLoading, setPostOnchainLifecycleResponse); }
   const handleMockLogCriticalEvent = () => { updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLogCriticalEventProductId}/log-critical-event`, 'POST', postLogCriticalEventBody, setIsPostLogCriticalEventLoading, setPostLogCriticalEventResponse); }
@@ -864,6 +877,30 @@ export default function DeveloperPortalPage() {
       )
     },
     {
+      id: 'anchor-dpp', // New endpoint configuration
+      section: 'onchain',
+      title: 'POST /api/v1/dpp/anchor/{productId}',
+      description: 'Creates a blockchain anchor for the specified DPP. Conceptually also sets contractAddress and tokenId.',
+      onSendRequest: handleMockAnchorDpp,
+      isLoading: isAnchorDppLoading,
+      response: anchorDppResponse,
+      codeSnippet: anchorDppCodeSnippet,
+      snippetLanguage: anchorDppSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setAnchorDppSnippetLang(lang); updateSnippet('anchorDpp', 'POST', lang, { productId: anchorDppProductId, platform: anchorDppPlatform }, JSON.stringify({ platform: anchorDppPlatform }), setAnchorDppCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="anchorDppProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="anchorDppProductIdPlayground" value={anchorDppProductId} onChange={(e) => setAnchorDppProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="anchorDppPlatformPlayground">Platform (Request Body)</Label>
+            <Input id="anchorDppPlatformPlayground" value={anchorDppPlatform} onChange={(e) => setAnchorDppPlatform(e.target.value)} placeholder="e.g., EBSI Mock Ledger" />
+          </div>
+        </>
+      )
+    },
+    {
       id: 'update-onchain-status',
       section: 'onchain',
       title: 'POST /api/v1/dpp/{productId}/onchain-status',
@@ -960,28 +997,28 @@ export default function DeveloperPortalPage() {
       )
     },
     {
-      id: 'get-private-supplier-attestations',
-      section: 'private',
-      title: 'GET /api/v1/private/dpp/{productId}/supplier/{supplierId}/attestations',
-      description: '[Private Layer] Retrieve private supplier attestations.',
-      onSendRequest: handleMockGetPrivateSupplierAttestations,
-      isLoading: isGetAttestationsLoading,
-      response: getAttestationsResponse,
-      codeSnippet: getAttestationsCodeSnippet,
-      snippetLanguage: getAttestationsSnippetLang,
-      onSnippetLanguageChange: (lang: string) => { setGetAttestationsSnippetLang(lang); updateSnippet('getPrivateSupplierAttestations','GET',lang,{productId: getAttestationsProductId, supplierId: getAttestationsSupplierId},null,setGetAttestationsCodeSnippet); },
-      children: (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <Label htmlFor="getAttestationsProductIdPlayground">Product ID (Path Parameter)</Label>
-                <Input id="getAttestationsProductIdPlayground" value={getAttestationsProductId} onChange={(e) => setGetAttestationsProductId(e.target.value)} placeholder="e.g., DPP001" />
-            </div>
-            <div>
-                <Label htmlFor="getAttestationsSupplierIdPlayground">Supplier ID (Path Parameter)</Label>
-                <Input id="getAttestationsSupplierIdPlayground" value={getAttestationsSupplierId} onChange={(e) => setGetAttestationsSupplierId(e.target.value)} placeholder="e.g., SUP001" />
-            </div>
-        </div>
-      )
+        id: 'get-private-supplier-attestations',
+        section: 'private',
+        title: 'GET /api/v1/private/dpp/{productId}/supplier/{supplierId}/attestations',
+        description: '[Private Layer] Retrieve private supplier attestations.',
+        onSendRequest: handleMockGetPrivateSupplierAttestations,
+        isLoading: isGetAttestationsLoading,
+        response: getAttestationsResponse,
+        codeSnippet: getAttestationsCodeSnippet,
+        snippetLanguage: getAttestationsSnippetLang,
+        onSnippetLanguageChange: (lang: string) => { setGetAttestationsSnippetLang(lang); updateSnippet('getPrivateSupplierAttestations','GET',lang,{productId: getAttestationsProductId, supplierId: getAttestationsSupplierId},null,setGetAttestationsCodeSnippet); },
+        children: (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                  <Label htmlFor="getAttestationsProductIdPlayground">Product ID (Path Parameter)</Label>
+                  <Input id="getAttestationsProductIdPlayground" value={getAttestationsProductId} onChange={(e) => setGetAttestationsProductId(e.target.value)} placeholder="e.g., DPP001" />
+              </div>
+              <div>
+                  <Label htmlFor="getAttestationsSupplierIdPlayground">Supplier ID (Path Parameter)</Label>
+                  <Input id="getAttestationsSupplierIdPlayground" value={getAttestationsSupplierId} onChange={(e) => setGetAttestationsSupplierId(e.target.value)} placeholder="e.g., SUP001" />
+              </div>
+          </div>
+        )
     },
     {
       id: 'post-component-transfer',
@@ -1520,3 +1557,4 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
