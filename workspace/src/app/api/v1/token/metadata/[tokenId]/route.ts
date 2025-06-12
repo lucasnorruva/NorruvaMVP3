@@ -35,13 +35,17 @@ export async function PATCH(
   await new Promise(resolve => setTimeout(resolve, 250));
   const mockTransactionHash = `0xmeta_update_tx_mock_${Date.now().toString(16)}`;
 
-  // In a real app, you might want to find the token in MOCK_DPPS by tokenId and update its metadata URI concept
-  // For now, we'll just return a success response.
+  // Conceptual: In a real backend, you'd:
+  // 1. Fetch the old metadataHash for the tokenId from the contract (or your off-chain cache).
+  // 2. Derive newMetadataHash from the provided metadataUri.
+  // 3. Call the smart contract: dppToken.updateMetadataHash(tokenId, newMetadataHash)
+  // 4. The contract would emit MetadataUpdate(tokenId, oldMetadataHash, newMetadataHash)
 
   return NextResponse.json({
     tokenId: tokenId,
     contractAddress: contractAddress || "DEFAULT_DPP_TOKEN_CONTRACT", // Use a default if not provided
     transactionHash: mockTransactionHash,
-    message: `Mock metadata for token ${tokenId} updated to ${metadataUri}.`,
+    message: `Conceptual on-chain metadata hash for token ${tokenId} updated based on new URI: ${metadataUri}. Smart contract would emit 'MetadataUpdate' event.`,
   }, { status: 200 });
 }
+
