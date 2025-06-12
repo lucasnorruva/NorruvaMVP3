@@ -14,7 +14,7 @@ import {
     KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
     PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
     Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare,
-    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock, Users2 as Users2Icon // Added Users2Icon for DAO transfer
+    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock, Users2 as Users2Icon 
 } from "lucide-react";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse, OwnershipNftLink } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -1302,4 +1302,3 @@ export default function BlockchainPage() {
 }
       
     
-
