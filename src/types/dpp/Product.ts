@@ -2,7 +2,7 @@
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
-import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle'; // Ensure IconName is exported or defined if used here
+import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName, InspectionEvent } from './Lifecycle'; // Ensure IconName is exported or defined if used here
 import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from './Compliance';
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -103,10 +103,10 @@ export interface DigitalProductPassport {
     materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
     sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
     energyLabel?: string;
-    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
-    sparePartsAvailability?: string; // New for Right to Repair
-    repairManualUrl?: string; // New for Right to Repair
-    disassemblyInstructionsUrl?: string; // New for Right to Repair
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; // Updated type
+    sparePartsAvailability?: string; 
+    repairManualUrl?: string; 
+    disassemblyInstructionsUrl?: string; 
     recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
     specifications?: string; 
     customAttributes?: CustomAttribute[];
@@ -140,6 +140,7 @@ export interface DigitalProductPassport {
   };
 
   ebsiVerification?: EbsiVerificationDetails;
+  complianceSummary?: ProductComplianceSummary; // Added for consistency and ease of access
   verifiableCredentials?: VerifiableCredentialReference[];
   consumerScans?: number;
   dataController?: string;
@@ -183,10 +184,10 @@ export interface SimpleProductDetail {
   customAttributes?: CustomAttribute[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
-  repairability?: { score: number; scale: number; detailsUrl?: string };
-  sparePartsAvailability?: string; // New for Right to Repair
-  repairManualUrl?: string; // New for Right to Repair
-  disassemblyInstructionsUrl?: string; // New for Right to Repair
+  repairability?: { score: number | null; scale: number | null; detailsUrl?: string; reportUrl?: string }; // Updated type
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   complianceSummary?: ProductComplianceSummary;
@@ -207,6 +208,12 @@ export interface SimpleProductDetail {
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
   lastUpdated?: string; 
+  productDetails?: { // To store new repairability fields that might not be top-level yet
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
 }
 
 export interface StoredUserProduct {
@@ -244,10 +251,16 @@ export interface StoredUserProduct {
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributesJsonString?: string;
-  repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string }; // Added for Right to Repair
-  sparePartsAvailability?: string; // New for Right to Repair
-  repairManualUrl?: string; // New for Right to Repair
-  disassemblyInstructionsUrl?: string; // New for Right to Repair
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; // Updated
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
+  productDetails?: { // Added for new structure
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
   complianceData?: { 
     eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
     esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
@@ -299,10 +312,10 @@ export interface RichMockProduct {
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string }; // Added for Right to Repair
-  sparePartsAvailability?: string; // New for Right to Repair
-  repairManualUrl?: string; // New for Right to Repair
-  disassemblyInstructionsUrl?: string; // New for Right to Repair
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; // Updated
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
 }
 
 export interface PublicProductInfo {
@@ -323,7 +336,7 @@ export interface PublicProductInfo {
   sku?: string;
   nfcTagId?: string;
   rfidTagId?: string;
-  gtin?: string; // Added GTIN to public info
+  gtin?: string; 
   anchorTransactionHash?: string;
   blockchainPlatform?: string;
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';
@@ -341,10 +354,10 @@ export interface PublicProductInfo {
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
-  repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string }; // Added for Right to Repair
-  sparePartsAvailability?: string; // New for Right to Repair
-  repairManualUrl?: string; // New for Right to Repair
-  disassemblyInstructionsUrl?: string; // New for Right to Repair
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; // Updated
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
 }
 
 export interface Supplier {
@@ -398,10 +411,16 @@ export interface DisplayableProduct {
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
-  repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string }; // Added for Right to Repair
-  sparePartsAvailability?: string; // New for Right to Repair
-  repairManualUrl?: string; // New for Right to Repair
-  disassemblyInstructionsUrl?: string; // New for Right to Repair
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
+  sparePartsAvailability?: string; 
+  repairManualUrl?: string; 
+  disassemblyInstructionsUrl?: string; 
+  productDetails?: { // Added for new structure from ProductForm
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
+    sparePartsAvailability?: string;
+    repairManualUrl?: string;
+    disassemblyInstructionsUrl?: string;
+  };
 }
 
 export interface AnchorResult {
@@ -459,14 +478,6 @@ export interface CustomsAlert {
   regulation?: string;
 }
 
-export interface InspectionEvent {
-  id: string;
-  icon: React.ElementType;
-  title: string;
-  timestamp: string; 
-  description: string;
-  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
-  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
-}
+// InspectionEvent is already defined in Lifecycle.ts and re-exported by index.ts
+// No need to redefine here.
     
-
