@@ -24,6 +24,18 @@ export default function ApiReferenceTokenEndpoints({
   error404,
   error500,
 }: TokenEndpointsProps) {
+  const daoTransferRequestBody = JSON.stringify({
+    newOwnerAddress: "0x0987654321abcdef0987654321abcdef09876543"
+  }, null, 2);
+
+  const daoTransferResponseBody = JSON.stringify({
+    message: "DAO token transfer initiated for token 101 to 0xNEWOWNER...",
+    tokenId: "101",
+    newOwnerAddress: "0xNEWOWNER...",
+    transactionHash: "0xdaotransfer_mock_abcdef123",
+    conceptualNote: "This is a mock response. In a real system, the token owner would be updated on-chain via a smart contract call authorized by the DAO (e.g., dppToken.daoTransfer(from, to, tokenId)). The 'from' address would be the current owner on-chain."
+  }, null, 2);
+
   return (
     <section id="token-endpoints" className="mt-8">
       <h2 className="text-2xl font-semibold font-headline mt-8 mb-4 flex items-center">
@@ -74,7 +86,7 @@ export default function ApiReferenceTokenEndpoints({
               </li>
               <li>The backend waits for the transaction to be mined.</li>
               <li>The `transactionHash` and the minted `tokenId` are returned in the API response.</li>
-              <li>The `MOCK_DPPS` data is updated with the `tokenId` and `contractAddress`.</li>
+              <li>Internally, the mock product data (e.g., `MOCK_DPPS`) for the given `productId` is updated: its `blockchainIdentifiers` field will store the new `tokenId` and `contractAddress`. The `metadata.last_updated` timestamp is also updated.</li>
             </ol>
           </section>
           <section>
@@ -215,6 +227,78 @@ export default function ApiReferenceTokenEndpoints({
           </section>
         </CardContent>
       </Card>
+
+      <Card className="shadow-lg mt-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Transfer DPP Token Ownership (DAO/Admin Action)</CardTitle>
+          <CardDescription>
+            <span className="inline-flex items-center font-mono text-sm">
+              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/token/dao-transfer/{"{tokenId}"}</code>
+            </span>
+            <br />
+            Simulates a DAO-controlled or admin-initiated transfer of a DPP token (NFT) from its current owner to a new owner. This bypasses standard soulbound restrictions.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <section>
+            <h4 className="font-semibold mb-1">Path Parameters</h4>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">tokenId</code> (string, required): The unique identifier of the token to be transferred.</li>
+            </ul>
+          </section>
+          <section>
+            <h4 className="font-semibold mb-1">Request Body (JSON) - DaoTransferTokenRequest</h4>
+            <details className="border rounded-md">
+              <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                <FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Request Body
+              </summary>
+              <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto">
+                <code>{daoTransferRequestBody}</code>
+              </pre>
+            </details>
+            <ul className="list-disc list-inside text-sm space-y-1 mt-1">
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">newOwnerAddress</code> (string, required): The blockchain address of the new token owner.</li>
+            </ul>
+          </section>
+          <section>
+            <h4 className="font-semibold mb-1">Conceptual Backend Interaction</h4>
+            <ol className="list-decimal list-inside text-sm space-y-1 text-muted-foreground">
+              <li>The backend receives the request and validates the `tokenId` and `newOwnerAddress`.</li>
+              <li>This API endpoint conceptually represents an action that would be executed by the DAO's Timelock contract after a successful governance proposal.</li>
+              <li>The Timelock, upon execution, would call the `daoTransfer(from, to, tokenId)` function on the `DPPToken.sol` smart contract.
+                <ul className="list-disc list-inside ml-4">
+                  <li>`from`: The current owner of the `tokenId` (fetched from the contract or passed in the proposal).</li>
+                  <li>`to`: The `newOwnerAddress` from the request.</li>
+                  <li>`tokenId`: The token being transferred.</li>
+                </ul>
+              </li>
+              <li>The backend waits for the transaction and returns the `transactionHash`.</li>
+            </ol>
+          </section>
+          <section>
+            <h4 className="font-semibold mb-1">Example Response (200 OK)</h4>
+            <details className="border rounded-md">
+              <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                <FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response
+              </summary>
+              <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                <code>{daoTransferResponseBody}</code>
+              </pre>
+            </details>
+          </section>
+          <section>
+            <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
+            <ul className="list-disc list-inside text-sm space-y-2">
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Missing or invalid `newOwnerAddress`.</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code> (Token not found or DPP for token not found).</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code> (e.g., if blockchain interaction fails).</li>
+            </ul>
+          </section>
+        </CardContent>
+      </Card>
+
     </section>
   );
 }
