@@ -37,6 +37,7 @@ export async function POST(
   }
 
   const anchorHash = `0xmockAnchor${Date.now().toString(16)}`;
+  // Generate conceptual contractAddress and tokenId
   const mockContractAddress = `0xMOCK_CONTRACT_FOR_${productId}`;
   const mockTokenId = `MOCK_TID_${productId}_${Date.now().toString(36).slice(-4).toUpperCase()}`;
 
