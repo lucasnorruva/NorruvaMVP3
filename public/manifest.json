@@ -1,16 +1,29 @@
+
 {
   "name": "Norruva Digital Product Passport",
   "short_name": "Norruva DPP",
-  "description": "Manage and view digital product passports",
+  "description": "Secure and Compliant Product Data Management with AI-Powered Insights.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#FAFBFC",
+  "theme_color": "#1A202C",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "https://placehold.co/192x192.png?text=Norruva",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://placehold.co/384x384.png?text=Norruva",
+      "type": "image/png",
+      "sizes": "384x384"
+    },
+    {
+      "src": "https://placehold.co/512x512.png?text=Norruva",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ]
 }
