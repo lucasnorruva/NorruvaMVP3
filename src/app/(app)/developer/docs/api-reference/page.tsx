@@ -3,10 +3,12 @@ import { BookText } from "lucide-react";
 import { MOCK_DPPS } from "@/data";
 import DocsPageLayout from '@/components/developer/DocsPageLayout';
 import ApiReferenceIntro from '@/components/developer/docs/ApiReferenceIntro';
-import ApiReferenceDppEndpoints from '@/components/developer/docs/ApiReferenceDppEndpoints';
+import ApiReferenceDppEndpoints from '@/components/developer/docs/api-reference/ApiReferenceDppEndpoints';
 import ApiReferenceQrEndpoints from '@/components/developer/docs/ApiReferenceQrEndpoints';
 import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiReferenceComplianceEndpoints';
 import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
+import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints';
+import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferenceZkpLayerEndpoints';
 import type { DigitalProductPassport } from "@/types/dpp";
 
 export default function ApiReferencePage() {
@@ -80,68 +82,74 @@ export default function ApiReferencePage() {
   }, null, 2);
 
   const error401 = JSON.stringify({ error: { code: 401, message: "API key missing or invalid." } }, null, 2);
-  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, { status: 404 }); 
+  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }); 
   const error400_general = JSON.stringify({ error: { code: 400, message: "Invalid request payload or parameters." } }, null, 2);
   const error400_qr = JSON.stringify({ error: { code: 400, message: "Invalid request body. 'qrIdentifier' is required." } }, null, 2);
   const error500 = JSON.stringify({ error: { code: 500, message: "An unexpected error occurred on the server." } }, null, 2);
 
   const conceptualCreateDppRequestBody = JSON.stringify({
-    productName: "Sustainable Smart Watch Series 5",
-    category: "Wearable Technology",
-    gtin: "09876543210123",
-    manufacturerName: "FutureGadgets Inc.",
-    modelNumber: "SW-S5-ECO",
+    productName: "Organic Cotton Hoodie",
+    category: "Apparel",
+    gtin: "09876543210987",
+    manufacturerName: "Sustainable Styles Co.",
+    modelNumber: "OCH-2024-NAVY",
     productDetails: {
-      description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case and energy-efficient display.",
+      description: "Comfortable and eco-friendly hoodie made from 100% organic cotton.",
       materials: [
-        { name: "Recycled Aluminum (Case)", percentage: 80, isRecycled: true },
-        { name: "Organic Polymer (Strap)", percentage: 20 }
+        { name: "Organic Cotton", percentage: 100, isRecycled: false },
       ],
-      energyLabel: "A",
       customAttributes: [
-        { "key": "Display Type", "value": "AMOLED" },
-        { "key": "OS", "value": "WearOS" }
+        { "key": "Color", "value": "Navy Blue" },
+        { "key": "Collection", "value": "Autumn 2024" }
       ]
+    },
+    textileInformation: {
+      fiberComposition: [
+        { fiberName: "Organic Cotton", percentage: 100 }
+      ],
+      countryOfOriginLabeling: "Fabric: India, Garment: Portugal",
+      careInstructionsUrl: "https://sustainablestyles.com/care/hoodie",
+      isSecondHand: false
     }
   }, null, 2);
 
   const conceptualCreateDppResponseBody = JSON.stringify({
-    id: "DPP_API_12345", 
+    id: "DPP_API_TEXTILE_001", 
     version: 1,
-    productName: "Sustainable Smart Watch Series 5",
-    category: "Wearable Technology",
-    gtin: "09876543210123",
-    manufacturer: { name: "FutureGadgets Inc." },
-    modelNumber: "SW-S5-ECO",
+    productName: "Organic Cotton Hoodie",
+    category: "Apparel",
+    gtin: "09876543210987",
+    manufacturer: { name: "Sustainable Styles Co." },
+    modelNumber: "OCH-2024-NAVY",
     metadata: {
       created_at: new Date().toISOString(), 
       last_updated: new Date().toISOString(),
       status: "draft", 
-      dppStandardVersion: MOCK_DPPS[0]?.metadata?.dppStandardVersion || "CIRPASS v1.0 Draft"
+      dppStandardVersion: "ESPR Textiles Draft v0.8"
     },
     productDetails: {
-      description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case and energy-efficient display.",
+      description: "Comfortable and eco-friendly hoodie made from 100% organic cotton.",
       materials: [
-        { name: "Recycled Aluminum (Case)", percentage: 80, isRecycled: true },
-        { name: "Organic Polymer (Strap)", percentage: 20 }
+        { name: "Organic Cotton", percentage: 100, isRecycled: false },
       ],
-      energyLabel: "A",
       imageUrl: "https://placehold.co/600x400.png",
-      imageHint: "smart watch wearable",
+      imageHint: "cotton hoodie apparel",
       customAttributes: [
-        { "key": "Display Type", "value": "AMOLED" },
-        { "key": "OS", "value": "WearOS" }
+        { "key": "Color", "value": "Navy Blue" },
+        { "key": "Collection", "value": "Autumn 2024" }
       ]
+    },
+    textileInformation: {
+      fiberComposition: [
+        { fiberName: "Organic Cotton", percentage: 100 }
+      ],
+      countryOfOriginLabeling: "Fabric: India, Garment: Portugal",
+      careInstructionsUrl: "https://sustainablestyles.com/care/hoodie",
+      isSecondHand: false
     },
     compliance: { 
         eprel: { status: "N/A", lastChecked: new Date().toISOString() },
-        battery_regulation: { 
-            status: "not_applicable",
-            batteryChemistry: "",
-            carbonFootprint: { value: null, unit: ""},
-            recycledContent: [],
-            stateOfHealth: { value: null, unit: ""}
-        } 
+        battery_regulation: { status: "not_applicable" } 
     },
     ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
     lifecycleEvents: [],
@@ -151,81 +159,43 @@ export default function ApiReferencePage() {
 
   const conceptualUpdateDppRequestBody = JSON.stringify({
     productDetails: {
-      description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.",
-      sustainabilityClaims: [
-        { claim: "Made with 80% recycled aluminum", verificationDetails: "Verified by GreenCert" }
-      ],
+      description: "Updated: Premium Organic Cotton Hoodie, now with reinforced stitching.",
       customAttributes: [
-        { "key": "Display Type", "value": "AMOLED" },
-        { "key": "OS", "value": "WearOS Pro" },
-        { "key": "Water Resistance", "value": "5 ATM" }
+        { "key": "Color", "value": "Deep Navy Blue" },
+        { "key": "Collection", "value": "Autumn/Winter 2024" },
+        { "key": "Reinforcement", "value": "Double-stitched seams" }
       ]
     },
-    metadata: {
-      status: "pending_review"
+    textileInformation: {
+      careInstructionsUrl: "https://sustainablestyles.com/care/hoodie-v2"
     },
-    compliance: { // Example update for battery regulation
-        battery_regulation: {
-            status: "pending",
-            batteryPassportId: "BATT-ID-SW-S5-ECO-001",
-            carbonFootprint: {
-                value: 12.5,
-                unit: "kg CO2e/unit",
-                calculationMethod: "Product specific LCA"
-            },
-            recycledContent: [
-                { material: "Aluminum", percentage: 80 }
-            ]
-        }
-    }
+    constructionProductInformation: null // Explicitly nullify if not applicable
   }, null, 2);
 
-  // Use DPP001 as base for update example, but add battery_regulation to show its structure
-  const dpp001ForUpdateResponse = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
+  const dppTextileForUpdateResponse = MOCK_DPPS.find(dpp => dpp.id === "DPP002") || MOCK_DPPS[0]; // Using DPP002 as a base for textile update
   const conceptualUpdateDppResponseBody = JSON.stringify({
-    ...dpp001ForUpdateResponse, 
-    id: dpp001ForUpdateResponse.id,
-    productName: dpp001ForUpdateResponse.productName, 
+    ...dppTextileForUpdateResponse, 
+    id: dppTextileForUpdateResponse.id,
+    productName: dppTextileForUpdateResponse.productName, 
     productDetails: {
-        ...dpp001ForUpdateResponse.productDetails,
-        description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.", 
-        sustainabilityClaims: [ 
-          { claim: "Made with 80% recycled aluminum", verificationDetails: "Verified by GreenCert" }
-        ],
+        ...dppTextileForUpdateResponse.productDetails,
+        description: "Updated: Premium Organic Cotton Hoodie, now with reinforced stitching.",
         customAttributes: [ 
-            { "key": "Display Type", "value": "AMOLED" },
-            { "key": "OS", "value": "WearOS Pro" },
-            { "key": "Water Resistance", "value": "5 ATM" }
+            { "key": "Color", "value": "Deep Navy Blue" },
+            { "key": "Collection", "value": "Autumn/Winter 2024" },
+            { "key": "Reinforcement", "value": "Double-stitched seams" }
         ]
     },
     metadata: {
-        ...dpp001ForUpdateResponse.metadata,
+        ...dppTextileForUpdateResponse.metadata,
         status: "pending_review", 
         last_updated: new Date().toISOString() 
     },
-    compliance: {
-        ...dpp001ForUpdateResponse.compliance,
-        battery_regulation: { // Show updated battery_regulation data
-            status: "pending",
-            batteryPassportId: "BATT-ID-SW-S5-ECO-001",
-            carbonFootprint: {
-                value: 12.5,
-                unit: "kg CO2e/unit",
-                calculationMethod: "Product specific LCA",
-                vcId: "vc:cf:sw-s5-eco:001"
-            },
-            recycledContent: [
-                { material: "Aluminum", percentage: 80, vcId: "vc:rc:aluminum:sw-s5-eco:001" }
-            ],
-            stateOfHealth: { // Add example SoH
-                value: 99,
-                unit: "%",
-                measurementDate: new Date().toISOString(),
-                vcId: "vc:soh:sw-s5-eco:001"
-            },
-            vcId: "vc:battreg:overall:sw-s5-eco:001"
-        }
-    }
+    textileInformation: {
+      ...dppTextileForUpdateResponse.textileInformation,
+      careInstructionsUrl: "https://sustainablestyles.com/care/hoodie-v2"
+    },
+    constructionProductInformation: null // Showing it can be explicitly nulled
   }, null, 2);
 
 
@@ -306,11 +276,11 @@ export default function ApiReferencePage() {
 
   const error400_lifecycle_event = JSON.stringify({ error: { code: 400, message: "Field 'eventType' is required and must be a non-empty string." } }, null, 2);
 
-  const dppForComplianceSummary = MOCK_DPPS.find(dpp => dpp.id === "DPP005") || MOCK_DPPS[0]; // DPP005 has battery data
+  const dppForComplianceSummary = MOCK_DPPS.find(dpp => dpp.id === "DPP005") || MOCK_DPPS[0]; 
   const conceptualComplianceSummaryResponse = JSON.stringify({
     productId: dppForComplianceSummary.id,
     productName: dppForComplianceSummary.productName,
-    overallStatus: "Fully Compliant", // This would be dynamically calculated by the API
+    overallStatus: "Fully Compliant", 
     eprelStatus: dppForComplianceSummary.compliance.eprel?.status || "N/A",
     ebsiVerificationStatus: dppForComplianceSummary.ebsiVerification?.status || "N/A",
     batteryRegulationStatus: dppForComplianceSummary.compliance.battery_regulation?.status || "N/A",
@@ -321,7 +291,7 @@ export default function ApiReferencePage() {
     details: {
       eprel: dppForComplianceSummary.compliance.eprel,
       ebsi: dppForComplianceSummary.ebsiVerification,
-      batteryRegulation: dppForComplianceSummary.compliance.battery_regulation, // Include full battery object
+      batteryRegulation: dppForComplianceSummary.compliance.battery_regulation, 
       esprConformity: dppForComplianceSummary.compliance.esprConformity,
       euEspr: dppForComplianceSummary.compliance.eu_espr,
       usScope3: dppForComplianceSummary.compliance.us_scope3,
@@ -338,18 +308,17 @@ export default function ApiReferencePage() {
     checksPerformed: ["Mock Data Integrity Check", "Mock EBSI Anchor Verification"]
   }, null, 2);
 
-  // Examples for new on-chain endpoints
   const exampleUpdateOnChainStatusRequestBody = JSON.stringify({ status: "recalled" }, null, 2);
   const exampleUpdateOnChainLifecycleStageRequestBody = JSON.stringify({ lifecycleStage: "Distribution" }, null, 2);
   const exampleLogCriticalEventRequestBody = JSON.stringify({ eventDescription: "Major defect discovered in Batch XYZ.", severity: "High" }, null, 2);
   const exampleRegisterVcHashRequestBody = JSON.stringify({ vcId: "urn:uuid:some-vc-id-123", vcHash: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2" }, null, 2);
   
   const dppForOnChainOps = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
-  const exampleUpdatedDppResponse = JSON.stringify({ // Example of an updated DPP after an on-chain operation
+  const exampleUpdatedDppResponse = JSON.stringify({ 
     ...dppForOnChainOps,
     metadata: {
         ...dppForOnChainOps.metadata,
-        onChainStatus: "recalled", // Example change
+        onChainStatus: "recalled", 
         last_updated: new Date().toISOString(),
     },
     lifecycleEvents: [
@@ -359,12 +328,88 @@ export default function ApiReferencePage() {
   }, null, 2);
 
 
+  const exampleB2BComponentTransferRequestBody = JSON.stringify({
+    componentId: "COMP_XYZ_123",
+    batchOrSerialNumbers: ["BATCH_A001", "BATCH_A002"],
+    quantity: 200,
+    unit: "units",
+    transferDate: new Date().toISOString(),
+    fromParty: {
+      participantId: "SUP001",
+      participantDid: "did:example:supplier:greenpartsinc",
+      role: "Component Supplier"
+    },
+    toParty: {
+      participantId: "MFG002_ASSEMBLY",
+      participantDid: "did:example:manufacturer:acmeassembly",
+      role: "Pack Assembler"
+    },
+    transactionDetails: {
+      type: "InternalStockTransfer",
+      referenceId: "ERP_PO_67890"
+    },
+    notes: "Transfer of tested battery cells for EV pack assembly."
+  }, null, 2);
+
+  const exampleB2BComponentTransferResponseBody = JSON.stringify({
+    transferId: "transfer_comp_xyz_123_mock123",
+    componentId: "COMP_XYZ_123",
+    quantity: 200,
+    transferDate: new Date().toISOString(),
+    fromParty: { participantId: "SUP001", role: "Supplier" },
+    toParty: { participantId: "MFG001", role: "Manufacturer" },
+    productId: "DPP001" 
+  }, null, 2);
+
+  const exampleGetSupplierAttestationsResponseBody = JSON.stringify([
+    {
+      attestationId: "attest_sup001_compA_batchXYZ_20240815",
+      productId: "DPP001",
+      componentId: "COMP_A_BATTERY_CELL",
+      supplierId: "SUP001",
+      attestationType: "EthicalSourcingCompliance",
+      attestationStatement: "Component COMP_A_BATTERY_CELL sourced in compliance with OECD Due Diligence Guidance.",
+      issuanceDate: "2024-08-15T10:00:00Z"
+    }
+  ], null, 2);
+
+  const exampleGetConfidentialMaterialsResponseBody = JSON.stringify({
+    confidentialMaterialId: "cm_dpp001_proprietary_alloy_X1",
+    productId: "DPP001",
+    materialName: "Proprietary Alloy X1-Alpha",
+    composition: [{ substanceName: "Titanium", percentageByWeight: "75-78%" }]
+  }, null, 2);
+
+  const exampleZkpSubmitRequestBody = JSON.stringify({
+    claimType: "material_compliance_svhc_lead_less_0.1",
+    proofData: "0xMockProofDataStringForLeadCompliance...",
+    publicInputs: { productBatchId: "BATCH_XYZ123", svhcCasNumber: "7439-92-1" }
+  }, null, 2);
+
+  const exampleZkpSubmitResponseBody = JSON.stringify({
+    dppId: "DPP001",
+    proofId: "zkp_proof_mock_abcdef123",
+    status: "acknowledged",
+    message: "ZKP submission received and queued for conceptual verification.",
+    timestamp: new Date().toISOString()
+  }, null, 2);
+
+  const exampleZkpVerifyResponseBody = JSON.stringify({
+    dppId: "DPP001",
+    claimType: "material_compliance_svhc_lead_less_0.1",
+    isVerified: true,
+    proofId: "zkp_proof_mock_abcdef123",
+    verifiedAt: new Date().toISOString(),
+    message: "Mock ZKP for claim 'material_compliance_svhc_lead_less_0.1' is considered valid for this DPP."
+  }, null, 2);
+
+
   return (
     <DocsPageLayout
       pageTitle="API Reference (Conceptual)"
       pageIcon="BookText"
       alertTitle="Conceptual Documentation"
-      alertDescription="This API reference is conceptual and outlines how API endpoints for the Norruva DPP platform might be structured. Actual implementation details may vary."
+      alertDescription="This API reference is conceptual and outlines how API endpoints for the Norruva DPP platform might be structured. Actual implementation details may vary. Note: The OpenAPI specification has been updated to include schemas for SCIP, EU Customs, Textile, and Construction products, as well as on-chain status fields. You can find these under #/components/schemas/ in the openapi.yaml file."
     >
       <ApiReferenceIntro />
       <ApiReferenceDppEndpoints
@@ -379,13 +424,11 @@ export default function ApiReferencePage() {
         conceptualPatchDppExtendResponseBody={conceptualPatchDppExtendResponseBody}
         addLifecycleEventRequestBodyExample={addLifecycleEventRequestBodyExample}
         addLifecycleEventResponseExample={addLifecycleEventResponseExample}
-        // Pass new props for on-chain endpoints
         exampleUpdateOnChainStatusRequestBody={exampleUpdateOnChainStatusRequestBody}
         exampleUpdateOnChainLifecycleStageRequestBody={exampleUpdateOnChainLifecycleStageRequestBody}
         exampleLogCriticalEventRequestBody={exampleLogCriticalEventRequestBody}
         exampleRegisterVcHashRequestBody={exampleRegisterVcHashRequestBody}
         exampleUpdatedDppResponse={exampleUpdatedDppResponse}
-        // Error responses
         error401={error401}
         error404={error404}
         error500={error500}
@@ -393,7 +436,7 @@ export default function ApiReferencePage() {
         error400_update_dpp={error400_update_dpp}
         error400_patch_dpp={error400_patch_dpp}
         error400_lifecycle_event={error400_lifecycle_event}
-        error400_general={error400_general}
+        error400_general={error400_general} 
       />
       <ApiReferenceTokenEndpoints
         mintRequest={mintTokenRequest}
@@ -415,6 +458,25 @@ export default function ApiReferencePage() {
       <ApiReferenceComplianceEndpoints
         conceptualComplianceSummaryResponse={conceptualComplianceSummaryResponse}
         conceptualVerifyDppResponse={conceptualVerifyDppResponse}
+        error401={error401}
+        error404={error404}
+        error500={error500}
+      />
+      <ApiReferencePrivateLayerEndpoints
+        exampleB2BComponentTransferRequestBody={exampleB2BComponentTransferRequestBody}
+        exampleB2BComponentTransferResponseBody={exampleB2BComponentTransferResponseBody}
+        exampleGetSupplierAttestationsResponseBody={exampleGetSupplierAttestationsResponseBody}
+        exampleGetConfidentialMaterialsResponseBody={exampleGetConfidentialMaterialsResponseBody}
+        error400General={error400_general}
+        error401={error401}
+        error404={error404}
+        error500={error500}
+      />
+      <ApiReferenceZkpLayerEndpoints
+        exampleZkpSubmitRequestBody={exampleZkpSubmitRequestBody}
+        exampleZkpSubmitResponseBody={exampleZkpSubmitResponseBody}
+        exampleZkpVerifyResponseBody={exampleZkpVerifyResponseBody}
+        error400General={error400_general}
         error401={error401}
         error404={error404}
         error500={error500}

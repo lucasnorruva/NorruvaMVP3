@@ -167,6 +167,18 @@ paths:
             type: string
             enum: ["all", "anchored", "not_anchored"]
             default: "all"
+        - name: isTextileProduct # New filter
+          in: query
+          required: false
+          description: Filter for products with textile-specific information.
+          schema:
+            type: boolean
+        - name: isConstructionProduct # New filter
+          in: query
+          required: false
+          description: Filter for products with construction-specific information.
+          schema:
+            type: boolean
       responses:
         '200':
           description: A list of Digital Product Passports.
@@ -2416,6 +2428,21 @@ components:
           sparePartsAvailability: "Available for 7 years post-purchase."
           repairManualUrl: "https://example.com/manuals/repairX500.pdf"
           disassemblyInstructionsUrl: "https://example.com/manuals/disassemblyX500.pdf"
+        textileInformation: # Example of textile info
+          fiberComposition:
+            - fiberName: "Organic Cotton"
+              percentage: 100
+          countryOfOriginLabeling: "Made in Portugal"
+          isSecondHand: false
+        constructionProductInformation: # Example of construction info
+          declarationOfPerformanceId: "DoP-XYZ-001"
+          ceMarkingDetailsUrl: "https://example.com/ce-mark/xyz"
+          intendedUseDescription: "For internal wall insulation"
+          essentialCharacteristics:
+            - characteristicName: "Thermal Resistance"
+              value: "5.0"
+              unit: "m²K/W"
+              testMethod: "EN 12667"
     LifecycleEvent:
       type: object
       properties:
@@ -3307,6 +3334,15 @@ components:
           type: boolean
           nullable: true
           description: "Indicates if the textile product is second-hand."
+      example:
+        fiberComposition:
+          - fiberName: "Organic Cotton"
+            percentage: 95
+          - fiberName: "Elastane"
+            percentage: 5
+        countryOfOriginLabeling: "Woven in India, Assembled in Portugal"
+        careInstructionsUrl: "https://example.com/care/tshirt123"
+        isSecondHand: false
     EssentialCharacteristic: 
       type: object
       required:
@@ -3349,6 +3385,15 @@ components:
             $ref: '#/components/schemas/EssentialCharacteristic'
           nullable: true
           description: "List of essential characteristics and their declared performances."
+      example:
+        declarationOfPerformanceId: "DoP-INSUL-XYZ-001"
+        ceMarkingDetailsUrl: "https://example.com/ce/insul-xyz.pdf"
+        intendedUseDescription: "Thermal insulation for building envelopes."
+        essentialCharacteristics:
+          - characteristicName: "Thermal Resistance"
+            value: "R-5.0"
+            unit: "m²K/W"
+            testMethod: "EN 12667"
 security:
   - ApiKeyAuth: []
 components:
@@ -3360,6 +3405,8 @@ components:
       description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
     
 
+
+    
 
     
 
