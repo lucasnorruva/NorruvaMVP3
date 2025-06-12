@@ -23,7 +23,6 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     category: "Appliances",
     modelNumber: "X500-ECO",
     sku: "SKU-X500",
-    gtin: "01234567890123",
     nfcTagId: "NFC123456",
     rfidTagId: "RFID654321",
     anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef",
@@ -120,7 +119,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     authenticationVcId: "vc_auth_DPP002_mock456",
   },
   "PROD005": { 
-    passportId: "DPP005",
+    passportId: "PROD005", // Matched to mockDpps ID DPP005
     productName: "High-Performance EV Battery",
     tagline: "Powering the Future of Mobility.",
     imageUrl: "https://placehold.co/800x600.png",
@@ -166,7 +165,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     disassemblyInstructionsUrl: "https://powervolt.com/manuals/PV-EVB-75KWH-disassembly",
   },
   "PROD006": { 
-    passportId: "DPP006",
+    passportId: "PROD006", // Matched to mockDpps ID DPP006
     productName: "EcoSmart Insulation Panel R50",
     tagline: "Superior Insulation, Sustainably Made.",
     imageUrl: "https://placehold.co/800x600.png",
@@ -253,11 +252,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
             { characteristicName: "Load Bearing Capacity", value: "120 kg", testMethod: "EN 12520" },
             { characteristicName: "Formaldehyde Emission", value: "E1 Class", testMethod: "EN 717-1" }
         ]
-    },
-    repairabilityScore: { value: 7.5, scale: 10, reportUrl: "https://artisanwoodworks.com/repair/CWC-001" },
-    sparePartsAvailability: "Individual components (legs, seat) available on request for 10 years.",
-    repairManualUrl: "https://artisanwoodworks.com/manuals/CWC-001-repair",
-    disassemblyInstructionsUrl: "https://artisanwoodworks.com/manuals/CWC-001-disassembly-recycling",
+    }
   }
 };
 

@@ -51,8 +51,12 @@ export interface DocumentReference {
   addedTimestamp: string;
 }
 
-// TextileInformation and ConstructionProductInformation moved to Compliance.ts
-// and imported from there, so they are removed from direct definition here.
+export interface OwnershipNftLink {
+  registryUrl?: string;
+  contractAddress: string;
+  tokenId: string;
+  chainName?: string;
+}
 
 export interface DigitalProductPassport {
   id: string;
@@ -88,13 +92,8 @@ export interface DigitalProductPassport {
     anchorTransactionHash?: string;
   };
 
-  authenticationVcId?: string;
-  ownershipNftLink?: {
-    registryUrl?: string;
-    contractAddress: string;
-    tokenId: string;
-    chainName?: string;
-  };
+  authenticationVcId?: string; // Added
+  ownershipNftLink?: OwnershipNftLink; // Added
 
   productDetails?: {
     description?: string;
@@ -103,7 +102,7 @@ export interface DigitalProductPassport {
     materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
     sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
     energyLabel?: string;
-    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; // Updated type
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
     sparePartsAvailability?: string; 
     repairManualUrl?: string; 
     disassemblyInstructionsUrl?: string; 
@@ -140,7 +139,7 @@ export interface DigitalProductPassport {
   };
 
   ebsiVerification?: EbsiVerificationDetails;
-  complianceSummary?: ProductComplianceSummary; // Added for consistency and ease of access
+  complianceSummary?: ProductComplianceSummary; 
   verifiableCredentials?: VerifiableCredentialReference[];
   consumerScans?: number;
   dataController?: string;
@@ -184,7 +183,7 @@ export interface SimpleProductDetail {
   customAttributes?: CustomAttribute[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
-  repairability?: { score: number | null; scale: number | null; detailsUrl?: string; reportUrl?: string }; // Updated type
+  repairability?: { score: number | null; scale: number | null; detailsUrl?: string; reportUrl?: string };
   sparePartsAvailability?: string; 
   repairManualUrl?: string; 
   disassemblyInstructionsUrl?: string; 
@@ -194,8 +193,8 @@ export interface SimpleProductDetail {
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added
+  ownershipNftLink?: OwnershipNftLink; // Added
   blockchainPlatform?: string;
   contractAddress?: string;
   tokenId?: string;
@@ -208,7 +207,7 @@ export interface SimpleProductDetail {
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
   lastUpdated?: string; 
-  productDetails?: { // To store new repairability fields that might not be top-level yet
+  productDetails?: { 
     repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
     sparePartsAvailability?: string;
     repairManualUrl?: string;
@@ -251,11 +250,11 @@ export interface StoredUserProduct {
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributesJsonString?: string;
-  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; // Updated
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
   sparePartsAvailability?: string; 
   repairManualUrl?: string; 
   disassemblyInstructionsUrl?: string; 
-  productDetails?: { // Added for new structure
+  productDetails?: { 
     repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
     sparePartsAvailability?: string;
     repairManualUrl?: string;
@@ -269,8 +268,8 @@ export interface StoredUserProduct {
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added
+  ownershipNftLink?: OwnershipNftLink; // Added
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
@@ -307,12 +306,12 @@ export interface RichMockProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[];
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added
+  ownershipNftLink?: OwnershipNftLink; // Added
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; // Updated
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
   sparePartsAvailability?: string; 
   repairManualUrl?: string; 
   disassemblyInstructionsUrl?: string; 
@@ -345,8 +344,8 @@ export interface PublicProductInfo {
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
   documents?: DocumentReference[];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added
+  ownershipNftLink?: OwnershipNftLink; // Added
   contractAddress?: string;
   tokenId?: string;
   onChainStatus?: string;
@@ -354,7 +353,7 @@ export interface PublicProductInfo {
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
-  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; // Updated
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
   sparePartsAvailability?: string; 
   repairManualUrl?: string; 
   disassemblyInstructionsUrl?: string; 
@@ -405,8 +404,8 @@ export interface DisplayableProduct {
   customAttributes?: CustomAttribute[];
   customAttributesJsonString?: string;
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added
+  ownershipNftLink?: OwnershipNftLink; // Added
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
@@ -415,7 +414,7 @@ export interface DisplayableProduct {
   sparePartsAvailability?: string; 
   repairManualUrl?: string; 
   disassemblyInstructionsUrl?: string; 
-  productDetails?: { // Added for new structure from ProductForm
+  productDetails?: { 
     repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
     sparePartsAvailability?: string;
     repairManualUrl?: string;

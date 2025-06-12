@@ -2404,6 +2404,12 @@ components:
           anchorTransactionHash: "0x123abc..."
           contractAddress: "0xContract123"
           tokenId: "Token789"
+        authenticationVcId: "vc_auth_DPP001_mock123"
+        ownershipNftLink:
+          registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1"
+          contractAddress: "0xNFTContractForDPP001"
+          tokenId: "1"
+          chainName: "MockEthereum"
         productDetails:
           description: "An eco friendly fridge."
           energyLabel: "A++"
@@ -2669,6 +2675,9 @@ components:
             battery_regulation:
               $ref: '#/components/schemas/BatteryRegulationDetails'
               nullable: true
+        ownershipNftLink: # Add to CreateDppRequestBody
+            $ref: '#/components/schemas/OwnershipNftLinkRequestBody'
+            nullable: true
     UpdateDppRequestBody:
       type: object
       properties:
@@ -2832,7 +2841,13 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/DocumentReference'
-    UpdateOnChainStatusRequest: # New schema for updating on-chain status
+        authenticationVcId: # Add to UpdateDppRequestBody
+            type: string
+            nullable: true
+        ownershipNftLink: # Add to UpdateDppRequestBody
+            $ref: '#/components/schemas/OwnershipNftLinkRequestBody'
+            nullable: true
+    UpdateOnChainStatusRequest: 
       type: object
       required:
         - status
@@ -2841,7 +2856,7 @@ components:
           type: string
           enum: ["active", "recalled", "flagged_for_review", "archived"]
           description: The new conceptual on-chain status for the DPP.
-    UpdateOnChainLifecycleStageRequest: # New schema for updating on-chain lifecycle stage
+    UpdateOnChainLifecycleStageRequest: 
       type: object
       required:
         - lifecycleStage
@@ -2850,7 +2865,7 @@ components:
           type: string
           description: The new conceptual on-chain lifecycle stage for the DPP.
           example: "Manufacturing"
-    LogCriticalEventRequest: # New schema for logging a critical event
+    LogCriticalEventRequest:
       type: object
       required:
         - eventDescription
@@ -2864,7 +2879,7 @@ components:
           nullable: true
           description: Severity of the event. Defaults to "High" if not provided by API.
           example: "High"
-    RegisterVcHashRequest: # New schema for registering a VC hash
+    RegisterVcHashRequest: 
       type: object
       required:
         - vcId
@@ -2877,7 +2892,7 @@ components:
         vcHash:
           type: string
           description: The cryptographic hash (e.g., SHA-256) of the Verifiable Credential.
-          example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2" 
+          example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
     MintTokenRequest:
       type: object
       required:

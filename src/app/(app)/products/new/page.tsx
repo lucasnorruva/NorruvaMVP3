@@ -10,7 +10,7 @@ import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp"; 
+import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, OwnershipNftLink } from "@/types/dpp"; 
 import { fileToDataUri } from '@/utils/fileUtils';
 import AiExtractionSection from "@/components/products/new/AiExtractionSection";
 import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";
@@ -40,7 +40,7 @@ interface BatteryRegulationOrigin {
   vcIdOrigin?: AiOrigin;
 }
 
-export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails'> {
+export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails' | 'ownershipNftLink'> {
   productNameOrigin?: AiOrigin;
   productDescriptionOrigin?: AiOrigin;
   manufacturerOrigin?: AiOrigin;
@@ -58,6 +58,8 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
   batteryRegulationOrigin?: BatteryRegulationOrigin;
+  authenticationVcId?: string; // Added
+  ownershipNftLink?: Partial<OwnershipNftLink>; // Added
   compliance?: {
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
@@ -72,7 +74,7 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
 }
 
 
-export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails'> {
+export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails' | 'ownershipNftLink'> {
   id: string;
   status: string; 
   compliance: string; 
@@ -82,13 +84,13 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   keyCompliancePoints?: string[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
-  // repairability moved under productDetails below
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string }; 
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary; 
-  productDetails?: { // To store new repairability fields
-    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
+  productDetails?: { 
+    repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
     sparePartsAvailability?: string;
     repairManualUrl?: string;
     disassemblyInstructionsUrl?: string;
@@ -101,6 +103,8 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
+  authenticationVcId?: string; // Added
+  ownershipNftLink?: Partial<OwnershipNftLink>; // Added
   textileInformation?: Partial<TextileInformation>; 
   constructionProductInformation?: Partial<ConstructionProductInformation>; 
   metadata?: { 
@@ -163,6 +167,10 @@ const defaultProductDetailsState = {
   disassemblyInstructionsUrl: "",
 };
 
+const defaultOwnershipNftLinkState: Partial<OwnershipNftLink> = {
+  registryUrl: "", contractAddress: "", tokenId: "", chainName: ""
+};
+
 
 export default function AddNewProductPage() {
   const router = useRouter();
@@ -188,6 +196,8 @@ export default function AddNewProductPage() {
     productDetails: { ...defaultProductDetailsState },
     batteryRegulation: { ...defaultBatteryRegulationState },
     customAttributesJsonString: "",
+    authenticationVcId: "", // Added
+    ownershipNftLink: { ...defaultOwnershipNftLinkState }, // Added
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
     modelNumberOrigin: undefined, materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined,
     energyLabelOrigin: undefined, specificationsOrigin: undefined,
@@ -216,8 +226,8 @@ export default function AddNewProductPage() {
           onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", 
           onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", 
           productDetails: {
-            ...defaultProductDetailsState, // Ensure all fields are present
-            ...(productToEdit.productDetails || {}), // Spread existing productDetails if any
+            ...defaultProductDetailsState, 
+            ...(productToEdit.productDetails || {}), 
             repairabilityScore: productToEdit.repairabilityScore || productToEdit.productDetails?.repairabilityScore || defaultProductDetailsState.repairabilityScore,
             sparePartsAvailability: productToEdit.sparePartsAvailability || productToEdit.productDetails?.sparePartsAvailability || defaultProductDetailsState.sparePartsAvailability,
             repairManualUrl: productToEdit.repairManualUrl || productToEdit.productDetails?.repairManualUrl || defaultProductDetailsState.repairManualUrl,
@@ -238,6 +248,8 @@ export default function AddNewProductPage() {
               ? productToEdit.batteryRegulation.recycledContent
               : [],
           },
+          authenticationVcId: productToEdit.authenticationVcId || "", // Added
+          ownershipNftLink: { ...defaultOwnershipNftLinkState, ...(productToEdit.ownershipNftLink || {}) }, // Added
           compliance: {
             eprel: { ...(defaultFormState.compliance?.eprel || {}), ...(productToEdit.complianceData?.eprel || {}) },
             esprConformity: { ...(defaultFormState.compliance?.esprConformity || {}), ...(productToEdit.complianceData?.esprConformity || {}) },
@@ -302,6 +314,8 @@ export default function AddNewProductPage() {
         compliance: { ...defaultFormState.compliance }, 
         textileInformation: { ...defaultTextileInformationState }, 
         constructionProductInformation: { ...defaultConstructionProductInformationState }, 
+        authenticationVcId: prev.authenticationVcId, // Retain these if already set
+        ownershipNftLink: prev.ownershipNftLink,     // Retain these if already set
       }));
       setError(null);
       setAiExtractionAppliedSuccessfully(false);
@@ -322,7 +336,7 @@ export default function AddNewProductPage() {
       const result = await extractProductData({ documentDataUri, documentType });
 
       const aiInitialFormData: Partial<InitialProductFormData> = {
-        productDetails: { ...defaultProductDetailsState }, // Ensure productDetails is initialized
+        productDetails: { ...defaultProductDetailsState },
         batteryRegulation: { ...defaultBatteryRegulationState },
         batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState },
         compliance: { 
@@ -334,6 +348,8 @@ export default function AddNewProductPage() {
         },
         textileInformation: { ...defaultTextileInformationState }, 
         constructionProductInformation: { ...defaultConstructionProductInformationState }, 
+        authenticationVcId: "", // Reset on AI extraction
+        ownershipNftLink: { ...defaultOwnershipNftLinkState }, // Reset on AI extraction
       };
 
       if (result.productName) { aiInitialFormData.productName = result.productName; aiInitialFormData.productNameOrigin = 'AI_EXTRACTED'; }
@@ -432,7 +448,8 @@ export default function AddNewProductPage() {
         lastUpdated: new Date().toISOString(),
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
-        productDetails: { // Save new repairability fields
+        
+        productDetails: { 
             repairabilityScore: formDataFromForm.productDetails?.repairabilityScore,
             sparePartsAvailability: formDataFromForm.productDetails?.sparePartsAvailability,
             repairManualUrl: formDataFromForm.productDetails?.repairManualUrl,
@@ -446,6 +463,8 @@ export default function AddNewProductPage() {
           battery_regulation: formDataFromForm.compliance?.battery_regulation,
         },
         batteryRegulation: formDataFromForm.batteryRegulation,
+        authenticationVcId: formDataFromForm.authenticationVcId, // Added
+        ownershipNftLink: formDataFromForm.ownershipNftLink, // Added
         textileInformation: formDataFromForm.textileInformation, 
         constructionProductInformation: formDataFromForm.constructionProductInformation, 
         metadata: { 

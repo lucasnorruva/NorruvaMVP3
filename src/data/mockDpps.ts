@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp'; // Added EbsiVerificationDetails
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, OwnershipNftLink } from '@/types/dpp'; // Added OwnershipNftLink
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -189,7 +189,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       }, 
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "61091000", // HS Code for cotton t-shirts
+        hsCode: "61091000", 
         countryOfOrigin: "IN",
         netWeightKg: 0.15,
         grossWeightKg: 0.2,
@@ -252,11 +252,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       onChainStatus: "FlaggedForReview", 
       onChainLifecycleStage: "InUse" 
     },
-    productDetails: { 
-      description: "A recycled phone case.",
-      repairabilityScore: { value: 2.5, scale: 10 },
-      sparePartsAvailability: "Not typically repaired",
-    },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -284,7 +279,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       },
     },
     consumerScans: 2100,
-     blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333"},
+     productDetails: { 
+      description: "A recycled phone case.",
+      repairabilityScore: { value: 2.5, scale: 10 },
+      sparePartsAvailability: "Not typically repaired",
+    },
+     blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333", contractAddress: "0xContractForDPP003", tokenId: "NFT003"},
     documents: [],
     traceability: {
       originCountry: "CN",
@@ -314,13 +314,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       onChainStatus: "Archived", 
       onChainLifecycleStage: "EndOfLife" 
     },
-    productDetails: { 
-      description: "A modular sofa.",
-      repairabilityScore: { value: 7.0, scale: 10, reportUrl: "https://comfyliving.com/repair/sofa" },
-      sparePartsAvailability: "Individual modules available for 5 years",
-      repairManualUrl: "https://comfyliving.com/manuals/sofa-repair",
-      disassemblyInstructionsUrl: "https://comfyliving.com/manuals/sofa-disassembly",
-    },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-20T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -338,6 +331,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       }
     },
     consumerScans: 850,
+    productDetails: { 
+      description: "A modular sofa.",
+      repairabilityScore: { value: 7.0, scale: 10, reportUrl: "https://comfyliving.com/repair/sofa" },
+      sparePartsAvailability: "Individual modules available for 5 years",
+      repairManualUrl: "https://comfyliving.com/manuals/sofa-repair",
+      disassemblyInstructionsUrl: "https://comfyliving.com/manuals/sofa-disassembly",
+    },
     documents: [],
     traceability: {
       originCountry: "SE",
@@ -417,7 +417,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       },
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "85076000", // HS code for lithium-ion batteries
+        hsCode: "85076000", 
         countryOfOrigin: "US",
         netWeightKg: 450.0,
         grossWeightKg: 465.0,

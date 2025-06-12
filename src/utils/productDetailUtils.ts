@@ -5,7 +5,7 @@
 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp';
+import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails, TextileInformation, ConstructionProductInformation, OwnershipNftLink } from '@/types/dpp';
 import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 
 // Helper function to map DigitalProductPassport to SimpleProductDetail
@@ -17,7 +17,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             case 'pending_review': return 'Pending';
             case 'draft': return 'Draft';
             case 'revoked': return 'Archived'; // Consider revoked as archived for simple view
-            case 'flagged': return 'Flagged'; // Added Flagged status
+            case 'flagged': return 'Flagged'; 
             default: return 'Draft';
         }
     };
@@ -81,7 +81,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const customAttributes = dpp.productDetails?.customAttributes || [];
     const mappedCertifications: SimpleCertification[] = dpp.certifications?.map(cert => ({
-        id: cert.id, // Ensure ID is mapped
+        id: cert.id, 
         name: cert.name,
         authority: cert.issuer,
         standard: cert.standard,
@@ -151,8 +151,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         recyclabilityInfo: dpp.productDetails?.recyclabilityInformation ? { percentage: dpp.productDetails.recyclabilityInformation.recycledContentPercentage, instructionsUrl: dpp.productDetails.recyclabilityInformation.instructionsUrl } : undefined,
         supplyChainLinks: dpp.supplyChainLinks || [],
         certifications: mappedCertifications,
-        authenticationVcId: dpp.authenticationVcId,
-        ownershipNftLink: dpp.ownershipNftLink,
+        authenticationVcId: dpp.authenticationVcId, // Added
+        ownershipNftLink: dpp.ownershipNftLink, // Added
         blockchainPlatform: dpp.blockchainIdentifiers?.platform,
         contractAddress: dpp.blockchainIdentifiers?.contractAddress,
         tokenId: dpp.blockchainIdentifiers?.tokenId,
@@ -165,13 +165,18 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         constructionProductInformation: dpp.constructionProductInformation, 
         batteryRegulation: dpp.compliance.battery_regulation,
         lastUpdated: dpp.metadata.last_updated,
+        productDetails: {
+            repairabilityScore: dpp.productDetails?.repairabilityScore,
+            sparePartsAvailability: dpp.productDetails?.sparePartsAvailability,
+            repairManualUrl: dpp.productDetails?.repairManualUrl,
+            disassemblyInstructionsUrl: dpp.productDetails?.disassemblyInstructionsUrl,
+        }
     };
 }
 
 
 export async function fetchProductDetails(productId: string): Promise<SimpleProductDetail | null> {
-  // Simulate async fetching
-  await new Promise(resolve => setTimeout(resolve, 0)); // Minimal delay for promise resolution
+  await new Promise(resolve => setTimeout(resolve, 0)); 
 
   let foundDpp: DigitalProductPassport | undefined;
 
@@ -191,7 +196,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             }
         }
         const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
-            id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}_${Math.random().toString(36).slice(2, 7)}`, // Ensure ID exists
+            id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}_${Math.random().toString(36).slice(2, 7)}`, 
             name: sc.name,
             issuer: sc.authority,
             issueDate: sc.issueDate,
@@ -230,10 +235,10 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             energyLabel: userProductData.energyLabel,
             specifications: userProductData.specifications, 
             customAttributes: parsedCustomAttributes, 
-            repairabilityScore: userProductData.repairabilityScore,
-            sparePartsAvailability: userProductData.sparePartsAvailability,
-            repairManualUrl: userProductData.repairManualUrl,
-            disassemblyInstructionsUrl: userProductData.disassemblyInstructionsUrl,
+            repairabilityScore: userProductData.productDetails?.repairabilityScore || userProductData.repairabilityScore,
+            sparePartsAvailability: userProductData.productDetails?.sparePartsAvailability || userProductData.sparePartsAvailability,
+            repairManualUrl: userProductData.productDetails?.repairManualUrl || userProductData.repairManualUrl,
+            disassemblyInstructionsUrl: userProductData.productDetails?.disassemblyInstructionsUrl || userProductData.disassemblyInstructionsUrl,
           },
           compliance: { 
             eprel: userProductData.complianceData?.eprel,
