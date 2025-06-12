@@ -138,6 +138,7 @@ export default function GlobeV2Page() {
   }, []);
 
   useEffect(() => {
+    // Reset states when selectedProduct changes or becomes null
     setHighlightedCountries([]);
     setArcsData([]);
     setSelectedProductTransitInfo(null);
@@ -182,53 +183,63 @@ export default function GlobeV2Page() {
         if (globeEl.current) globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
       }
     } else {
-      // Fallback: If no transit info, fetch supply chain graph
-      fetch(`/api/v1/dpp/graph/${selectedProduct}`)
-        .then(res => res.ok ? res.json() : null)
-        .then((graph) => {
-          if (!graph || !graph.nodes) { return; }
-          const countries = new Set<string>();
-          let manufacturerCountry: string | null = null;
-          graph.nodes.forEach((node: any) => {
-            const loc: string | undefined = node.data?.location;
-            if (loc) {
-              const country = getCountryFromLocationString(loc);
-              if (country) {
-                countries.add(country);
-                if (node.type === 'manufacturer') manufacturerCountry = country;
-              }
-            }
-          });
-          const supplyChainCountries = Array.from(countries);
-          setHighlightedCountries(supplyChainCountries);
-          
-          const newSupplyArcs = [];
-          if (manufacturerCountry && supplyChainCountries.length > 1) {
-            const manufacturerCoords = mockCountryCoordinates[manufacturerCountry];
-            if (manufacturerCoords) {
-                supplyChainCountries.forEach(countryName => {
-                    if (countryName !== manufacturerCountry) {
-                        const supplierCoords = mockCountryCoordinates[countryName];
-                        if (supplierCoords) {
-                            newSupplyArcs.push({
-                                startLat: manufacturerCoords.lat, startLng: manufacturerCoords.lng,
-                                endLat: supplierCoords.lat, endLng: supplierCoords.lng,
-                                color: '#F59E0B', // Orange for supply chain
-                                label: `Supply: ${manufacturerCountry} to ${countryName}`
-                            });
-                        }
+      // Fallback: If no transit info, fetch supply chain graph (or simulate)
+      const dpp = MOCK_DPPS.find(d => d.id === selectedProduct);
+      const countries = new Set<string>();
+      let manufacturerCountry: string | null = null;
+
+      if (dpp?.manufacturer?.address) {
+        const country = getCountryFromLocationString(dpp.manufacturer.address);
+        if (country) {
+          countries.add(country);
+          manufacturerCountry = country;
+        }
+      } else if (dpp?.traceability?.originCountry) {
+        // If no manufacturer address, use originCountry as a proxy for main location
+        const country = getCountryFromLocationString(dpp.traceability.originCountry);
+         if (country) {
+          countries.add(country);
+          manufacturerCountry = country; // Use origin as the 'center' for supply arcs
+        }
+      }
+      
+      dpp?.supplyChainLinks?.forEach(link => {
+        const supplier = MOCK_DPPS.find(s => s.id === link.supplierId) || MOCK_TRANSIT_PRODUCTS.find(s => s.id === link.supplierId); // Check both for supplier location
+        const supplierLocation = (supplier as any)?.location || (supplier as any)?.origin; // Simple check
+        if (supplierLocation) {
+          const country = getCountryFromLocationString(supplierLocation);
+          if (country) countries.add(country);
+        }
+      });
+
+      const supplyChainCountries = Array.from(countries);
+      setHighlightedCountries(supplyChainCountries);
+      
+      const newSupplyArcs = [];
+      if (manufacturerCountry && supplyChainCountries.length > 1) {
+        const manufacturerCoords = mockCountryCoordinates[manufacturerCountry];
+        if (manufacturerCoords) {
+            supplyChainCountries.forEach(countryName => {
+                if (countryName !== manufacturerCountry) {
+                    const supplierCoords = mockCountryCoordinates[countryName];
+                    if (supplierCoords) {
+                        newSupplyArcs.push({
+                            startLat: manufacturerCoords.lat, startLng: manufacturerCoords.lng,
+                            endLat: supplierCoords.lat, endLng: supplierCoords.lng,
+                            color: '#F59E0B', // Orange for supply chain
+                            label: `Supply Link`
+                        });
                     }
-                });
-            }
-          }
-          setArcsData(newSupplyArcs as any[]);
-          if (globeEl.current) { // Focus view based on supply chain if any
-            if (countries.has('China') || countries.has('Japan') || countries.has('India')) globeEl.current.pointOfView({ lat: 20, lng: 90, altitude: 2.5 }, 1000);
-            else if (countries.has('United States') || countries.has('Canada')) globeEl.current.pointOfView({ lat: 45, lng: -90, altitude: 2.5 }, 1000);
-            else globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
-          }
-        })
-        .catch((err) => { console.error('Error fetching product graph:', err); setHighlightedCountries([]); setArcsData([]); });
+                }
+            });
+        }
+      }
+      setArcsData(newSupplyArcs as any[]);
+      if (globeEl.current) { // Focus view based on supply chain if any
+        if (countries.has('China') || countries.has('Japan') || countries.has('India')) globeEl.current.pointOfView({ lat: 20, lng: 90, altitude: 2.5 }, 1000);
+        else if (countries.has('United States') || countries.has('Canada')) globeEl.current.pointOfView({ lat: 45, lng: -90, altitude: 2.5 }, 1000);
+        else globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
+      }
     }
   }, [selectedProduct, mockCountryCoordinates]); 
 

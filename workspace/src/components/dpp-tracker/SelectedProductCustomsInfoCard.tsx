@@ -108,3 +108,4 @@ export default function SelectedProductCustomsInfoCard({ productTransitInfo, ale
     </Card>
   );
 }
+
