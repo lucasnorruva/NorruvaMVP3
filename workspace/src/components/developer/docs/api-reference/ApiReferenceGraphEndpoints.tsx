@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileJson, Server, Share2 } from "lucide-react"; // Using Share2 for graph-like icon
+import { FileJson, Share2 } from "lucide-react"; // Using Share2 for graph-like icon
 
 interface ApiReferenceGraphEndpointsProps {
   exampleGraphResponse: string;
@@ -51,7 +51,7 @@ export default function ApiReferenceGraphEndpoints({
           </section>
           <section>
             <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-            <p className="text-sm mb-1">Returns a DppGraphResponse object containing arrays of nodes and edges.</p>
+            <p className="text-sm mb-1">Returns a DppGraphResponse object containing arrays of nodes and edges. Nodes represent entities like the product, manufacturer, suppliers, components, or lifecycle events. Edges represent the relationships between these nodes. See the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">DppGraphResponse</code>, <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">DppGraphNode</code>, and <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">DppGraphEdge</code> schemas in the OpenAPI specification for full details.</p>
             <details className="border rounded-md">
               <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
                 <FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response
@@ -83,4 +83,3 @@ export default function ApiReferenceGraphEndpoints({
     </section>
   );
 }
-
