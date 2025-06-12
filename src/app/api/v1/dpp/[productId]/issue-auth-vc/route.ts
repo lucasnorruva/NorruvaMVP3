@@ -1,3 +1,4 @@
+
 // --- File: src/app/api/v1/dpp/[productId]/issue-auth-vc/route.ts ---
 // Description: Mock API endpoint to simulate issuing an authentication VC for a DPP.
 
@@ -45,3 +46,5 @@ export async function POST(
     updatedProduct: updatedProduct, // Returning the full updated product for easier UI update
   }, { status: 200 });
 }
+
+    

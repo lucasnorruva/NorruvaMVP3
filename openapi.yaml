@@ -2675,7 +2675,7 @@ components:
             battery_regulation:
               $ref: '#/components/schemas/BatteryRegulationDetails'
               nullable: true
-        ownershipNftLink: # Add to CreateDppRequestBody
+        ownershipNftLink: 
             $ref: '#/components/schemas/OwnershipNftLinkRequestBody'
             nullable: true
     UpdateDppRequestBody:
@@ -2841,10 +2841,10 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/DocumentReference'
-        authenticationVcId: # Add to UpdateDppRequestBody
+        authenticationVcId: 
             type: string
             nullable: true
-        ownershipNftLink: # Add to UpdateDppRequestBody
+        ownershipNftLink: 
             $ref: '#/components/schemas/OwnershipNftLinkRequestBody'
             nullable: true
     UpdateOnChainStatusRequest: 
@@ -3360,5 +3360,7 @@ components:
       description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
     
 
+
+    
 
     

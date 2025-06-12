@@ -1,3 +1,4 @@
+
 // --- File: src/app/api/v1/dpp/[productId]/link-nft/route.ts ---
 // Description: Mock API endpoint to simulate linking an ownership NFT to a DPP.
 
@@ -69,3 +70,5 @@ export async function POST(
     updatedProduct: updatedProduct, // Returning the full updated product
   }, { status: 200 });
 }
+
+    
