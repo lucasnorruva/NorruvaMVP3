@@ -1,4 +1,3 @@
-
 // 'use server';
 /**
  * @fileOverview Extracts and categorizes product information from supplier documents using AI.
@@ -23,7 +22,7 @@ const ExtractProductDataInputSchema = z.object({
     ),
   documentType: z
     .string()
-    .describe("The type of document being uploaded (e.g., 'invoice', 'specification', 'battery_spec_sheet', 'commercial_invoice', 'packing_list', 'material_safety_data_sheet')."),
+    .describe("The type of document being uploaded (e.g., 'invoice', 'specification', 'battery_spec_sheet', 'commercial_invoice', 'packing_list', 'material_safety_data_sheet', 'textile_spec_sheet', 'DoP_document')."),
 });
 export type ExtractProductDataInput = z.infer<typeof ExtractProductDataInputSchema>;
 
@@ -60,6 +59,32 @@ const CustomsDataSchemaForAI = z.object({
   countryOfOrigin: z.string().optional().describe("ISO 3166-1 alpha-2 code for the country of origin."),
 }).optional();
 
+const FiberCompositionEntrySchemaForAI = z.object({
+  fiberName: z.string().describe("Name of the textile fiber (e.g., Cotton, Polyester)."),
+  percentage: z.number().nullable().optional().describe("Percentage of this fiber in the product."),
+});
+
+const TextileInformationSchemaForAI = z.object({
+  fiberComposition: z.array(FiberCompositionEntrySchemaForAI).optional().describe("List of fibers and their percentages."),
+  countryOfOriginLabeling: z.string().optional().describe("Country of origin for key manufacturing processes as stated on the label."),
+  careInstructionsUrl: z.string().url().optional().describe("URL to detailed care instructions."),
+  isSecondHand: z.boolean().optional().describe("Indicates if the textile product is second-hand."),
+}).optional();
+
+const EssentialCharacteristicSchemaForAI = z.object({
+  characteristicName: z.string().describe("Name of the essential characteristic (e.g., Thermal Resistance)."),
+  value: z.string().describe("Value of the characteristic."),
+  unit: z.string().optional().describe("Unit of measurement for the value."),
+  testMethod: z.string().optional().describe("Test method used to determine the value (e.g., EN 12667)."),
+});
+
+const ConstructionProductInformationSchemaForAI = z.object({
+  declarationOfPerformanceId: z.string().optional().describe("Identifier of the Declaration of Performance (DoP)."),
+  ceMarkingDetailsUrl: z.string().url().optional().describe("URL to CE marking information or certificate."),
+  intendedUseDescription: z.string().optional().describe("Description of the intended use of the construction product."),
+  essentialCharacteristics: z.array(EssentialCharacteristicSchemaForAI).optional().describe("List of essential characteristics and their declared performances."),
+}).optional();
+
 
 const ExtractProductDataOutputSchema = z.object({
   productName: z.string().describe("The name of the product.").optional(),
@@ -78,6 +103,9 @@ const ExtractProductDataOutputSchema = z.object({
 
   scipData: ScipDataSchemaForAI.describe("SCIP database related information if relevant and found.").optional(),
   customsData: CustomsDataSchemaForAI.describe("Basic customs data if relevant and found.").optional(),
+
+  textileInformation: TextileInformationSchemaForAI.describe("Textile-specific product information if relevant and found.").optional(),
+  constructionProductInformation: ConstructionProductInformationSchemaForAI.describe("Construction product specific information if relevant and found.").optional(),
 });
 export type ExtractProductDataOutput = z.infer<typeof ExtractProductDataOutputSchema>;
 
@@ -100,7 +128,7 @@ Document Content: {{media url=documentDataUri}}
 **Prioritization based on Document Type:**
 
 *   **If documentType is 'battery_spec_sheet' or clearly indicates detailed battery information:**
-    *   **Strongly prioritize** extracting ALL of the following battery-specific details:
+    *   **Strongly prioritize** extracting ALL of the following battery-specific details into the 'batteryRegulation' object:
         *   batteryChemistry: (e.g., Li-ion NMC, LFP)
         *   batteryPassportId: Unique ID for the battery passport.
         *   carbonFootprint: Object with 'value' (number), 'unit', 'calculationMethod', 'vcId' (optional).
@@ -113,7 +141,7 @@ Document Content: {{media url=documentDataUri}}
     *   **Prioritize** extracting customs-related data into a 'customsData' object:
         *   hsCode: Harmonized System (HS) code.
         *   countryOfOrigin: ISO 3166-1 alpha-2 code for the country of origin.
-    *   Also extract general product information like productName, modelNumber if clearly identifiable. Other fields like productDescription or detailed specifications may be less relevant from these document types.
+    *   Also extract general product information like productName, modelNumber if clearly identifiable.
 
 *   **If documentType is 'material_safety_data_sheet' (MSDS), 'specification_sheet' that clearly discusses chemical composition or substances of concern:**
     *   **Prioritize** extracting SCIP-related data into a 'scipData' object:
@@ -124,11 +152,27 @@ Document Content: {{media url=documentDataUri}}
         *   safeUseInstructionsLink: URL for safe use instructions (if provided).
     *   Also extract general product information, especially 'productName' and 'materials' if specified.
 
+*   **If documentType is 'textile_spec_sheet', 'garment_tech_pack', or similar textile-focused document:**
+    *   **Prioritize** extracting textile-specific data into a 'textileInformation' object:
+        *   fiberComposition: Array of objects, each with 'fiberName' (string) and 'percentage' (number, optional). Extract all listed fibers.
+        *   countryOfOriginLabeling: String, e.g., "Made in Portugal (Spinning, Weaving), Assembled in Vietnam (Making-up)".
+        *   careInstructionsUrl: String, URL to detailed care instructions.
+        *   isSecondHand: Boolean, if the product is second-hand.
+    *   Also extract general product information.
+
+*   **If documentType is 'construction_product_dop', 'DoP_document', 'technical_datasheet_construction', or similar construction-focused document:**
+    *   **Prioritize** extracting construction product information into a 'constructionProductInformation' object:
+        *   declarationOfPerformanceId: String, the DoP identifier.
+        *   ceMarkingDetailsUrl: String, URL to CE marking information/certificate.
+        *   intendedUseDescription: String, description of the intended use.
+        *   essentialCharacteristics: Array of objects, each with 'characteristicName', 'value', 'unit' (optional), 'testMethod' (optional). Extract key characteristics.
+    *   Also extract general product information.
+
 *   **For other documentTypes (e.g., 'invoice', 'general_specification', 'bill_of_materials', 'technical_drawing'):**
     *   Extract as much of the general product information as possible: productName, productDescription, manufacturer, modelNumber, specifications, energyLabel.
-    *   If battery, SCIP, or customs details are incidentally present and clearly identifiable, extract them into their respective objects.
+    *   If battery, SCIP, customs, textile, or construction details are incidentally present and clearly identifiable, extract them into their respective objects.
 
-Extract the product information and return it in JSON format. If a numeric field cannot be found, omit it or return null where appropriate within nested objects. For arrays like 'recycledContent', if no information is found, return an empty array or omit the field. Only include the 'scipData' or 'customsData' objects if relevant information is found and prioritized by document type.
+Extract the product information and return it in JSON format. If a numeric field cannot be found, omit it or return null where appropriate within nested objects. For arrays like 'recycledContent', 'fiberComposition', or 'essentialCharacteristics', if no information is found, return an empty array or omit the field. Only include the 'scipData', 'customsData', 'textileInformation', or 'constructionProductInformation' objects if relevant information is found and prioritized by document type.
 `,
 });
 
