@@ -12,6 +12,7 @@ import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-refer
 import type { DigitalProductPassport } from "@/types/dpp";
 
 export default function ApiReferencePage() {
+  // Use DPP005 for a rich example including battery data
   const exampleDppForResponse = MOCK_DPPS.find(dpp => dpp.id === "DPP005") || MOCK_DPPS[0];
   const exampleDppResponse = JSON.stringify(exampleDppForResponse, null, 2);
 
@@ -190,7 +191,13 @@ export default function ApiReferencePage() {
         euCustomsData: { status: "Cleared", declarationId: "CUSTDEC789" }
     },
     textileInformation: { /* ... */ },
-    constructionProductInformation: { /* ... */ }
+    constructionProductInformation: { /* ... */ },
+    authenticationVcId: "vc_auth_updated_example",
+    ownershipNftLink: {
+        contractAddress: "0xNewNFTContract",
+        tokenId: "789",
+        chainName: "Polygon"
+    }
   }, null, 2);
 
   const dpp001ForUpdateResponse = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
@@ -241,6 +248,12 @@ export default function ApiReferencePage() {
         },
         scipNotification: { ...dpp001ForUpdateResponse.compliance.scipNotification, status: "Notified", notificationId: "SCIP123" },
         euCustomsData: { ...dpp001ForUpdateResponse.compliance.euCustomsData, status: "Cleared", declarationId: "CUSTDEC789" }
+    },
+    authenticationVcId: "vc_auth_updated_example",
+    ownershipNftLink: {
+        contractAddress: "0xNewNFTContract",
+        tokenId: "789",
+        chainName: "Polygon"
     },
     textileInformation: dpp001ForUpdateResponse.textileInformation,
     constructionProductInformation: dpp001ForUpdateResponse.constructionProductInformation

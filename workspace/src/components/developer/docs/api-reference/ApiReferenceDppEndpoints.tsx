@@ -8,6 +8,8 @@ import {
   ExtendDigitalProductPassport,
   AddLifecycleEventToDpp,
   ArchiveDigitalProductPassport,
+  IssueDppAuthVc, // Added import
+  LinkDppOwnershipNft, // Added import
 } from "./index"; // Import all from index
 import {
   Card,
@@ -223,111 +225,6 @@ function RegisterDppVcHash({ exampleRequestBody, exampleDppResponse, error400, e
   );
 }
 
-// Component for Issue Authentication VC
-function IssueDppAuthVc({ exampleDppResponse, error401, error404, error500 }: { exampleDppResponse: string; error401: string; error404: string; error500: string; }) {
-  return (
-    <Card className="shadow-lg mt-6">
-      <CardHeader>
-        <CardTitle className="text-lg">Issue Authentication Verifiable Credential (VC)</CardTitle>
-        <CardDescription>
-          <span className="inline-flex items-center font-mono text-sm">
-            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-            <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp/{"{productId}"}/issue-auth-vc</code>
-          </span>
-          <br />
-          Conceptually issues an authentication VC for the product and links its ID to the DPP.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <section>
-          <h4 className="font-semibold mb-1">Path Parameters</h4>
-          <ul className="list-disc list-inside text-sm space-y-1">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the product.</li>
-          </ul>
-        </section>
-        <section>
-          <h4 className="font-semibold mb-1">Request Body</h4>
-          <p className="text-sm mb-1">No request body is required for this conceptual endpoint.</p>
-        </section>
-        <section>
-          <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-          <p className="text-sm mb-1">Returns a confirmation message, the product ID, the new VC ID, and the updated DPP object.</p>
-          <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleDppResponse}</code></pre>
-          </details>
-        </section>
-        <section>
-          <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
-          <ul className="list-disc list-inside text-sm space-y-2">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code> (Product not found).</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
-          </ul>
-        </section>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Component for Link Ownership NFT
-function LinkDppOwnershipNft({ exampleDppResponse, error400, error401, error404, error500 }: { exampleDppResponse: string; error400: string; error401: string; error404: string; error500: string; }) {
-  const exampleRequestBody = JSON.stringify({
-    registryUrl: "https://mock-nft-market.example/token/0xContract/123",
-    contractAddress: "0xMockNFTContractAddressForDPP",
-    tokenId: "123",
-    chainName: "MockEthereum"
-  }, null, 2);
-  return (
-    <Card className="shadow-lg mt-6">
-      <CardHeader>
-        <CardTitle className="text-lg">Link Ownership NFT to DPP</CardTitle>
-        <CardDescription>
-          <span className="inline-flex items-center font-mono text-sm">
-            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-            <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp/{"{productId}"}/link-nft</code>
-          </span>
-          <br />
-          Conceptually links an NFT representing product ownership to the specified DPP.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <section>
-          <h4 className="font-semibold mb-1">Path Parameters</h4>
-          <ul className="list-disc list-inside text-sm space-y-1">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the product.</li>
-          </ul>
-        </section>
-        <section>
-          <h4 className="font-semibold mb-1">Request Body (JSON) - OwnershipNftLinkRequestBody</h4>
-           <p className="text-sm mb-1">Requires contractAddress and tokenId. Registry URL and chainName are optional.</p>
-          <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Request</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleRequestBody}</code></pre>
-          </details>
-        </section>
-        <section>
-          <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-          <p className="text-sm mb-1">Returns a confirmation message, the product ID, the linked NFT details, and the updated DPP object.</p>
-          <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleDppResponse}</code></pre>
-          </details>
-        </section>
-        <section>
-          <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
-          <ul className="list-disc list-inside text-sm space-y-2">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Missing contractAddress or tokenId.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code> (Product not found).</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
-          </ul>
-        </section>
-      </CardContent>
-    </Card>
-  );
-}
-
 
 interface DppEndpointsProps {
   exampleListDppsResponse: string;
@@ -467,5 +364,3 @@ export default function ApiReferenceDppEndpoints(props: DppEndpointsProps) {
 ApiReferenceDppEndpoints.defaultProps = {
   error400_general: JSON.stringify({ error: { code: 400, message: "Invalid request body or parameters." } }, null, 2)
 };
-
-    

@@ -8,6 +8,8 @@ export { default as AddLifecycleEventToDpp } from './AddLifecycleEventToDpp';
 export { default as ArchiveDigitalProductPassport } from './ArchiveDigitalProductPassport';
 export { default as ApiReferencePrivateLayerEndpoints } from './ApiReferencePrivateLayerEndpoints';
 export { default as ApiReferenceZkpLayerEndpoints } from './ApiReferenceZkpLayerEndpoints'; 
+export { default as IssueDppAuthVc } from './IssueDppAuthVc';
+export { default as LinkDppOwnershipNft } from './LinkDppOwnershipNft';
 
 // Ensure ApiReferenceDppEndpoints is also exported if it's the main aggregator,
 // or export the new components directly if they are separate files.
@@ -18,4 +20,5 @@ export { default as ApiReferenceZkpLayerEndpoints } from './ApiReferenceZkpLayer
 
 // However, the current plan seems to integrate these into ApiReferenceDppEndpoints.tsx,
 // so no new exports might be needed here unless that structure changes.
+
 
