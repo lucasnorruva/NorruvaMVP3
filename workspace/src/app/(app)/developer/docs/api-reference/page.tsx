@@ -3,7 +3,7 @@ import { BookText } from "lucide-react";
 import { MOCK_DPPS } from "@/data";
 import DocsPageLayout from '@/components/developer/DocsPageLayout';
 import ApiReferenceIntro from '@/components/developer/docs/ApiReferenceIntro';
-import ApiReferenceDppEndpoints from '@/components/developer/docs/ApiReferenceDppEndpoints';
+import ApiReferenceDppEndpoints from '@/components/developer/docs/api-reference/ApiReferenceDppEndpoints';
 import ApiReferenceQrEndpoints from '@/components/developer/docs/ApiReferenceQrEndpoints';
 import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiReferenceComplianceEndpoints';
 import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
@@ -103,7 +103,9 @@ export default function ApiReferencePage() {
         { "key": "Display Type", "value": "AMOLED" },
         { "key": "OS", "value": "WearOS" }
       ]
-    }
+    },
+    textileInformation: { /* ... */ },
+    constructionProductInformation: { /* ... */ }
   }, null, 2);
 
   const conceptualCreateDppResponseBody = JSON.stringify({
@@ -136,6 +138,8 @@ export default function ApiReferencePage() {
     },
     compliance: { 
         eprel: { status: "N/A", lastChecked: new Date().toISOString() },
+        scipNotification: { status: "N/A", lastChecked: new Date().toISOString() },
+        euCustomsData: { status: "N/A", lastChecked: new Date().toISOString() },
         battery_regulation: { 
             status: "not_applicable",
             batteryChemistry: "",
@@ -144,6 +148,8 @@ export default function ApiReferencePage() {
             stateOfHealth: { value: null, unit: ""}
         } 
     },
+    textileInformation: { /* ... */ },
+    constructionProductInformation: { /* ... */ },
     ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
     lifecycleEvents: [],
     certifications: [],
@@ -163,9 +169,11 @@ export default function ApiReferencePage() {
       ]
     },
     metadata: {
-      status: "pending_review"
+      status: "pending_review",
+      onChainStatus: "Active",
+      onChainLifecycleStage: "Distribution"
     },
-    compliance: { // Example update for battery regulation
+    compliance: { 
         battery_regulation: {
             status: "pending",
             batteryPassportId: "BATT-ID-SW-S5-ECO-001",
@@ -177,8 +185,12 @@ export default function ApiReferencePage() {
             recycledContent: [
                 { material: "Aluminum", percentage: 80 }
             ]
-        }
-    }
+        },
+        scipNotification: { status: "Notified", notificationId: "SCIP123" },
+        euCustomsData: { status: "Cleared", declarationId: "CUSTDEC789" }
+    },
+    textileInformation: { /* ... */ },
+    constructionProductInformation: { /* ... */ }
   }, null, 2);
 
   const dpp001ForUpdateResponse = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
@@ -201,6 +213,8 @@ export default function ApiReferencePage() {
     metadata: {
         ...dpp001ForUpdateResponse.metadata,
         status: "pending_review", 
+        onChainStatus: "Active",
+        onChainLifecycleStage: "Distribution",
         last_updated: new Date().toISOString() 
     },
     compliance: {
@@ -224,8 +238,12 @@ export default function ApiReferencePage() {
                 vcId: "vc:soh:sw-s5-eco:001"
             },
             vcId: "vc:battreg:overall:sw-s5-eco:001"
-        }
-    }
+        },
+        scipNotification: { ...dpp001ForUpdateResponse.compliance.scipNotification, status: "Notified", notificationId: "SCIP123" },
+        euCustomsData: { ...dpp001ForUpdateResponse.compliance.euCustomsData, status: "Cleared", declarationId: "CUSTDEC789" }
+    },
+    textileInformation: dpp001ForUpdateResponse.textileInformation,
+    constructionProductInformation: dpp001ForUpdateResponse.constructionProductInformation
   }, null, 2);
 
 
@@ -306,7 +324,7 @@ export default function ApiReferencePage() {
 
   const error400_lifecycle_event = JSON.stringify({ error: { code: 400, message: "Field 'eventType' is required and must be a non-empty string." } }, null, 2);
 
-  const dppForComplianceSummary = MOCK_DPPS.find(dpp => dpp.id === "DPP005") || MOCK_DPPS[0]; // DPP005 has battery data
+  const dppForComplianceSummary = MOCK_DPPS.find(dpp => dpp.id === "DPP005") || MOCK_DPPS[0]; 
   const conceptualComplianceSummaryResponse = JSON.stringify({
     productId: dppForComplianceSummary.id,
     productName: dppForComplianceSummary.productName,
@@ -439,7 +457,7 @@ export default function ApiReferencePage() {
       pageTitle="API Reference (Conceptual)"
       pageIcon="BookText"
       alertTitle="Conceptual Documentation"
-      alertDescription="This API reference is conceptual and outlines how API endpoints for the Norruva DPP platform might be structured. Actual implementation details may vary."
+      alertDescription="This API reference is conceptual and outlines how API endpoints for the Norruva DPP platform might be structured. Actual implementation details may vary. Note: The OpenAPI specification has been updated to include schemas for SCIP, EU Customs, Textile, and Construction products, as well as on-chain status fields. You can find these under #/components/schemas/ in the openapi.yaml file."
     >
       <ApiReferenceIntro />
       <ApiReferenceDppEndpoints
