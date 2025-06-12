@@ -6,8 +6,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, CustomAttribute, DashboardFiltersState } from '@/types/dpp';
+import type { DigitalProductPassport, CustomAttribute, DashboardFiltersState, OwnershipNftLink, TextileInformation, ConstructionProductInformation } from '@/types/dpp';
 
+// Interface to reflect the expected request body for creating a DPP
 interface CreateDppRequestBody {
   productName: string;
   category: string;
@@ -22,6 +23,11 @@ interface CreateDppRequestBody {
     imageUrl?: string;
     imageHint?: string;
   };
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
+  authenticationVcId?: string;
+  ownershipNftLink?: OwnershipNftLink;
+  // Note: onChainStatus and onChainLifecycleStage are set by server default, not part of request body
 }
 
 export async function POST(request: NextRequest) {
@@ -42,6 +48,10 @@ export async function POST(request: NextRequest) {
     manufacturerName,
     modelNumber,
     productDetails,
+    textileInformation,
+    constructionProductInformation,
+    authenticationVcId,
+    ownershipNftLink,
   } = requestBody;
 
   if (!productName || typeof productName !== 'string' || productName.trim() === '') {
@@ -66,6 +76,8 @@ export async function POST(request: NextRequest) {
       last_updated: now,
       status: 'draft',
       dppStandardVersion: "CIRPASS v1.0 Draft",
+      onChainStatus: "Unknown", // Default value for new products
+      onChainLifecycleStage: "Design", // Default value for new products
     },
     productDetails: {
       description: productDetails?.description || undefined,
@@ -75,10 +87,16 @@ export async function POST(request: NextRequest) {
       imageUrl: productDetails?.imageUrl || `https://placehold.co/600x400.png?text=${encodeURIComponent(productName.substring(0,15))}`,
       imageHint: productDetails?.imageHint || productName.toLowerCase().split(" ").slice(0,2).join(" "),
     },
+    textileInformation: textileInformation || undefined,
+    constructionProductInformation: constructionProductInformation || undefined,
+    authenticationVcId: authenticationVcId || undefined,
+    ownershipNftLink: ownershipNftLink || undefined,
     compliance: {
       eprel: { status: 'N/A', lastChecked: now },
       esprConformity: { status: 'pending_assessment', assessmentDate: now },
       battery_regulation: { status: 'not_applicable' },
+      scipNotification: { status: 'N/A', lastChecked: now },
+      euCustomsData: { status: 'N/A', lastChecked: now },
     },
     ebsiVerification: {
       status: 'pending_verification',
@@ -96,9 +114,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  // Intentionally removed API key validation for GET for easier development testing of Blockchain Management page.
-  // const authError = validateApiKey(request);
-  // if (authError) return authError;
+  const authError = validateApiKey(request);
+  if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') as DashboardFiltersState['status'] | null;
@@ -136,16 +153,15 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Conceptual filtering acknowledgement - actual logic not implemented for mock
   const isTextileProduct = isTextileProductParam === 'true' ? true : isTextileProductParam === 'false' ? false : undefined;
   const isConstructionProduct = isConstructionProductParam === 'true' ? true : isConstructionProductParam === 'false' ? false : undefined;
 
-  // if (isTextileProduct !== undefined) {
-  //   // Conceptual: filteredDPPs = filteredDPPs.filter(dpp => !!dpp.textileInformation === isTextileProduct);
-  // }
-  // if (isConstructionProduct !== undefined) {
-  //   // Conceptual: filteredDPPs = filteredDPPs.filter(dpp => !!dpp.constructionProductInformation === isConstructionProduct);
-  // }
+  if (isTextileProduct !== undefined) {
+    filteredDPPs = filteredDPPs.filter(dpp => !!dpp.textileInformation === isTextileProduct);
+  }
+  if (isConstructionProduct !== undefined) {
+    filteredDPPs = filteredDPPs.filter(dpp => !!dpp.constructionProductInformation === isConstructionProduct);
+  }
 
 
   await new Promise(resolve => setTimeout(resolve, 300));
@@ -157,8 +173,8 @@ export async function GET(request: NextRequest) {
       category: categoryParam,
       searchQuery,
       blockchainAnchored,
-      isTextileProduct, // Acknowledge the filter
-      isConstructionProduct, // Acknowledge the filter
+      isTextileProduct, 
+      isConstructionProduct, 
     },
     totalCount: filteredDPPs.length,
   });

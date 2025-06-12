@@ -1472,6 +1472,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  
+  /api/v1/token/dao-transfer/{tokenId}:
+    post:
+      operationId: daoTransferDppToken
+      summary: Transfer DPP Token Ownership (DAO/Admin Action)
+      description: >
+        Simulates a DAO-controlled or admin-initiated transfer of a DPP token (NFT)
+        from its current owner to a new owner. This bypasses standard soulbound restrictions.
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          description: The unique identifier of the token to be transferred.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DaoTransferTokenRequest'
+      responses:
+        '200':
+          description: DAO token transfer successfully initiated (mock).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaoTransferTokenResponse'
+        '400':
+          description: Invalid request body (e.g., missing newOwnerAddress).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Token with the given tokenId not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/qr/generate/{productId}:
     get:
       operationId: generateQrCode
@@ -2659,6 +2712,14 @@ components:
         constructionProductInformation:
           $ref: '#/components/schemas/ConstructionProductInformation'
           nullable: true
+        authenticationVcId: # Added
+          type: string
+          nullable: true
+          description: Identifier for a Verifiable Credential attesting to product authenticity.
+        ownershipNftLink: # Added
+          $ref: '#/components/schemas/OwnershipNftLinkRequestBody'
+          nullable: true
+          description: Link to an NFT representing product ownership.
         compliance: 
           type: object
           nullable: true
@@ -2687,9 +2748,6 @@ components:
             battery_regulation:
               $ref: '#/components/schemas/BatteryRegulationDetails'
               nullable: true
-        ownershipNftLink: 
-            $ref: '#/components/schemas/OwnershipNftLinkRequestBody'
-            nullable: true
     UpdateDppRequestBody:
       type: object
       properties:
@@ -2959,6 +3017,34 @@ components:
         tokenId: "101"
         contractAddress: "0xMOCK_DPP_TOKEN_CONTRACT"
         transactionHash: "0xmeta_update_tx_mock_654321fedcba"
+    DaoTransferTokenRequest:
+      type: object
+      required:
+        - newOwnerAddress
+      properties:
+        newOwnerAddress:
+          type: string
+          description: The blockchain address of the new token owner.
+          example: "0x0987654321abcdef0987654321abcdef09876543"
+    DaoTransferTokenResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        tokenId:
+          type: string
+        newOwnerAddress:
+          type: string
+        transactionHash:
+          type: string
+        conceptualNote:
+          type: string
+      example:
+        message: "DAO token transfer initiated for token 101 to 0xNEWOWNER..."
+        tokenId: "101"
+        newOwnerAddress: "0xNEWOWNER..."
+        transactionHash: "0xdaotransfer_mock_abcdef123"
+        conceptualNote: "This is a mock response. In a real system, the token owner would be updated on-chain."
     TokenStatusResponse:
       type: object
       properties:
@@ -3372,6 +3458,8 @@ components:
       description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
     
 
+
+    
 
     
 
