@@ -10,7 +10,7 @@
     "predev": "npm run copy:openapi",
     "prebuild": "npm run copy:openapi",
     "build": "node_modules/.bin/next build",
-    "start": "node_modules/.bin/next start -p 9003 -H 0.0.0.0",
+    "start": "node_modules/.bin/next start -p 9003 --hostname 0.0.0.0",
     "lint": "node_modules/.bin/next lint",
     "typecheck": "tsc --noEmit",
     "test": "jest",
