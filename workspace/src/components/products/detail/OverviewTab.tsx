@@ -6,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Shirt, Construction } from "lucide-react";
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
-import { getEbsiStatusBadge } from "@/utils/dppDisplayUtils"; 
-// Tooltip related imports are intentionally removed as per previous request, if they were the cause.
-// We will re-add if this doesn't fix the core issue, or if tooltips are desired again.
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
 import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface OverviewTabProps {
   product: SimpleProductDetail;
@@ -47,6 +47,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     parsedSpecifications = product.specifications;
   }
 
+  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus); // Get details for badge
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -164,7 +165,12 @@ export default function OverviewTab({ product }: OverviewTabProps) {
              {product.ebsiStatus && (
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
-                <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiStatus)}</div>
+                <div className="flex items-center mt-0.5">
+                  <Badge variant={ebsiDetails.variant} className={cn("capitalize", getStatusBadgeClasses(product.ebsiStatus))}>
+                    {React.cloneElement(ebsiDetails.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
+                    {ebsiDetails.text}
+                  </Badge>
+                </div>
                 {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
                     <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
                 )}
@@ -344,4 +350,3 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
-

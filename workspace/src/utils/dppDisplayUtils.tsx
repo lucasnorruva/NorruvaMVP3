@@ -270,15 +270,6 @@ export const getStatusBadgeClasses = (status?: string): string => {
   return STATUS_DISPLAY_MAP[key]?.classes ?? STATUS_DISPLAY_MAP.default.classes;
 };
 
-// New function explicitly exported
-export const getEbsiStatusBadge = (status?: EbsiVerificationDetails['status']): JSX.Element | null => {
-  if (!status) return null;
-  const details = getEbsiStatusDetails(status);
-  const badgeClassesToApply = getStatusBadgeClasses(status); 
-  return (
-    <Badge variant={details.variant} className={cn("capitalize", badgeClassesToApply)}>
-      {React.cloneElement(details.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
-      {details.text}
-    </Badge>
-  );
-};
+// Removed getEbsiStatusBadge to ensure it's not exported, as per the most recent error context.
+// The OverviewTab should now use getEbsiStatusDetails and getStatusBadgeClasses.
+    
