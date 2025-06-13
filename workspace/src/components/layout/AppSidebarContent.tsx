@@ -23,7 +23,7 @@ import {
   Recycle as RecycleIconLucide,
   UploadCloud,
   Inbox,
-  BadgeCheck,
+  BadgeCheck, // Changed from CheckSquare for Verifier
   History as HistoryIconLucide,
   ShoppingCart,
   PlusCircle,
@@ -34,8 +34,9 @@ import {
   DatabaseZap, 
   MessageSquare, 
   LifeBuoy,
-  HardDrive, // Added for Recycler
-  Trash2 as TrashIcon, // Added for Recycler
+  HardDrive,
+  FileSearch, // Added for Verifier - DPPs for Verification
+  ClipboardEdit, // Added for Verifier - Submit Report
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
@@ -130,8 +131,9 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   verifier: {
     primary: [
       { href: "/dashboard", label: "Verifier Dashboard", icon: LayoutDashboard, exactMatch: true },
-      { href: "/dpp-live-dashboard?status=pending_review", label: "DPPs for Verification", icon: LineChart }, 
+      { href: "/dpp-live-dashboard?status=pending_review&status=flagged", label: "DPPs for Verification", icon: FileSearch },
       { href: "/audit-log", label: "View Audit Trails", icon: HistoryIconLucide },
+      { href: "/dashboard#submit-report", label: "Submit Verification Report", icon: ClipboardEdit },
     ],
     secondary: [
       { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot },
@@ -154,7 +156,6 @@ export default function AppSidebarContent() {
     if (exactMatch) {
       isActive = pathname === href;
     } else {
-      // For links with query params, we only care about the base path for active state
       const basePath = href.split('?')[0];
       isActive = pathname.startsWith(basePath);
 
@@ -164,12 +165,15 @@ export default function AppSidebarContent() {
       if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
         isActive = false;
       }
+       // Ensure /compliance/pathways is active for sub-pages but not if another top-level compliance link is hit
+      if (href === "/compliance/pathways" && (pathname === "/copilot" || pathname === "/gdpr")) {
+        isActive = false;
+      }
     }
     
     if (pathname === "/dashboard" && href !== "/dashboard") {
         isActive = false;
     }
-
 
     const className = cn(
       "w-full text-sm",
@@ -208,7 +212,7 @@ export default function AppSidebarContent() {
           {navItems.map((item) => {
             const { className, isActive } = commonButtonClass(item.href, item.exactMatch);
             return (
-              <SidebarMenuItem key={item.href}>
+              <SidebarMenuItem key={item.label}> {/* Changed key to item.label for more stability if hrefs change slightly for same logical item */}
                 <Link href={item.href} asChild>
                   <SidebarMenuButton
                     className={className}
@@ -232,7 +236,7 @@ export default function AppSidebarContent() {
               {secondaryNavItems.map((item) => {
                 const { className, isActive } = commonButtonClass(item.href, item.exactMatch);
                 return (
-                  <SidebarMenuItem key={item.href}>
+                  <SidebarMenuItem key={item.label}> {/* Changed key to item.label */}
                     <Link href={item.href} asChild>
                       <SidebarMenuButton
                         className={className}
