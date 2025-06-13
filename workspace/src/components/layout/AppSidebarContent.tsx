@@ -33,7 +33,9 @@ import {
   Server, 
   DatabaseZap, 
   MessageSquare, 
-  LifeBuoy, 
+  LifeBuoy,
+  HardDrive, // Added for Recycler
+  Trash2 as TrashIcon, // Added for Recycler
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
@@ -117,6 +119,8 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
     primary: [
       { href: "/dashboard", label: "Recycler Dashboard", icon: LayoutDashboard, exactMatch: true },
       { href: "/dpp-live-dashboard?status=all&includeArchived=true", label: "Search All DPPs (Incl. EOL)", icon: LineChart },
+      { href: "/dpp-live-dashboard?searchQuery=disassembly%20OR%20recycling%20instructions%20OR%20material%20composition&includeArchived=true", label: "Access EOL & Material Data", icon: HardDrive },
+      { href: "/dashboard#report-recovery", label: "Report Recovered Materials", icon: RecycleIconLucide },
     ],
     secondary: [
       { href: "/copilot", label: "EOL Co-Pilot", icon: Bot },
@@ -150,7 +154,10 @@ export default function AppSidebarContent() {
     if (exactMatch) {
       isActive = pathname === href;
     } else {
-      isActive = pathname.startsWith(href);
+      // For links with query params, we only care about the base path for active state
+      const basePath = href.split('?')[0];
+      isActive = pathname.startsWith(basePath);
+
       if (href === "/products" && pathname.startsWith("/products/new")) {
         isActive = false;
       }
