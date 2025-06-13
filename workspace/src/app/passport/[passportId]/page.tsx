@@ -15,7 +15,7 @@ import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
   ServerIcon as ServerIconLucide, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
   KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn, Shirt, Construction,
-  BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, FileText as FileTextIcon // Added BatteryCharging, Thermometer, Weight, Hash, CalendarIcon, FileTextIcon
+  BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, FileText as FileTextIcon, Heart
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react';
@@ -25,7 +25,8 @@ import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertificati
 import { MOCK_PUBLIC_PASSPORTS } from '@/data';
 import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
 import { getAiHintForImage } from '@/utils/imageUtils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // For tooltips
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getEbsiStatusDetails } from "@/utils/dppDisplayUtils"; // Removed getStatusBadgeClasses
 
 const STORY_TRUNCATE_LENGTH = 250;
 
@@ -70,21 +71,6 @@ export default function PublicPassportPage() {
   const displayProductStory = isStoryExpanded || product.productStory.length <= STORY_TRUNCATE_LENGTH
     ? product.productStory
     : `${product.productStory.substring(0, STORY_TRUNCATE_LENGTH)}...`;
-
-  const getEbsiStatusBadge = (status?: 'verified' | 'pending' | 'not_verified' | 'error') => {
-    switch (status) {
-      case 'verified':
-        return <Badge variant="default" className="bg-green-500/20 text-green-700 border-green-500/30"><ShieldCheck className="mr-1.5 h-3.5 w-3.5" />Verified</Badge>;
-      case 'pending':
-        return <Badge variant="outline" className="bg-yellow-500/20 text-yellow-700 border-yellow-500/30"><InfoIcon className="mr-1.5 h-3.5 w-3.5" />Pending</Badge>;
-      case 'not_verified':
-        return <Badge variant="destructive"><AlertCircle className="mr-1.5 h-3.5 w-3.5" />Not Verified</Badge>;
-      case 'error':
-        return <Badge variant="destructive" className="bg-red-500/20 text-red-700 border-red-500/30"><AlertCircle className="mr-1.5 h-3.5 w-3.5" />Error</Badge>;
-      default:
-        return <Badge variant="secondary">Unknown</Badge>;
-    }
-  };
 
   const aiCopilotQuery = encodeURIComponent(`What are the key compliance requirements for a product like '${product.productName}' in the '${product.category}' category? Also, what are specific considerations for its EBSI status of '${product.ebsiStatus || 'N/A'}'?`);
   const aiCopilotLink = `/copilot?contextQuery=${aiCopilotQuery}`;
@@ -155,7 +141,7 @@ export default function PublicPassportPage() {
                 </CardContent>
               </Card>
 
-              {(product.sku || product.nfcTagId || product.rfidTagId) && ( 
+              {(product.gtin || product.modelNumber || product.sku || product.nfcTagId || product.rfidTagId) && (
                 <Card className="border-accent/50">
                   <CardHeader>
                     <CardTitle className="text-xl text-accent flex items-center">
@@ -164,6 +150,8 @@ export default function PublicPassportPage() {
                   </CardHeader>
                   <CardContent className="space-y-1 text-sm">
                     {product.sku && (<p><strong className="text-muted-foreground">SKU:</strong> {product.sku}</p>)}
+                    {product.gtin && (<p><strong className="text-muted-foreground">GTIN:</strong> {product.gtin}</p>)}
+                    {product.modelNumber && (<p><strong className="text-muted-foreground">Model:</strong> {product.modelNumber}</p>)}
                     {product.nfcTagId && (<p><strong className="text-muted-foreground">NFC Tag ID:</strong> {product.nfcTagId}</p>)}
                     {product.rfidTagId && (<p><strong className="text-muted-foreground">RFID Tag ID:</strong> {product.rfidTagId}</p>)}
                   </CardContent>
@@ -355,7 +343,7 @@ export default function PublicPassportPage() {
                     <CardTitle className="text-xl text-primary flex items-center"><Construction className="mr-2 h-6 w-6" />Construction Product Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm px-0 pb-0">
-                    {product.constructionProductInformation.declarationOfPerformanceId && <p><strong className="text-muted-foreground">Declaration of Performance ID:</strong> {product.constructionProductInformation.declarationOfPerformanceId}</p>}
+                    {product.constructionProductInformation.declarationOfPerformanceId && <p><strong className="text-muted-foreground">DoP ID:</strong> {product.constructionProductInformation.declarationOfPerformanceId}</p>}
                     {product.constructionProductInformation.ceMarkingDetailsUrl && <p><strong className="text-muted-foreground">CE Marking:</strong> <Link href={product.constructionProductInformation.ceMarkingDetailsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Details</Link></p>}
                     {product.constructionProductInformation.intendedUseDescription && <p><strong className="text-muted-foreground">Intended Use:</strong> {product.constructionProductInformation.intendedUseDescription}</p>}
                     {product.constructionProductInformation.essentialCharacteristics && product.constructionProductInformation.essentialCharacteristics.length > 0 && (
@@ -461,8 +449,27 @@ export default function PublicPassportPage() {
                       )}
                     {product.ebsiStatus && (
                         <div className="mt-2 pt-2 border-t border-border/50">
-                            <strong className="text-muted-foreground flex items-center"><LucideIcons.Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
-                            <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiStatus)}</div>
+                            <strong className="text-muted-foreground flex items-center">EBSI Status:</strong>
+                            <div className="flex items-center mt-0.5">
+                                {(() => {
+                                const ebsiStatusDetails = getEbsiStatusDetails(product.ebsiStatus);
+                                return (
+                                    <TooltipProvider delayDuration={100}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span className="cursor-help">
+                                                {React.cloneElement(ebsiStatusDetails.icon, {className: "h-5 w-5"})}
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-popover text-popover-foreground shadow-lg rounded-md p-2 border max-w-xs">
+                                        <p className="font-semibold">{ebsiStatusDetails.text}</p>
+                                        <p className="text-xs">{ebsiStatusDetails.tooltipText}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    </TooltipProvider>
+                                );
+                                })()}
+                            </div>
                             {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
                                <TooltipProvider><Tooltip><TooltipTrigger asChild>
                                 <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
@@ -558,5 +565,5 @@ export default function PublicPassportPage() {
     </div>
   );
 }
-
+    
     
