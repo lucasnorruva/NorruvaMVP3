@@ -4,34 +4,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Package,
-  ScanLine,
-  ShieldCheck,
-  FileText,
-  Settings,
-  Bot,
-  Code2,
-  LineChart,
-  ListChecks,
-  BarChartHorizontal,
-  ClipboardList,
-  Globe2,
-  Users,
-  Fingerprint,
-  Building, 
-  Recycle as RecycleIconLucide, 
-  UploadCloud, 
-  Inbox, 
-  BadgeCheck, 
-  History as HistoryIconLucide, 
-  ShoppingCart, 
-  PlusCircle,
-  Users2, 
-  Landmark, 
-  HardDrive, 
-  FileSearch, 
-  ClipboardEdit,
+  LayoutDashboard, Package, ScanLine, ShieldCheck, FileText, Settings, Bot, Code2,
+  LineChart, ListChecks, BarChartHorizontal, ClipboardList, Globe2, Users, Fingerprint,
+  Building, Recycle as RecycleIconLucide, UploadCloud, Inbox, BadgeCheck, History as HistoryIconLucide,
+  ShoppingCart, PlusCircle, Users2, Landmark, HardDrive, FileSearch, ClipboardEdit,
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
@@ -40,7 +16,7 @@ import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar/Side
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { useRole, type UserRole } from "@/contexts/RoleContext";
+import React, { useMemo } from 'react'; // Added useMemo
 
 interface NavItem {
   href: string;
@@ -50,11 +26,11 @@ interface NavItem {
   exactMatch?: boolean; 
 }
 
-// Define ALL_NAV_ITEMS at the module level (outside the component)
-const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[] }> = {
-  admin: {
+// Keys are now based on URL segments for the dashboards
+const ALL_NAV_ITEMS: Record<string, { primary: NavItem[], secondary: NavItem[] }> = {
+  "admin-dashboard": { // Key matches the dashboard route segment
     primary: [
-      { href: "/dashboard", label: "Admin Dashboard", icon: LayoutDashboard, exactMatch: true },
+      { href: "/admin-dashboard", label: "Admin Dashboard", icon: LayoutDashboard, exactMatch: true },
       { href: "/dpp-live-dashboard", label: "Live DPPs Overview", icon: LineChart },
       { href: "/products", label: "Product Management", icon: Package },
       { href: "/suppliers", label: "Supplier Directory", icon: Users2 },
@@ -73,63 +49,62 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
       { href: "/copilot", label: "AI Co-Pilot", icon: Bot, exactMatch: true },
     ],
   },
-  manufacturer: {
+  "manufacturer-dashboard": {
     primary: [
-      { href: "/dashboard", label: "Manufacturer Dashboard", icon: Building, exactMatch: true },
+      { href: "/manufacturer-dashboard", label: "My Dashboard", icon: Building, exactMatch: true },
       { href: "/products", label: "My Products", icon: Package },
       { href: "/products/new", label: "Add New Product", icon: PlusCircle, exactMatch: true },
       { href: "/suppliers", label: "My Suppliers", icon: Users2 },
-      { href: "/blockchain", label: "Manage Product Tokens/Anchors", icon: Fingerprint },
+      { href: "/blockchain", label: "Product Tokens/Anchors", icon: Fingerprint },
       { href: "/sustainability", label: "Sustainability Reports", icon: FileText, exactMatch: true },
       { href: "/compliance/pathways", label: "Compliance Guidance", icon: ShieldCheck },
-      // { href: "/dpp-global-tracker-v2", label: "Global Product View", icon: Globe2 }, // Removed as per re-evaluation of focus
     ],
     secondary: [
       { href: "/copilot", label: "AI Co-Pilot", icon: Bot, exactMatch: true },
       { href: "/settings", label: "My Profile", icon: Settings, exactMatch: true },
     ],
   },
-  supplier: {
+  "supplier-dashboard": {
     primary: [
-      { href: "/dashboard", label: "Supplier Dashboard", icon: UploadCloud, exactMatch: true },
-      { href: "/products/new", label: "Submit Component/Material Data", icon: PlusCircle, exactMatch: true }, // Conceptually re-using new product form
-      { href: "/dpp-live-dashboard?suppliedBy=myOrg", label: "Products Using My Components", icon: Package }, // Filter is conceptual
-      { href: "/dashboard#data-requests", label: "View Data Requests", icon: Inbox }, // Conceptual link
+      { href: "/supplier-dashboard", label: "Supplier Hub", icon: UploadCloud, exactMatch: true },
+      { href: "/products/new", label: "Submit Component Data", icon: PlusCircle, exactMatch: true },
+      { href: "/dpp-live-dashboard?suppliedBy=myOrg", label: "My Supplied Components", icon: Package },
+      { href: "/supplier-dashboard#data-requests", label: "View Data Requests", icon: Inbox },
     ],
     secondary: [
       { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot, exactMatch: true },
       { href: "/settings", label: "My Supplier Profile", icon: Settings, exactMatch: true },
     ],
   },
-  retailer: {
+  "retailer-dashboard": {
     primary: [
-      { href: "/dashboard", label: "Retailer Dashboard", icon: ShoppingCart, exactMatch: true },
+      { href: "/retailer-dashboard", label: "Retailer Portal", icon: ShoppingCart, exactMatch: true },
       { href: "/dpp-live-dashboard", label: "Browse Product Passports", icon: LineChart },
-      { href: "/sustainability/compare", label: "Compare Product Sustainability", icon: BarChartHorizontal, exactMatch: true },
+      { href: "/sustainability/compare", label: "Compare Products", icon: BarChartHorizontal, exactMatch: true },
     ],
     secondary: [
       { href: "/copilot", label: "AI Product Assistant", icon: Bot, exactMatch: true },
       { href: "/settings", label: "My Retailer Profile", icon: Settings, exactMatch: true },
     ],
   },
-  recycler: {
+  "recycler-dashboard": {
     primary: [
-      { href: "/dashboard", label: "Recycler Dashboard", icon: RecycleIconLucide, exactMatch: true },
-      { href: "/dpp-live-dashboard?status=all&includeArchived=true", label: "Search All DPPs (Incl. EOL)", icon: FileSearch },
-      { href: "/dpp-live-dashboard?searchQuery=disassembly%20OR%20recycling%20instructions%20OR%20material%20composition&includeArchived=true", label: "Access EOL & Material Data", icon: HardDrive },
-      // { href: "/dashboard#report-recovery", label: "Report Recovered Materials", icon: RecycleIconLucide }, // Conceptual link
+      { href: "/recycler-dashboard", label: "Recycling Center", icon: RecycleIconLucide, exactMatch: true },
+      { href: "/dpp-live-dashboard?status=all&includeArchived=true", label: "Search All DPPs (incl. EOL)", icon: FileSearch },
+      { href: "/dpp-live-dashboard?searchQuery=disassembly%20OR%20recycling%20instructions%20OR%20material%20composition&includeArchived=true", label: "EOL & Material Data", icon: HardDrive },
+      { href: "/recycler-dashboard#report-recovery", label: "Report Recovered Materials", icon: RecycleIconLucide },
     ],
     secondary: [
       { href: "/copilot", label: "EOL Co-Pilot", icon: Bot, exactMatch: true },
       { href: "/settings", label: "My Recycler Profile", icon: Settings, exactMatch: true },
     ],
   },
-  verifier: {
+  "verifier-dashboard": {
     primary: [
-      { href: "/dashboard", label: "Verifier Dashboard", icon: BadgeCheck, exactMatch: true },
+      { href: "/verifier-dashboard", label: "Verification Desk", icon: BadgeCheck, exactMatch: true },
       { href: "/dpp-live-dashboard?status=pending_review&status=flagged", label: "DPPs for Verification", icon: FileSearch },
       { href: "/audit-log", label: "View Audit Trails", icon: HistoryIconLucide, exactMatch: true },
-      // { href: "/dashboard#submit-report", label: "Submit Verification Report", icon: ClipboardEdit }, // Conceptual link
+      { href: "/verifier-dashboard#submit-report", label: "Submit Verification Report", icon: ClipboardEdit },
     ],
     secondary: [
       { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot, exactMatch: true },
@@ -142,45 +117,41 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
 export default function AppSidebarContent() {
   const pathname = usePathname();
   const { state: sidebarState, isMobile } = useSidebar();
-  const { currentRole } = useRole();
 
-  let roleNavConfig = ALL_NAV_ITEMS[currentRole];
-
-  if (!roleNavConfig) {
-    console.warn(`[AppSidebarContent] No navigation config found for role: "${currentRole}". Defaulting to minimal set.`);
-    roleNavConfig = {
-      primary: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exactMatch: true }],
-      secondary: [{ href: "/settings", label: "Settings", icon: Settings, exactMatch: true }],
-    };
-  }
-
-  const { primary: navItems, secondary: secondaryNavItems } = roleNavConfig;
+  // Determine the current dashboard section from the URL to select nav items
+  const currentDashboardSegment = useMemo(() => {
+    const pathSegments = pathname.split('/');
+    if (pathSegments.length >= 3 && pathSegments[1] === '(app)') { // Ensure we are in the (app) group
+        const segment = pathSegments[2];
+        if (ALL_NAV_ITEMS[segment]) {
+            return segment;
+        }
+    }
+    // Fallback if no specific dashboard segment is matched, perhaps default to admin or a generic one
+    return "admin-dashboard"; // Or handle appropriately, e.g., based on RoleContext currentRole
+  }, [pathname]);
+  
+  const roleNavConfig = ALL_NAV_ITEMS[currentDashboardSegment] || ALL_NAV_ITEMS["admin-dashboard"]; // Fallback
+  
+  const navItems = roleNavConfig.primary;
+  const secondaryNavItems = roleNavConfig.secondary;
 
   const commonButtonClass = (href: string, exactMatch?: boolean) => {
     let isActive: boolean;
-    const basePath = href.split('?')[0]; // Compare against path without query params
+    const basePath = href.split('?')[0]; 
 
     if (exactMatch) {
       isActive = pathname === basePath;
     } else {
       isActive = pathname.startsWith(basePath);
-      // Specific exclusions
-      if (href === "/products" && pathname.startsWith("/products/new")) {
-        isActive = false;
-      }
-      if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
-        isActive = false;
-      }
-      if (href === "/compliance/pathways" && (pathname.startsWith("/copilot") || pathname.startsWith("/gdpr"))) {
-        isActive = false;
-      }
+      if (href === "/products" && pathname.startsWith("/products/new")) isActive = false;
+      if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) isActive = false;
+      if (href === "/compliance/pathways" && (pathname.startsWith("/copilot") || pathname.startsWith("/gdpr"))) isActive = false;
     }
     
-    // If on the exact dashboard page, only the dashboard link should be active from primary nav.
-    if (pathname === "/dashboard" && href !== "/dashboard" && navItems.some(item => item.href === href)) {
+    if (pathname === `/${currentDashboardSegment}` && href !== `/${currentDashboardSegment}` && navItems.some(item => item.href === href)) {
         isActive = false;
     }
-
 
     const className = cn(
       "w-full text-sm",
@@ -200,7 +171,7 @@ export default function AppSidebarContent() {
       <SidebarHeader className="border-b border-sidebar-border h-auto py-4 flex flex-col items-start px-4">
         {(sidebarState === 'expanded' || isMobile) && (
           <>
-            <Link href="/dashboard" className="flex items-center gap-2 text-primary hover:opacity-80">
+            <Link href={`/${currentDashboardSegment}`} className="flex items-center gap-2 text-primary hover:opacity-80">
               <Logo className="h-8 w-auto" />
             </Link>
             <p className="text-xs text-sidebar-foreground/70 mt-1.5 ml-0.5">
@@ -209,18 +180,16 @@ export default function AppSidebarContent() {
           </>
         )}
         {sidebarState === 'collapsed' && !isMobile && (
-           <Link href="/dashboard" className="flex items-center justify-center w-full text-primary hover:opacity-80 py-1">
+           <Link href={`/${currentDashboardSegment}`} className="flex items-center justify-center w-full text-primary hover:opacity-80 py-1">
              <Logo className="h-7 w-auto" />
            </Link>
         )}
       </SidebarHeader>
       <SidebarContent className="flex-1 py-2">
-        {/* Key change: Add key prop to SidebarMenu based on currentRole to force re-mount */}
-        <SidebarMenu key={`primary-nav-${currentRole}`} className="px-2 space-y-1">
+        <SidebarMenu key={`primary-nav-${currentDashboardSegment}`} className="px-2 space-y-1">
           {navItems.map((item) => {
             const { className, isActive } = commonButtonClass(item.href, item.exactMatch);
             return (
-              // Key for SidebarMenuItem should be unique within its list (item.href is good)
               <SidebarMenuItem key={item.href}> 
                 <Link href={item.href} asChild>
                   <SidebarMenuButton
@@ -241,12 +210,10 @@ export default function AppSidebarContent() {
         <>
           <Separator className="bg-sidebar-border my-2" />
           <SidebarFooter className="p-2 border-t-0">
-            {/* Key change: Add key prop to SidebarMenu based on currentRole */}
-            <SidebarMenu key={`secondary-nav-${currentRole}`} className="px-2 space-y-1">
+            <SidebarMenu key={`secondary-nav-${currentDashboardSegment}`} className="px-2 space-y-1">
               {secondaryNavItems.map((item) => {
                 const { className, isActive } = commonButtonClass(item.href, item.exactMatch);
                 return (
-                  // Key for SidebarMenuItem
                   <SidebarMenuItem key={item.href}> 
                     <Link href={item.href} asChild>
                       <SidebarMenuButton
@@ -268,3 +235,4 @@ export default function AppSidebarContent() {
     </>
   );
 }
+    
