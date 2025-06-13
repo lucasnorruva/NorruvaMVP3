@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Badge } from "@/components/ui/badge"; 
 import React from "react"; 
 import { cn } from "@/lib/utils"; 
+import * as LucideIcons from 'lucide-react'; // For dynamic icon rendering
 
 interface OverviewTabProps {
   product: SimpleProductDetail;
@@ -48,9 +49,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     parsedSpecifications = product.specifications;
   }
 
-  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus); // Get details object
-  const ebsiBadgeClasses = getStatusBadgeClasses(product.ebsiStatus); // Get specific classes
-  const EbsiIcon = ebsiDetails.icon.type; // Extract icon component type
+  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus);
+  const ebsiBadgeAdditionalClasses = getStatusBadgeClasses(product.ebsiStatus);
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -173,10 +173,10 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               )}
              {product.ebsiStatus && (
               <div className="mt-2 pt-2 border-t border-border/50">
-                <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
+                <strong className="text-muted-foreground flex items-center"><LucideIcons.Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">
-                  <Badge variant={ebsiDetails.variant} className={cn("capitalize", ebsiBadgeClasses)}>
-                    <EbsiIcon className="mr-1.5 h-3.5 w-3.5" />
+                  <Badge variant={ebsiDetails.variant} className={cn("capitalize", ebsiBadgeAdditionalClasses)}>
+                    {React.cloneElement(ebsiDetails.icon, { className: cn(ebsiDetails.icon.props.className, "mr-1.5 h-3.5 w-3.5")})}
                     {ebsiDetails.text}
                   </Badge>
                 </div>
@@ -199,6 +199,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
           </CardContent>
         </Card>
+
+
       </div>
 
       {/* Right Column: Description, Key Points, Specifications, Custom Attributes */}
@@ -327,6 +329,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </Card>
         )}
 
+
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -354,3 +357,4 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   );
 }
 
+    
