@@ -44,11 +44,11 @@ export default function DPPLiveDashboardPage() {
     productToDeleteId,
     isDeleteDialogOpen,
     availableCategories,
-    availableManufacturers, // New from hook
+    availableManufacturers, 
     sortedAndFilteredDPPs, 
     metrics,
-    categoryDistribution, // New from hook
-    complianceDistribution, // New from hook
+    categoryDistribution, 
+    complianceDistribution, 
     handleFiltersChange,
     handleSort,
     handleDeleteRequest,
@@ -203,5 +203,3 @@ export default function DPPLiveDashboardPage() {
     </div>
   );
 }
-
-    

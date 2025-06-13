@@ -31,8 +31,8 @@ export function useDPPLiveData() {
     category: "all",
     searchQuery: "",
     blockchainAnchored: "all",
-    manufacturer: "all", // Added manufacturer filter
-    completeness: "all", // Added completeness filter
+    manufacturer: "all", 
+    completeness: "all", 
     onChainStatus: "all",
   });
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
@@ -204,11 +204,11 @@ export function useDPPLiveData() {
     productToDeleteId,
     isDeleteDialogOpen,
     availableCategories,
-    availableManufacturers, // Export available manufacturers
+    availableManufacturers, 
     sortedAndFilteredDPPs,
     metrics,
-    categoryDistribution, // Export chart data
-    complianceDistribution, // Export chart data
+    categoryDistribution, 
+    complianceDistribution, 
     handleFiltersChange,
     handleSort,
     handleDeleteRequest,
@@ -218,6 +218,3 @@ export function useDPPLiveData() {
     toast   
   };
 }
-
-
-    
