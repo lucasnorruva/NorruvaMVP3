@@ -8,13 +8,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Shirt, Construction } from "lucide-react";
 import { getAiHintForImage } from "@/utils/imageUtils";
-import NextLink from "next/link";
-// Removed all imports related to getEbsiStatusBadge, getEbsiStatusDetails, getStatusBadgeClasses
-import React from "react"; // Keep React import
-import { cn } from "@/lib/utils";
-// Removed Badge import as it's not used if EBSI badge is gone
-// import { Badge } from "@/components/ui/badge";
-import * as LucideIcons from 'lucide-react';
+import NextLink from "next/link"; 
+import { getEbsiStatusBadge } from "@/utils/dppDisplayUtils"; 
+// Tooltip related imports are intentionally removed as per previous request, if they were the cause.
+// We will re-add if this doesn't fix the core issue, or if tooltips are desired again.
+import React from "react";
 
 interface OverviewTabProps {
   product: SimpleProductDetail;
@@ -49,6 +47,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     parsedSpecifications = product.specifications;
   }
 
+
   return (
     <div className="grid md:grid-cols-3 gap-6">
       {/* Left Column: Image and Identifiers */}
@@ -59,8 +58,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <Image
                 src={imageDisplayUrl}
                 alt={product.productName}
-                fill
-                className="object-contain"
+                fill 
+                className="object-contain" 
                 data-ai-hint={aiHint}
                 priority={!imageDisplayUrl.startsWith("data:")}
               />
@@ -131,7 +130,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
-              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & Token Details 
+              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & EBSI Details
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
@@ -162,7 +161,15 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                   View Token on Mock Explorer <ExternalLink className="ml-1 h-3 w-3" />
                 </NextLink>
               )}
-             {/* EBSI Status Display Removed */}
+             {product.ebsiStatus && (
+              <div className="mt-2 pt-2 border-t border-border/50">
+                <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
+                <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiStatus)}</div>
+                {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
+                    <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
+                )}
+              </div>
+            )}
             {(product.onChainStatus || product.onChainLifecycleStage) && (
                 <div className="mt-2 pt-2 border-t border-border/50">
                   <h4 className="font-medium text-sm text-muted-foreground mb-1">Conceptual On-Chain State:</h4>
@@ -171,7 +178,12 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 </div>
             )}
             {!(product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.ebsiStatus || product.onChainStatus || product.onChainLifecycleStage) && (
-              <p className="text-muted-foreground">No specific blockchain or token details available.</p>
+              <p className="text-muted-foreground">No specific blockchain, EBSI, or on-chain state details available.</p>
+            )}
+             {!product.ebsiStatus && (product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.onChainStatus || product.onChainLifecycleStage) && (
+                <div className="mt-2 pt-2 border-t border-border/50">
+                     <p className="text-xs text-muted-foreground">EBSI status not specified.</p>
+                </div>
             )}
           </CardContent>
         </Card>
@@ -332,3 +344,4 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+

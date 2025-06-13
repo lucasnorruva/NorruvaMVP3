@@ -112,11 +112,12 @@ export const getEbsiStatusDetails = (status?: EbsiVerificationDetails['status'])
     const iconElement = <ShieldQuestion className="h-4 w-4 text-muted-foreground" />;
     return { text: "N/A", variant: "secondary", icon: iconElement, tooltipText: "EBSI status unknown." };
   }
-  switch (status) {
+  switch (status.toLowerCase()) {
     case 'verified':
       const verifiedIcon = <ShieldCheck className="h-4 w-4 text-success" />;
       return { text: "Verified", variant: "default", icon: verifiedIcon, tooltipText: "EBSI verification successful." };
     case 'pending_verification':
+    case 'pending':
       const pendingIcon = <InfoIcon className="h-4 w-4 text-warning" />;
       return { text: "Pending", variant: "outline", icon: pendingIcon, tooltipText: "EBSI verification pending." };
     case 'not_verified':
@@ -269,10 +270,11 @@ export const getStatusBadgeClasses = (status?: string): string => {
   return STATUS_DISPLAY_MAP[key]?.classes ?? STATUS_DISPLAY_MAP.default.classes;
 };
 
-// New function to export for OverviewTab.tsx
-export const getEbsiStatusBadge = (status?: EbsiVerificationDetails['status']): JSX.Element => {
+// New function explicitly exported
+export const getEbsiStatusBadge = (status?: EbsiVerificationDetails['status']): JSX.Element | null => {
+  if (!status) return null;
   const details = getEbsiStatusDetails(status);
-  const badgeClassesToApply = getStatusBadgeClasses(status); // Get classes based on the status string
+  const badgeClassesToApply = getStatusBadgeClasses(status); 
   return (
     <Badge variant={details.variant} className={cn("capitalize", badgeClassesToApply)}>
       {React.cloneElement(details.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
