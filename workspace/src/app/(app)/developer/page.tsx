@@ -122,6 +122,17 @@ export default function DeveloperPortalPage() {
       productDetails: {
         description: "A fantastic new widget with pro features."
       }
+      // To add textile info (optional):
+      // "textileInformation": {
+      //   "fiberComposition": [{ "fiberName": "Organic Cotton", "percentage": 100 }],
+      //   "countryOfOriginLabeling": "Made in EU",
+      //   "isSecondHand": false
+      // },
+      // To add construction product info (optional):
+      // "constructionProductInformation": {
+      //   "declarationOfPerformanceId": "DoP-XYZ-001",
+      //   "intendedUseDescription": "For structural support in residential buildings."
+      // }
     }, null, 2)
   );
   const [postDppResponse, setPostDppResponse] = useState<string | null>(null);
@@ -159,6 +170,14 @@ export default function DeveloperPortalPage() {
     JSON.stringify({
       productDetails: { description: "Updated description with enhanced features." },
       metadata: { status: "pending_review" }
+      // Example textile update (optional):
+      // "textileInformation": {
+      //   "careInstructionsUrl": "https://example.com/newcare"
+      // },
+      // Example construction update (optional):
+      // "constructionProductInformation": {
+      //   "ceMarkingDetailsUrl": "https://example.com/newCE"
+      // }
     }, null, 2)
   );
   const [putProductResponse, setPutProductResponse] = useState<string | null>(null);
@@ -1583,4 +1602,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-
