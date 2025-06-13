@@ -37,13 +37,13 @@ export async function POST(
 
   // For this mock, we don't have a central token ownership registry.
   // We can check if the token ID is associated with any product in MOCK_DPPS
-  // to make the response slightly more contextual, but we won't actually update the owner.
+  // to make the response slightly more contextual, but we can't actually update the owner.
   const productWithToken = MOCK_DPPS.find(dpp => dpp.blockchainIdentifiers?.tokenId === tokenId);
 
   if (!productWithToken) {
     // Even if token ID is not in MOCK_DPPS, a DAO might transfer a token not linked to a DPP yet.
     // Or, it might be a token that genuinely doesn't exist on-chain.
-    // For this mock, we'll assume the token exists if the ID format is plausible.
+    // For this mock, we'll assume the token exists for simplicity if the ID format is plausible.
     // A real system would check the chain.
     if(isNaN(parseInt(tokenId)) && tokenId !== "N/A (Mint Token First)"){ // Simple check if it's not numeric like our mocks
         // console.warn(`Token ID ${tokenId} not found in any mock DPPs. Proceeding with generic DAO transfer simulation.`);
