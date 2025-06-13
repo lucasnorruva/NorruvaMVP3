@@ -1,3 +1,4 @@
+
 // --- File: src/utils/sortUtils.ts ---
 // Description: Utility functions for sorting Digital Product Passports.
 
@@ -15,7 +16,26 @@ export function getSortValue(dpp: DigitalProductPassport, key: SortableKeys): an
       return new Date(dpp.metadata.last_updated).getTime();
     case 'ebsiVerification.status':
       return dpp.ebsiVerification?.status;
+    case 'metadata.onChainStatus': 
+      return dpp.metadata?.onChainStatus;
+    case 'manufacturer.name': // Ensure this case is handled
+      return dpp.manufacturer?.name;
     default:
-      return (dpp as any)[key];
+      // Handle simple top-level keys directly
+      if (!key.includes('.')) {
+        return (dpp as any)[key];
+      }
+      // For other potential nested keys (if added to SortableKeys later)
+      const keys = key.split('.');
+      let value: any = dpp;
+      for (const k of keys) {
+        if (value && typeof value === 'object' && k in value) {
+          value = value[k];
+        } else {
+          return undefined;
+        }
+      }
+      return value;
   }
 }
+

@@ -9,8 +9,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { 
     FileText, CheckCircle, Leaf, Shield, Tag, Barcode, ListChecks, Info as InfoIcon, Fingerprint, Link as LinkIconPath, 
     KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, 
-    Cpu, Shirt, Construction, BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, Heart,
-    AlertTriangle
+    Cpu, Shirt, Construction, BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, Heart, Zap, Recycle,
+    AlertTriangle, FileTextIcon
 } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 

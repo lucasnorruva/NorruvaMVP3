@@ -92,8 +92,8 @@ export interface DigitalProductPassport {
     anchorTransactionHash?: string;
   };
 
-  authenticationVcId?: string; // Added
-  ownershipNftLink?: OwnershipNftLink; // Added
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
 
   productDetails?: {
     description?: string;
@@ -139,7 +139,6 @@ export interface DigitalProductPassport {
   };
 
   ebsiVerification?: EbsiVerificationDetails;
-  complianceSummary?: ProductComplianceSummary; 
   verifiableCredentials?: VerifiableCredentialReference[];
   consumerScans?: number;
   dataController?: string;
@@ -154,9 +153,20 @@ export interface DashboardFiltersState {
   category: 'all' | string;
   searchQuery?: string;
   blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
+  isTextileProduct?: boolean;
+  isConstructionProduct?: boolean;
+  manufacturer?: 'all' | string; 
+  completeness?: 'all' | '>75' | '50-75' | '<50'; 
+  onChainStatus?: string;
 }
 
-export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus';
+export type SortableKeys = 
+  keyof Pick<DigitalProductPassport, 'id' | 'productName' | 'category' | 'gtin' | 'modelNumber'> | 
+  `metadata.${'status' | 'last_updated' | 'onChainStatus'}` | 
+  `manufacturer.${'name'}` |
+  'overallCompliance' | // For overall compliance text from processed data
+  'completenessScore' | // For completeness score from processed data
+  `ebsiVerification.${'status'}`;
 
 export interface SortConfig {
   key: SortableKeys | null;
@@ -183,7 +193,7 @@ export interface SimpleProductDetail {
   customAttributes?: CustomAttribute[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
-  repairability?: { score: number | null; scale: number | null; detailsUrl?: string; reportUrl?: string };
+  repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
   sparePartsAvailability?: string; 
   repairManualUrl?: string; 
   disassemblyInstructionsUrl?: string; 
@@ -193,8 +203,8 @@ export interface SimpleProductDetail {
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
-  authenticationVcId?: string; // Added
-  ownershipNftLink?: OwnershipNftLink; // Added
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   blockchainPlatform?: string;
   contractAddress?: string;
   tokenId?: string;
@@ -268,8 +278,8 @@ export interface StoredUserProduct {
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
-  authenticationVcId?: string; // Added
-  ownershipNftLink?: OwnershipNftLink; // Added
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
@@ -306,8 +316,8 @@ export interface RichMockProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[];
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string; // Added
-  ownershipNftLink?: OwnershipNftLink; // Added
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
@@ -344,8 +354,8 @@ export interface PublicProductInfo {
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
   documents?: DocumentReference[];
-  authenticationVcId?: string; // Added
-  ownershipNftLink?: OwnershipNftLink; // Added
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   contractAddress?: string;
   tokenId?: string;
   onChainStatus?: string;
@@ -380,7 +390,7 @@ export interface DisplayableProduct {
   compliance: string;
   lastUpdated: string;
   gtin?: string;
-  manufacturer?: string;
+  manufacturer?: string; // Changed from DigitalProductPassport['manufacturer'] to simple string for display
   modelNumber?: string;
   description?: string;
   productDescription?: string;
@@ -404,8 +414,8 @@ export interface DisplayableProduct {
   customAttributes?: CustomAttribute[];
   customAttributesJsonString?: string;
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string; // Added
-  ownershipNftLink?: OwnershipNftLink; // Added
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
@@ -420,6 +430,7 @@ export interface DisplayableProduct {
     repairManualUrl?: string;
     disassemblyInstructionsUrl?: string;
   };
+  completeness?: { score: number; filledFields: number; totalFields: number; missingFields: string[] }; 
 }
 
 export interface AnchorResult {

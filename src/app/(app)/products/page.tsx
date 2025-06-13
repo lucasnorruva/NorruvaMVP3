@@ -9,7 +9,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3 } from "lucide-react"; // Added PieChart, Edit3
+import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3, Sigma } from "lucide-react"; 
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,63 +22,54 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRole } from "@/contexts/RoleContext";
 import { useToast } from "@/hooks/use-toast";
-import type { StoredUserProduct, RichMockProduct, DisplayableProduct, DigitalProductPassport } from "@/types/dpp"; // Added DigitalProductPassport
+import type { StoredUserProduct, RichMockProduct, DisplayableProduct, DigitalProductPassport, SortConfig as ProductSortConfig, SortableKeys as ProductSortableKeys } from "@/types/dpp"; 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from "@/types/dpp";
 import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ProductListRow } from "@/components/products/ProductListRow";
 import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils";
 import { cn } from "@/lib/utils";
+import { MOCK_DPPS as InitialMockDppsData } from '@/data'; 
 
-const initialMockProductsData: RichMockProduct[] = [
-  {
-    id: "PROD001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", category: "Appliances", status: "Active", compliance: "Compliant", lastUpdated: "2024-07-20",
-    gtin: "01234567890123", manufacturer: "GreenTech Appliances", modelNumber: "X2000-ECO", description: "State-of-the-art energy efficient refrigerator.", imageUrl: "https://placehold.co/400x300.png", imageHint: "refrigerator appliance", materials: "Recycled Steel, Bio-polymers", sustainabilityClaims: "Energy Star Certified", energyLabel: "A+++", specifications: { "Capacity": "400L", "Warranty": "5 years" }, lifecycleEvents: [{id:"lc_mfg_001", eventName:"Manufacturing Complete", date: "2024-01-01", status: "Completed"}], complianceSummary: { overallStatus: "Compliant", eprel: {id: "EPREL123", status: "Registered", lastChecked: "2024-07-01"}, ebsi: {status: "Verified", lastChecked: "2024-07-01"} },
-    supplyChainLinks: [
-      { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier for EU market. Audited for ethical sourcing." },
-      { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified post-consumer recycled content." }
-    ],
-    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef"}, // Added for PROD001
-  },
-  {
-    id: "PROD002", productId: "PROD002", productName: "Smart LED Bulb Pack (4-pack)", category: "Electronics", status: "Active", compliance: "Pending", lastUpdated: "2024-07-18",
-    gtin: "98765432109876", manufacturer: "BrightSpark Electronics", modelNumber: "BS-LED-S04B", description: "Tunable white and color smart LED bulbs.", imageUrl: "https://placehold.co/400x300.png", imageHint: "led bulbs", materials: "Polycarbonate, Aluminum", sustainabilityClaims: "Uses 85% less energy", energyLabel: "A+", specifications: { "Lumens": "800lm", "Connectivity": "Wi-Fi" }, batteryChemistry: "Li-ion", stateOfHealth: 99, carbonFootprintManufacturing: 5, recycledContentPercentage: 10,
-    lifecycleEvents: [{id:"lc_mfg_002", eventName:"Manufacturing Complete", date: "2024-03-01", status: "Completed"}], complianceSummary: { overallStatus: "Pending Review", eprel: {status: "Pending", lastChecked: "2024-07-10"}, ebsi: {status: "Pending", lastChecked: "2024-07-10"} },
-    supplyChainLinks: [
-       { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier from Shanghai." }
-    ]
-    // PROD002 does not have blockchainIdentifiers to test "Not Anchored" filter
-  },
-  {
-    id: "PROD003", productId: "PROD003", productName: "Organic Cotton T-Shirt", category: "Apparel", status: "Archived", compliance: "Compliant", lastUpdated: "2024-06-10",
-    description: "100% organic cotton t-shirt.", materials: "Organic Cotton", sustainabilityClaims: "GOTS Certified", imageUrl: "https://placehold.co/400x300.png", imageHint: "cotton t-shirt", manufacturer: "EcoThreads",
-    specifications: {"Fit": "Regular", "Origin": "India"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Compliant", eprel: {status: "N/A", lastChecked: "2024-06-01"}, ebsi: {status: "N/A", lastChecked: "2024-06-01"} }, supplyChainLinks: [],
-    blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0xProd003CottonAnchorHash"}, // Added for PROD003
-  },
-  {
-    id: "PROD004", productId: "PROD004", productName: "Recycled Plastic Water Bottle", category: "Homeware", status: "Active", compliance: "Non-Compliant", lastUpdated: "2024-07-21",
-    description: "Made from 100% recycled ocean-bound plastic.", materials: "Recycled PET", sustainabilityClaims: "Reduces ocean plastic", imageUrl: "https://placehold.co/400x300.png", imageHint: "water bottle", manufacturer: "RePurpose Inc.",
-    specifications: {"Volume": "500ml", "BPA-Free": "Yes"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Non-Compliant", eprel: {status: "N/A", lastChecked: "2024-07-01"}, ebsi: {status: "N/A", lastChecked: "2024-07-01"} }, supplyChainLinks: []
-  },
-  {
-    id: "PROD005", productId: "PROD005", productName: "Solar Powered Garden Light", category: "Outdoor", status: "Draft", compliance: "N/A", lastUpdated: "2024-07-22",
-    description: "Solar-powered LED light for gardens.", materials: "Aluminum, Solar Panel", energyLabel: "N/A", imageUrl: "https://placehold.co/400x300.png", imageHint: "garden light", manufacturer: "SunBeam",
-    specifications: {"Brightness": "100 lumens", "Battery life": "8 hours"}, lifecycleEvents: [], complianceSummary: { overallStatus: "N/A", eprel: {status: "N/A", lastChecked: "2024-07-01"}, ebsi: {status: "N/A", lastChecked: "2024-07-01"} }, supplyChainLinks: []
-  },
-];
+const initialMockProductsData: RichMockProduct[] = InitialMockDppsData.map(dpp => ({
+  ...dpp,
+  productId: dpp.id,
+  status: dpp.metadata.status as RichMockProduct['status'], 
+  compliance: dpp.complianceSummary?.overallStatus || "N/A", 
+  lastUpdated: dpp.metadata.last_updated,
+  description: dpp.productDetails?.description,
+  imageUrl: dpp.productDetails?.imageUrl,
+  imageHint: dpp.productDetails?.imageHint,
+  materials: dpp.productDetails?.materials?.map(m => m.name).join(', '),
+  sustainabilityClaims: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).join(', '),
+  energyLabel: dpp.productDetails?.energyLabel,
+  specifications: dpp.productDetails?.specifications,
+  lifecycleEvents: dpp.lifecycleEvents?.map(e => ({ id: e.id, eventName: e.type, date: e.timestamp, status: 'Completed' })),
+  complianceSummary: dpp.complianceSummary,
+  ebsiVerification: dpp.ebsiVerification,
+  certifications: dpp.certifications,
+  documents: dpp.documents,
+  supplyChainLinks: dpp.supplyChainLinks,
+  customAttributes: dpp.productDetails?.customAttributes,
+  blockchainIdentifiers: dpp.blockchainIdentifiers,
+  authenticationVcId: dpp.authenticationVcId,
+  ownershipNftLink: dpp.ownershipNftLink,
+  metadata: dpp.metadata, 
+}));
 
-type SortableProductKeys = keyof Pick<DisplayableProduct, 'id' | 'productName' | 'status' | 'compliance' | 'lastUpdated' | 'manufacturer'> | 'category' | 'completenessScore';
 
-interface SortConfig {
-  key: SortableProductKeys | null;
-  direction: 'ascending' | 'descending' | null;
+interface ProductWithCompleteness extends DisplayableProduct {
+  completeness: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
 }
 
+
 const SortableTableHead: React.FC<{
-  columnKey: SortableProductKeys;
+  columnKey: ProductSortableKeys;
   title: string;
-  onSort: (key: SortableProductKeys) => void;
-  sortConfig: SortConfig;
+  onSort: (key: ProductSortableKeys) => void;
+  sortConfig: ProductSortConfig;
   className?: string;
 }> = ({ columnKey, title, onSort, sortConfig, className }) => {
   const isSorted = sortConfig.key === columnKey;
@@ -93,15 +84,10 @@ const SortableTableHead: React.FC<{
   );
 };
 
-interface ProductWithCompleteness extends DisplayableProduct {
-  completeness: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // Ensure this is available
-}
-
 
 export default function ProductsPage() {
   const { currentRole } = useRole();
-  const [allProducts, setAllProducts] = useState<ProductWithCompleteness[]>([]); // Ensure type includes blockchainIdentifiers
+  const [allProducts, setAllProducts] = useState<ProductWithCompleteness[]>([]); 
   const [productToDelete, setProductToDelete] = useState<ProductWithCompleteness | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { toast } = useToast();
@@ -111,10 +97,13 @@ export default function ProductsPage() {
     status: "All",
     compliance: "All",
     category: "All",
-    blockchainAnchored: "all", // Initialize new filter
+    blockchainAnchored: "all", 
+    isTextileProduct: undefined, 
+    isConstructionProduct: undefined, 
+    onChainStatus: "All",
   });
 
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
+  const [sortConfig, setSortConfig] = useState<ProductSortConfig>({ key: 'id', direction: 'ascending' });
 
   useEffect(() => {
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
@@ -126,18 +115,21 @@ export default function ProductsPage() {
       complianceSummary: p.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: p.lastUpdated }, ebsi: { status: 'N/A', lastChecked: p.lastUpdated } },
       lifecycleEvents: p.lifecycleEvents || [],
       supplyChainLinks: p.supplyChainLinks || [],
-      completeness: calculateDppCompletenessForList(p as DisplayableProduct), // Calculate completeness
-      // blockchainIdentifiers can be undefined if not present
+      completeness: calculateDppCompletenessForList(p as DisplayableProduct), 
+      metadata: p.metadata, 
+      manufacturer: p.manufacturer,
     }));
 
     const initialDisplayable: ProductWithCompleteness[] = initialMockProductsData.map(mock => ({
       ...mock,
       productId: mock.productId || mock.id,
+      manufacturer: mock.manufacturer,
       complianceSummary: mock.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: mock.lastUpdated }, ebsi: { status: 'N/A', lastChecked: mock.lastUpdated } },
       lifecycleEvents: mock.lifecycleEvents || [],
       supplyChainLinks: mock.supplyChainLinks || [],
-      completeness: calculateDppCompletenessForList(mock as DisplayableProduct), // Calculate completeness
-      blockchainIdentifiers: mock.blockchainIdentifiers, // Include from mock
+      completeness: calculateDppCompletenessForList(mock as DisplayableProduct), 
+      blockchainIdentifiers: mock.blockchainIdentifiers, 
+      metadata: mock.metadata, 
     }));
 
     const combined = [
@@ -147,7 +139,7 @@ export default function ProductsPage() {
     setAllProducts(combined);
   }, []);
 
-  const handleSort = (key: SortableProductKeys) => {
+  const handleSort = (key: ProductSortableKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
       direction = 'descending';
@@ -162,6 +154,7 @@ export default function ProductsPage() {
       const lowerSearchQuery = filters.searchQuery.toLowerCase();
       tempProducts = tempProducts.filter(p =>
         p.productName?.toLowerCase().includes(lowerSearchQuery) ||
+        p.id?.toLowerCase().includes(lowerSearchQuery) ||
         p.gtin?.toLowerCase().includes(lowerSearchQuery) ||
         p.manufacturer?.toLowerCase().includes(lowerSearchQuery)
       );
@@ -175,7 +168,7 @@ export default function ProductsPage() {
     if (filters.category !== "All") {
       tempProducts = tempProducts.filter(p => (p.category || p.productCategory) === filters.category);
     }
-    // Add filtering for blockchainAnchored
+    
     if (filters.blockchainAnchored && filters.blockchainAnchored !== "all") {
       if (filters.blockchainAnchored === "anchored") {
         tempProducts = tempProducts.filter(p => !!p.blockchainIdentifiers?.anchorTransactionHash);
@@ -184,14 +177,33 @@ export default function ProductsPage() {
       }
     }
 
-    const getValue = (product: ProductWithCompleteness, key: SortableProductKeys) => {
-      if (key === 'category') {
-        return product.category || product.productCategory;
+    if (filters.isTextileProduct !== undefined) {
+      tempProducts = tempProducts.filter(p => !!p.textileInformation === filters.isTextileProduct);
+    }
+    if (filters.isConstructionProduct !== undefined) {
+      tempProducts = tempProducts.filter(p => !!p.constructionProductInformation === filters.isConstructionProduct);
+    }
+    if (filters.onChainStatus && filters.onChainStatus !== "All") {
+      tempProducts = tempProducts.filter(p => p.metadata?.onChainStatus === filters.onChainStatus);
+    }
+
+
+    const getValue = (product: ProductWithCompleteness, key: ProductSortableKeys): any => {
+      if (key === 'category') return product.category || product.productCategory;
+      if (key === 'completenessScore') return product.completeness.score;
+      if (key === 'metadata.onChainStatus') return product.metadata?.onChainStatus;
+      if (key === 'manufacturer.name') return product.manufacturer; // Assuming manufacturer is string here
+
+      const keys = key.split('.');
+      let val: any = product;
+      for (const k of keys) {
+        if (val && typeof val === 'object' && k in val) {
+          val = val[k];
+        } else {
+          return undefined;
+        }
       }
-      if (key === 'completenessScore') {
-        return product.completeness.score;
-      }
-      return product[key as keyof ProductWithCompleteness];
+      return val;
     };
 
     if (sortConfig.key && sortConfig.direction) {
@@ -254,7 +266,7 @@ export default function ProductsPage() {
     const active = allProducts.filter(p => p.status === 'Active').length;
     const draft = allProducts.filter(p => p.status === 'Draft').length;
     const issues = allProducts.filter(p => p.compliance === 'Non-Compliant' || p.compliance === 'Pending').length;
-    const totalCompletenessScore = allProducts.reduce((sum, p) => sum + p.completeness.score, 0);
+    const totalCompletenessScore = allProducts.reduce((sum, p) => sum + (p.completeness?.score || 0), 0);
     const averageCompleteness = total > 0 ? (totalCompletenessScore / total).toFixed(1) + "%" : "0%";
     return { total, active, draft, issues, averageCompleteness };
   }, [allProducts]);
@@ -301,12 +313,13 @@ export default function ProductsPage() {
                 <TableHead className="w-[50px]">Image</TableHead>
                 <SortableTableHead columnKey="id" title="ID" onSort={handleSort} sortConfig={sortConfig} />
                 <SortableTableHead columnKey="productName" title="Name" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="manufacturer" title="Manufacturer" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="manufacturer.name" title="Manufacturer" onSort={handleSort} sortConfig={sortConfig} />
                 <SortableTableHead columnKey="category" title="Category" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="status" title="Status" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="compliance" title="Compliance" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="metadata.status" title="Status" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="overallCompliance" title="Compliance" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="metadata.onChainStatus" title="On-Chain Status" onSort={handleSort} sortConfig={sortConfig} />
                 <SortableTableHead columnKey="completenessScore" title="Completeness" onSort={handleSort} sortConfig={sortConfig} className="w-28" />
-                <SortableTableHead columnKey="lastUpdated" title="Last Updated" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="metadata.last_updated" title="Last Updated" onSort={handleSort} sortConfig={sortConfig} />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -321,7 +334,7 @@ export default function ProductsPage() {
                 />
               ))}
                {filteredAndSortedProducts.length === 0 && (
-                <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No products found matching your filters.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">No products found matching your filters.</TableCell></TableRow>
                 )}
             </TableBody>
           </Table>
@@ -348,3 +361,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

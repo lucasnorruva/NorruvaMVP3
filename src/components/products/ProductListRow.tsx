@@ -10,14 +10,15 @@ import Image from "next/image";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Edit, Trash2, FileText as FileTextIcon } from "lucide-react";
+import { MoreHorizontal, Eye, Edit, Trash2, FileText as FileTextIcon, Sigma } from "lucide-react";
 import type { DisplayableProduct } from "@/types/dpp";
 import type { UserRole } from "@/contexts/RoleContext";
 import ProductStatusBadge from './list/ProductStatusBadge';
 import ProductComplianceBadge from './list/ProductComplianceBadge';
 import ProductCompletenessIndicator from './list/ProductCompletenessIndicator';
 import { getAiHintForImage } from '@/utils/imageUtils';
-
+import { Badge } from '@/components/ui/badge'; 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 
 interface ProductListRowProps {
   product: DisplayableProduct;
@@ -40,6 +41,21 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
     category: currentCategory,
     imageHint: product.imageHint,
   });
+
+  const onChainStatusDisplay = product.metadata?.onChainStatus || "Unknown";
+  const onChainStatusBadgeVariant = 
+    onChainStatusDisplay === "Active" ? "default" :
+    onChainStatusDisplay === "Pending Activation" ? "outline" :
+    onChainStatusDisplay === "Recalled" ? "destructive" :
+    onChainStatusDisplay === "Flagged for Review" ? "outline" : 
+    "secondary";
+
+  const onChainStatusBadgeClasses = 
+    onChainStatusDisplay === "Active" ? "bg-blue-100 text-blue-700 border-blue-300" :
+    onChainStatusDisplay === "Pending Activation" ? "bg-yellow-100 text-yellow-700 border-yellow-300" :
+    onChainStatusDisplay === "Recalled" ? "bg-red-100 text-red-700 border-red-300" :
+    onChainStatusDisplay === "Flagged for Review" ? "bg-orange-100 text-orange-700 border-orange-300" : 
+    "bg-muted text-muted-foreground";
 
 
   return (
@@ -73,6 +89,21 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
       </TableCell>
       <TableCell>
         <ProductComplianceBadge compliance={product.compliance} />
+      </TableCell>
+      <TableCell>
+        <TooltipProvider>
+          <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+              <Badge variant={onChainStatusBadgeVariant} className={`capitalize ${onChainStatusBadgeClasses}`}>
+                <Sigma className="mr-1 h-3.5 w-3.5" />
+                {onChainStatusDisplay.replace(/_/g, ' ')}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Conceptual On-Chain Status: {onChainStatusDisplay.replace(/_/g, ' ')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </TableCell>
       <TableCell>
         <ProductCompletenessIndicator completenessData={completenessData} />
@@ -119,3 +150,4 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
     </TableRow>
   );
 }
+
