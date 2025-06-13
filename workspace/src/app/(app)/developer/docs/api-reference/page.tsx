@@ -516,7 +516,7 @@ export default function ApiReferencePage() {
         exampleLogCriticalEventRequestBody={exampleLogCriticalEventRequestBody}
         exampleRegisterVcHashRequestBody={exampleRegisterVcHashRequestBody}
         exampleUpdatedDppResponse={exampleUpdatedDppResponse}
-        exampleAnchorDppResponse={exampleAnchorDppResponseWithFullIds} // Pass the new specific example
+        exampleAnchorDppResponse={exampleAnchorDppResponseWithFullIds} 
         error401={error401}
         error404={error404}
         error500={error500}
@@ -578,3 +578,4 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+
