@@ -7,7 +7,7 @@ import React from "react"; // For JSX element
 import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, ProductComplianceSummary, SimpleLifecycleEvent } from '@/types/dpp';
 import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge"; // Added Badge import
+// No Badge import needed here as it's not directly rendered, only its properties are returned.
 
 interface ComplianceDetails {
   text: string;
@@ -269,7 +269,3 @@ export const getStatusBadgeClasses = (status?: string): string => {
   const key = status?.toLowerCase().trim() ?? 'default';
   return STATUS_DISPLAY_MAP[key]?.classes ?? STATUS_DISPLAY_MAP.default.classes;
 };
-
-// Removed getEbsiStatusBadge to ensure it's not exported, as per the most recent error context.
-// The OverviewTab should now use getEbsiStatusDetails and getStatusBadgeClasses.
-    

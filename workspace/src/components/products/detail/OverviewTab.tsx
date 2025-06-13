@@ -9,7 +9,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
+// Corrected import based on the error message and available exports
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -47,7 +48,9 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     parsedSpecifications = product.specifications;
   }
 
-  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus); // Get details for badge
+  // Use the imported functions
+  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus); 
+  const ebsiBadgeClasses = getStatusBadgeClasses(product.ebsiStatus);
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -166,7 +169,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">
-                  <Badge variant={ebsiDetails.variant} className={cn("capitalize", getStatusBadgeClasses(product.ebsiStatus))}>
+                  <Badge variant={ebsiDetails.variant} className={cn("capitalize", ebsiBadgeClasses)}>
                     {React.cloneElement(ebsiDetails.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
                     {ebsiDetails.text}
                   </Badge>
@@ -193,8 +196,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
           </CardContent>
         </Card>
-
-
       </div>
 
       {/* Right Column: Description, Key Points, Specifications, Custom Attributes */}
@@ -350,3 +351,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+
+    
+    
+    
