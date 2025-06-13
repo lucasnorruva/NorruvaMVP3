@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
       dppStandardVersion: "CIRPASS v1.0 Draft",
       onChainStatus: "Unknown", // Default value for new products
       onChainLifecycleStage: "Design", // Default value for new products
+      isArchived: false, // New products are not archived
     },
     productDetails: {
       description: productDetails?.description || undefined,
@@ -124,9 +125,15 @@ export async function GET(request: NextRequest) {
   const blockchainAnchored = searchParams.get('blockchainAnchored') as DashboardFiltersState['blockchainAnchored'] | null;
   const isTextileProductParam = searchParams.get('isTextileProduct');
   const isConstructionProductParam = searchParams.get('isConstructionProduct');
+  const includeArchivedParam = searchParams.get('includeArchived'); // New parameter
 
   let filteredDPPs: DigitalProductPassport[] = [...MOCK_DPPS];
 
+  // Filter by isArchived first, unless includeArchived=true
+  if (includeArchivedParam !== 'true') {
+    filteredDPPs = filteredDPPs.filter(dpp => !dpp.metadata.isArchived);
+  }
+  
   if (searchQuery) {
     const lowerSearchQuery = searchQuery.toLowerCase();
     filteredDPPs = filteredDPPs.filter(dpp =>
@@ -138,8 +145,17 @@ export async function GET(request: NextRequest) {
   }
 
   if (status && status !== 'all') {
-    filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
+    // If filtering for 'archived' status, we need to consider 'isArchived' flag if includeArchived was true.
+    // However, the primary mechanism for "archived" from UI perspective is now isArchived flag.
+    // So, if `status === 'archived'`, it's handled by the includeArchived logic above and client-side filtering.
+    // For other statuses, we filter by `metadata.status`.
+    if (status !== 'archived') {
+      filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
+    }
+    // If status === 'archived', the API has already potentially included them if includeArchived=true.
+    // The client (useDPPLiveData) will do the final filter for dpp.metadata.isArchived === true.
   }
+
 
   if (categoryParam && categoryParam !== 'all') {
     filteredDPPs = filteredDPPs.filter(dpp => dpp.category === categoryParam);
@@ -175,6 +191,7 @@ export async function GET(request: NextRequest) {
       blockchainAnchored,
       isTextileProduct, 
       isConstructionProduct, 
+      includeArchived: includeArchivedParam === 'true', // Reflect the param
     },
     totalCount: filteredDPPs.length,
   });

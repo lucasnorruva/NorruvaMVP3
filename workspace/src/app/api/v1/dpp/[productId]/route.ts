@@ -8,14 +8,13 @@ import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport, CustomAttribute, OwnershipNftLink, TextileInformation, ConstructionProductInformation } from '@/types/dpp';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
 
-// Interface to reflect the expected request body for updating a DPP
 interface UpdateDppRequestBody {
   productName?: string;
   category?: string;
   gtin?: string;
   manufacturerName?: string;
   modelNumber?: string;
-  metadata?: Partial<DigitalProductPassport['metadata']>; // Allows partial updates to metadata, including onChainStatus/LifecycleStage
+  metadata?: Partial<DigitalProductPassport['metadata']>;
   productDetails?: Partial<DigitalProductPassport['productDetails']>;
   compliance?: Partial<DigitalProductPassport['compliance']>;
   ebsiVerification?: Partial<DigitalProductPassport['ebsiVerification']>;
@@ -35,14 +34,14 @@ export async function GET(
   const auth = validateApiKey(request);
   if (auth) return auth;
 
-  const product = MOCK_DPPS.find(dpp => dpp.id === productId);
+  const product = MOCK_DPPS.find(dpp => dpp.id === productId && !dpp.metadata.isArchived); // Exclude soft-deleted
 
   await new Promise(resolve => setTimeout(resolve, 200));
 
   if (product) {
     return NextResponse.json(product);
   } else {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found or has been archived.` } }, { status: 404 });
   }
 }
 
@@ -61,12 +60,12 @@ export async function PUT(
     return NextResponse.json({ error: { code: 400, message: "Invalid JSON payload." } }, { status: 400 });
   }
 
-  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId && !dpp.metadata.isArchived); // Don't update archived
 
   await new Promise(resolve => setTimeout(resolve, 200));
 
   if (productIndex === -1) {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found or has been archived.` } }, { status: 404 });
   }
 
   const existingProduct = MOCK_DPPS[productIndex];
@@ -78,12 +77,11 @@ export async function PUT(
     ...(requestBody.gtin && { gtin: requestBody.gtin }),
     ...(requestBody.manufacturerName && { manufacturer: { ...existingProduct.manufacturer, name: requestBody.manufacturerName } }),
     ...(requestBody.modelNumber && { modelNumber: requestBody.modelNumber }),
-    // Merge new fields if present in requestBody
-    ...(requestBody.authenticationVcId !== undefined && { authenticationVcId: requestBody.authenticationVcId }), // Handle empty string for clearing
-    ...(requestBody.ownershipNftLink && { ownershipNftLink: requestBody.ownershipNftLink }), // Replace whole object if provided
+    ...(requestBody.authenticationVcId !== undefined && { authenticationVcId: requestBody.authenticationVcId }), 
+    ...(requestBody.ownershipNftLink && { ownershipNftLink: requestBody.ownershipNftLink }), 
     metadata: {
       ...existingProduct.metadata,
-      ...(requestBody.metadata || {}), // Merges status, dppStandardVersion, onChainStatus, onChainLifecycleStage
+      ...(requestBody.metadata || {}), 
       last_updated: new Date().toISOString(),
     },
     productDetails: {
@@ -125,9 +123,11 @@ export async function DELETE(
   if (productIndex === -1) {
     return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found for deletion.` } }, { status: 404 });
   }
-
-  MOCK_DPPS[productIndex].metadata.status = 'archived';
+  
+  // Soft delete: set isArchived to true, keep original status
+  MOCK_DPPS[productIndex].metadata.isArchived = true;
   MOCK_DPPS[productIndex].metadata.last_updated = new Date().toISOString();
 
-  return NextResponse.json({ message: `Product with ID ${productId} has been archived successfully.`, status: "Archived" });
+  return NextResponse.json({ message: `Product with ID ${productId} has been archived successfully.` , statusMessage: "Archived (Soft Deleted)"}); // Keep user-facing message clear
 }
+

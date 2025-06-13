@@ -83,6 +83,7 @@ export interface DigitalProductPassport {
     dataSchemaVersion?: string;
     onChainStatus?: string;
     onChainLifecycleStage?: string;
+    isArchived?: boolean; // Added for soft delete
   };
 
   blockchainIdentifiers?: {
@@ -155,8 +156,8 @@ export interface DashboardFiltersState {
   blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
   isTextileProduct?: boolean;
   isConstructionProduct?: boolean;
-  manufacturer?: 'all' | string; // Added manufacturer filter
-  completeness?: 'all' | '>75' | '50-75' | '<50'; // Added completeness filter
+  manufacturer?: 'all' | string; 
+  completeness?: 'all' | '>75' | '50-75' | '<50'; 
   onChainStatus?: string;
 }
 
@@ -424,7 +425,7 @@ export interface DisplayableProduct {
     repairManualUrl?: string;
     disassemblyInstructionsUrl?: string;
   };
-  completeness?: { score: number; filledFields: number; totalFields: number; missingFields: string[] }; // Added for completeness
+  completeness?: { score: number; filledFields: number; totalFields: number; missingFields: string[] }; 
 }
 
 export interface AnchorResult {

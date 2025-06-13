@@ -18,6 +18,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       dppStandardVersion: "CIRPASS v0.9 Draft",
       onChainStatus: "Active", 
       onChainLifecycleStage: "InUse", 
+      isArchived: false,
     },
     authenticationVcId: "vc_auth_DPP001_mock123", 
     ownershipNftLink: { 
@@ -190,6 +191,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       created_at: "2024-03-01T10:00:00Z",
       onChainStatus: "Pending Activation", 
       onChainLifecycleStage: "Manufacturing", 
+      isArchived: false,
     },
     authenticationVcId: "vc_auth_DPP002_mock456", 
     productDetails: {
@@ -284,7 +286,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       status: "flagged", 
       created_at: "2024-04-10T10:00:00Z",
       onChainStatus: "FlaggedForReview", 
-      onChainLifecycleStage: "InUse" 
+      onChainLifecycleStage: "InUse",
+      isArchived: false,
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
@@ -339,10 +342,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     modelNumber: "CL-MODSOFA-01",
     metadata: { 
       last_updated: "2024-07-20T11:00:00Z", 
-      status: "archived", 
+      status: "archived", // Operational status
       created_at: "2023-12-01T10:00:00Z",
       onChainStatus: "Archived", 
-      onChainLifecycleStage: "EndOfLife" 
+      onChainLifecycleStage: "EndOfLife",
+      isArchived: true, // Soft delete flag
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-20T00:00:00Z" },
@@ -390,6 +394,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       created_at: "2024-05-01T10:00:00Z",
       onChainStatus: "Active",
       onChainLifecycleStage: "QualityAssurance",
+      isArchived: false,
     },
     productDetails: {
       description: "A high-performance EV battery module designed for long range and fast charging. Contains NMC 811 chemistry for optimal energy density.",
@@ -495,6 +500,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       dppStandardVersion: "CPR EN 13163",
       onChainStatus: "Active",
       onChainLifecycleStage: "InUse",
+      isArchived: false,
     },
     productDetails: {
       description: "High-performance, sustainable insulation panel made from recycled cellulose fibers and a bio-based binder. Provides excellent thermal resistance (R-value 50).",
@@ -558,325 +564,3 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     
 
 
-```
-
-The following tabs on the Product Detail page have been enhanced for better visual representation and comprehensiveness:
-*   **Sustainability Tab**: Now uses distinct cards for Key Claims, Materials & Circularity, Energy Efficiency, and Repairability & End-of-Life. It employs a `DetailItem` sub-component for consistent metric display.
-*   **Compliance Tab & Header**: The `ProductComplianceHeader` now displays a more prominent overall status badge. The `ComplianceTab` itself uses `ComplianceDetailItemDisplay` to render each checkpoint with clear status, icons, and actions like EPREL sync.
-*   **History Tab**: The timeline visualization has been refined with specific icons for different action types (e.g., `PlusCircle` for Created, `Layers` for Lifecycle, `Award` for Certification) and improved display of event details including tooltips for longer descriptions.
-*   **Supply Chain Tab**: Supplier links are now individual cards, providing a cleaner look. The "View Private Attestations" feature has a loading state and displays attestations in an accordion if successful, or an error message.
-*   **Mock Data (`MOCK_DPPS`)**: The entry for `DPP001` has been significantly enriched across various sections (sustainability details, compliance fields like SCIP/Customs/Battery, lifecycle events, documents, supply chain links) to ensure these new tab designs have ample data to display.
-
-These changes should make the product detail page much more informative and visually appealing.
-
-**Task 2 Evaluation:**
-
-*   **Completeness:** The key compliance-related display components (`ComplianceTab`, `ProductComplianceHeader`, `ComplianceDetailItemDisplay`) have been enhanced. Mock data for `DPP001` has been updated to ensure these compliance sections have data to display.
-*   **Readiness for Task 3:** Yes, Task 3 (Add AI suggestions for "Battery Regulation Details" in the `ProductForm`) is ready. The product detail page (display side) is now more robust. Improving the data entry side with AI assistance is a logical next step.
-
----
-
-**Task 3: Add specific AI suggestions for "Battery Regulation Details" within `ProductForm.tsx` (via `BatteryDetailsFormSection.tsx`).**
-
-*   **Objective:** When a user is on the Battery Details accordion in the product creation/editing form, allow them to click a button to get AI suggestions for fields like battery chemistry, capacity, carbon footprint values, recycled content, and state of health, based on the product's name and category.
-*   **Plan:**
-    1.  **Modify `src/components/products/form/BatteryDetailsFormSection.tsx`:**
-        *   Add a "Suggest Battery Details with AI" button.
-        *   Implement a handler function (`callSuggestBatteryDetailsAIInternal` or similar) that:
-            *   Retrieves `productName` and `productCategory` from the form.
-            *   Calls the existing `suggestBatteryDetails` AI flow from `src/ai/flows/suggest-battery-details-flow.ts`.
-            *   Uses a `toast` to inform the user if more input (name/category) is needed.
-            *   On successful AI response:
-                *   Populates the relevant form fields within the `batteryRegulation` object (e.g., `batteryRegulation.batteryChemistry`, `batteryRegulation.carbonFootprint.value`, `batteryRegulation.stateOfHealth.value`, etc.).
-                *   For `recycledContent` (which is an array), it might suggest a few common materials or an overall percentage. This will likely append new entries to the `useFieldArray` for recycled content.
-                *   Updates the corresponding `batteryRegulationOrigin` fields to `'AI_EXTRACTED'`.
-                *   Shows a success toast.
-            *   Handles errors with a toast.
-        *   Ensure the "Suggest..." button has a loading state.
-    2.  **Modify `src/utils/aiFormHelpers.tsx`:**
-        *   Create a new exported async function, `handleSuggestBatteryDetailsAI`, similar to the other helpers. This function will encapsulate the logic to call `suggestBatteryDetails` flow and handle loading/toast messages.
-    3.  **Update `src/ai/flows/suggest-battery-details-flow.ts`:**
-        *   Ensure the `SuggestBatteryDetailsOutputSchema` and the prompt are comprehensive enough to suggest values for all key fields in `BatteryRegulationDetails` (chemistry, passport ID, CF value/unit/method, recycled content materials/percentages, SoH value/unit/date, overall VC ID).
-        *   The AI prompt should be guided to provide realistic, common values based on product category/name. For example, if the category is "EV", it might suggest "Li-ion NMC" chemistry and a higher carbon footprint than for a "Power Tool".
-
-I will now generate the changes for Task 3.
-<changes>
-  <description>Integrated AI suggestions for Battery Regulation Details in the Product Form. This includes a "Suggest Battery Details" button in `BatteryDetailsFormSection.tsx`, a new helper function in `aiFormHelpers.tsx`, and an updated AI flow/prompt in `suggest-battery-details-flow.ts` to provide comprehensive suggestions for battery-related fields.</description>
-  <change>
-    <file>/workspace/src/components/products/form/BatteryDetailsFormSection.tsx</file>
-    <content><![CDATA[
-// --- File: BatteryDetailsFormSection.tsx ---
-// Description: Form section component for battery-specific details in the product form.
-"use client";
-
-import React, { useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useFieldArray } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import AiIndicator from "./AiIndicator";
-import type { ProductFormData } from "@/components/products/ProductForm";
-import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import type { SuggestBatteryDetailsOutput } from "@/ai/flows/suggest-battery-details-flow";
-import { handleSuggestBatteryDetailsAI } from "@/utils/aiFormHelpers"; // Import the new helper
-import type { ToastInput } from "@/hooks/use-toast";
-import { Sparkles, Loader2, AlertTriangle, PlusCircle, Trash2 } from "lucide-react";
-import type { BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData } from "@/types/dpp";
-
-type ToastFn = (input: ToastInput) => void;
-
-interface BatteryDetailsFormSectionProps {
-  form: UseFormReturn<ProductFormData>;
-  initialData?: Partial<InitialProductFormData>;
-  isSubmittingForm?: boolean;
-  toast: ToastFn;
-}
-
-export default function BatteryDetailsFormSection({ form, initialData, isSubmittingForm, toast }: BatteryDetailsFormSectionProps) {
-  const [isSuggestingBatteryDetailsInternal, setIsSuggestingBatteryDetailsInternal] = useState(false);
-
-  const { fields: recycledContentFields, append: appendRecycledContent, remove: removeRecycledContent } = useFieldArray({
-    control: form.control,
-    name: "batteryRegulation.recycledContent",
-  });
-
-  const callSuggestBatteryDetailsAIInternal = async () => {
-    const result = await handleSuggestBatteryDetailsAI(form, toast, setIsSuggestingBatteryDetailsInternal);
-    if (result) {
-      let suggestionsMade = false;
-      const originPath = "batteryRegulationOrigin";
-
-      if (result.suggestedBatteryChemistry) {
-        form.setValue("batteryRegulation.batteryChemistry", result.suggestedBatteryChemistry, { shouldValidate: true });
-        form.setValue(`${originPath}.batteryChemistryOrigin` as any, 'AI_EXTRACTED');
-        suggestionsMade = true;
-      }
-      if (result.suggestedBatteryPassportId) {
-        form.setValue("batteryRegulation.batteryPassportId", result.suggestedBatteryPassportId, { shouldValidate: true });
-        form.setValue(`${originPath}.batteryPassportIdOrigin` as any, 'AI_EXTRACTED');
-        suggestionsMade = true;
-      }
-      if (result.suggestedBatteryRegulationVcId) {
-        form.setValue("batteryRegulation.vcId", result.suggestedBatteryRegulationVcId, { shouldValidate: true });
-        form.setValue(`${originPath}.vcIdOrigin` as any, 'AI_EXTRACTED');
-        suggestionsMade = true;
-      }
-
-      if (result.suggestedCarbonFootprint) {
-        if (result.suggestedCarbonFootprint.value !== undefined) {
-          form.setValue("batteryRegulation.carbonFootprint.value", result.suggestedCarbonFootprint.value, { shouldValidate: true });
-          form.setValue(`${originPath}.carbonFootprintOrigin.valueOrigin` as any, 'AI_EXTRACTED');
-          suggestionsMade = true;
-        }
-        if (result.suggestedCarbonFootprint.unit) {
-          form.setValue("batteryRegulation.carbonFootprint.unit", result.suggestedCarbonFootprint.unit, { shouldValidate: true });
-          form.setValue(`${originPath}.carbonFootprintOrigin.unitOrigin` as any, 'AI_EXTRACTED');
-          suggestionsMade = true;
-        }
-        if (result.suggestedCarbonFootprint.calculationMethod) {
-          form.setValue("batteryRegulation.carbonFootprint.calculationMethod", result.suggestedCarbonFootprint.calculationMethod, { shouldValidate: true });
-          form.setValue(`${originPath}.carbonFootprintOrigin.calculationMethodOrigin` as any, 'AI_EXTRACTED');
-          suggestionsMade = true;
-        }
-      }
-
-      if (result.suggestedStateOfHealth) {
-        if (result.suggestedStateOfHealth.value !== undefined) {
-          form.setValue("batteryRegulation.stateOfHealth.value", result.suggestedStateOfHealth.value, { shouldValidate: true });
-          form.setValue(`${originPath}.stateOfHealthOrigin.valueOrigin` as any, 'AI_EXTRACTED');
-          suggestionsMade = true;
-        }
-        if (result.suggestedStateOfHealth.unit) {
-          form.setValue("batteryRegulation.stateOfHealth.unit", result.suggestedStateOfHealth.unit, { shouldValidate: true });
-          form.setValue(`${originPath}.stateOfHealthOrigin.unitOrigin` as any, 'AI_EXTRACTED');
-          suggestionsMade = true;
-        }
-        if (result.suggestedStateOfHealth.measurementDate) {
-          form.setValue("batteryRegulation.stateOfHealth.measurementDate", result.suggestedStateOfHealth.measurementDate, { shouldValidate: true });
-          form.setValue(`${originPath}.stateOfHealthOrigin.measurementDateOrigin` as any, 'AI_EXTRACTED');
-          suggestionsMade = true;
-        }
-      }
-      
-      if (result.suggestedRecycledContent && result.suggestedRecycledContent.length > 0) {
-        // Clear existing AI suggested recycled content before appending new ones to avoid duplicates from multiple suggestions
-        // Or, more robustly, merge based on material if AI might suggest updates to existing ones.
-        // For now, simple append:
-        const currentRecycledContentLength = form.getValues("batteryRegulation.recycledContent")?.length || 0;
-        result.suggestedRecycledContent.forEach((rc, index) => {
-          if (rc.material && rc.percentage !== undefined) {
-            appendRecycledContent({ material: rc.material, percentage: rc.percentage, vcId: "" });
-            const newIndex = currentRecycledContentLength + index;
-            form.setValue(`${originPath}.recycledContentOrigin.${newIndex}.materialOrigin` as any, 'AI_EXTRACTED');
-            form.setValue(`${originPath}.recycledContentOrigin.${newIndex}.percentageOrigin` as any, 'AI_EXTRACTED');
-            suggestionsMade = true;
-          }
-        });
-      }
-      
-      if (!suggestionsMade) {
-         toast({ title: "No Specific Battery Details Suggested", description: "AI could not find specific battery details to suggest based on current product info. You can still fill them manually.", variant: "default" });
-      }
-    }
-  };
-
-
-  return (
-    <div className="space-y-6 pt-4">
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">Provide detailed battery information as per EU Battery Regulation. Fields are optional.</p>
-        <Button type="button" variant="ghost" size="sm" onClick={callSuggestBatteryDetailsAIInternal} disabled={isSuggestingBatteryDetailsInternal || !!isSubmittingForm}>
-            {isSuggestingBatteryDetailsInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
-            <span className="ml-2">{isSuggestingBatteryDetailsInternal ? "Suggesting..." : "Suggest Battery Details"}</span>
-        </Button>
-      </div>
-
-      <FormField
-        control={form.control}
-        name="batteryRegulation.batteryChemistry"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="flex items-center">
-              Battery Chemistry
-              <AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.batteryChemistryOrigin} fieldName="Battery Chemistry" />
-            </FormLabel>
-            <FormControl>
-              <Input
-                placeholder="e.g., Li-ion NMC, LFP"
-                {...field}
-                onChange={(e) => { field.onChange(e); form.setValue("batteryRegulationOrigin.batteryChemistryOrigin" as any, "manual"); }}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="batteryRegulation.batteryPassportId"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="flex items-center">Battery Passport ID (Optional)
-              <AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.batteryPassportIdOrigin} fieldName="Battery Passport ID" />
-            </FormLabel>
-            <FormControl><Input placeholder="Unique ID for the battery passport itself" {...field} onChange={(e) => { field.onChange(e); form.setValue("batteryRegulationOrigin.batteryPassportIdOrigin" as any, "manual"); }} /></FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="batteryRegulation.vcId"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="flex items-center">Overall Battery Regulation VC ID (Optional)
-              <AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.vcIdOrigin} fieldName="Overall Battery VC ID" />
-            </FormLabel>
-            <FormControl><Input placeholder="Verifiable Credential ID for overall compliance" {...field} onChange={(e) => { field.onChange(e); form.setValue("batteryRegulationOrigin.vcIdOrigin" as any, "manual"); }} /></FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      
-      {/* Carbon Footprint Section */}
-      <div className="p-4 border rounded-md space-y-3 bg-muted/30">
-        <h4 className="font-medium text-md text-primary">Manufacturing Carbon Footprint</h4>
-        <FormField control={form.control} name="batteryRegulation.carbonFootprint.value"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center">Value
-                <AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.carbonFootprintOrigin?.valueOrigin} fieldName="CF Value" />
-              </FormLabel>
-              <FormControl><Input type="number" placeholder="e.g., 85.5" {...field} onChange={e => { field.onChange(e.target.value === '' ? null : e.target.valueAsNumber); form.setValue("batteryRegulationOrigin.carbonFootprintOrigin.valueOrigin" as any, "manual"); }} /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-        <FormField control={form.control} name="batteryRegulation.carbonFootprint.unit"
-          render={({ field }) => (
-            <FormItem><FormLabel className="flex items-center">Unit<AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.carbonFootprintOrigin?.unitOrigin} fieldName="CF Unit" /></FormLabel>
-            <FormControl><Input placeholder="e.g., kg CO2e/kWh" {...field} onChange={(e) => { field.onChange(e); form.setValue("batteryRegulationOrigin.carbonFootprintOrigin.unitOrigin" as any, "manual"); }} /></FormControl><FormMessage /></FormItem>
-          )} />
-        <FormField control={form.control} name="batteryRegulation.carbonFootprint.calculationMethod"
-          render={({ field }) => (
-            <FormItem><FormLabel className="flex items-center">Calculation Method<AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.carbonFootprintOrigin?.calculationMethodOrigin} fieldName="CF Method" /></FormLabel>
-            <FormControl><Input placeholder="e.g., PEFCR for Batteries v1.2" {...field} onChange={(e) => { field.onChange(e); form.setValue("batteryRegulationOrigin.carbonFootprintOrigin.calculationMethodOrigin" as any, "manual"); }} /></FormControl><FormMessage /></FormItem>
-          )} />
-        <FormField control={form.control} name="batteryRegulation.carbonFootprint.vcId"
-          render={({ field }) => (
-            <FormItem><FormLabel>Carbon Footprint VC ID (Optional)</FormLabel><FormControl><Input placeholder="VC ID for carbon footprint data" {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
-      </div>
-
-      {/* State of Health Section */}
-      <div className="p-4 border rounded-md space-y-3 bg-muted/30">
-        <h4 className="font-medium text-md text-primary">State of Health (SoH)</h4>
-        <FormField control={form.control} name="batteryRegulation.stateOfHealth.value"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center">Value
-                <AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.stateOfHealthOrigin?.valueOrigin} fieldName="SoH Value" />
-              </FormLabel>
-              <FormControl><Input type="number" placeholder="e.g., 100 (for new)" {...field} onChange={e => { field.onChange(e.target.value === '' ? null : e.target.valueAsNumber); form.setValue("batteryRegulationOrigin.stateOfHealthOrigin.valueOrigin" as any, "manual"); }} /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-        <FormField control={form.control} name="batteryRegulation.stateOfHealth.unit"
-          render={({ field }) => (
-            <FormItem><FormLabel className="flex items-center">Unit<AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.stateOfHealthOrigin?.unitOrigin} fieldName="SoH Unit" /></FormLabel>
-            <FormControl><Input placeholder="e.g., %" {...field} onChange={(e) => { field.onChange(e); form.setValue("batteryRegulationOrigin.stateOfHealthOrigin.unitOrigin" as any, "manual"); }} /></FormControl><FormMessage /></FormItem>
-          )} />
-        <FormField control={form.control} name="batteryRegulation.stateOfHealth.measurementDate"
-          render={({ field }) => (
-            <FormItem><FormLabel className="flex items-center">Measurement Date<AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.stateOfHealthOrigin?.measurementDateOrigin} fieldName="SoH Date" /></FormLabel>
-            <FormControl><Input type="date" {...field} onChange={(e) => { field.onChange(e); form.setValue("batteryRegulationOrigin.stateOfHealthOrigin.measurementDateOrigin" as any, "manual"); }} /></FormControl><FormMessage /></FormItem>
-          )} />
-        <FormField control={form.control} name="batteryRegulation.stateOfHealth.vcId"
-          render={({ field }) => (
-            <FormItem><FormLabel>State of Health VC ID (Optional)</FormLabel><FormControl><Input placeholder="VC ID for SoH data" {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
-      </div>
-
-      {/* Recycled Content Section */}
-      <div className="p-4 border rounded-md space-y-3 bg-muted/30">
-        <h4 className="font-medium text-md text-primary">Recycled Content in Active Materials</h4>
-        {recycledContentFields.map((item, index) => (
-          <div key={item.id} className="p-3 border rounded-md bg-background space-y-2 relative">
-            <FormField control={form.control} name={`batteryRegulation.recycledContent.${index}.material`}
-              render={({ field }) => (
-                <FormItem><FormLabel className="flex items-center">Material
-                  <AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.recycledContentOrigin?.[index]?.materialOrigin} fieldName={`Material #${index + 1}`} />
-                </FormLabel><FormControl><Input placeholder="e.g., Cobalt, Lithium, Nickel, Lead" {...field} onChange={(e) => { field.onChange(e); form.setValue(`batteryRegulationOrigin.recycledContentOrigin.${index}.materialOrigin` as any, "manual"); }} /></FormControl><FormMessage /></FormItem>
-              )} />
-            <FormField control={form.control} name={`batteryRegulation.recycledContent.${index}.percentage`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center">Percentage (%)
-                    <AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.recycledContentOrigin?.[index]?.percentageOrigin} fieldName={`Recycled Content % #${index + 1}`} />
-                  </FormLabel>
-                  <FormControl><Input type="number" placeholder="e.g., 16" {...field} onChange={e => { field.onChange(e.target.value === '' ? null : e.target.valueAsNumber); form.setValue(`batteryRegulationOrigin.recycledContentOrigin.${index}.percentageOrigin` as any, "manual"); }} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            <FormField control={form.control} name={`batteryRegulation.recycledContent.${index}.vcId`}
-              render={({ field }) => (
-                <FormItem><FormLabel>VC ID for this material (Optional)</FormLabel><FormControl><Input placeholder="VC ID for specific recycled material claim" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-            <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 text-destructive" onClick={() => removeRecycledContent(index)} title="Remove this material">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        ))}
-        <Button type="button" variant="outline" size="sm" onClick={() => appendRecycledContent({ material: "", percentage: null, vcId: "" })}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Material for Recycled Content
-        </Button>
-      </div>
-
-    </div>
-  );
-}
-
-    

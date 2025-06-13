@@ -69,9 +69,33 @@ export function useDPPLiveData() {
   }, [dpps]);
 
   const sortedAndFilteredDPPs: ProcessedDPP[] = useMemo(() => {
-    let filtered = processedDPPs.filter((dpp) => {
+    // Determine if API needs to include archived based on UI filter
+    const fetchIncludeArchived = filters.status === 'archived' || filters.status === 'all';
+
+    // Simulate API call based on fetchIncludeArchived
+    let apiFetchedDpps = processedDPPs;
+    if (!fetchIncludeArchived) {
+      apiFetchedDpps = processedDPPs.filter(dpp => !dpp.metadata.isArchived);
+    }
+    // If fetchIncludeArchived is true, API would return all items,
+    // client-side filtering below will handle showing only 'isArchived' if needed.
+
+    let filtered = apiFetchedDpps.filter((dpp) => {
       if (filters.searchQuery && !dpp.productName.toLowerCase().includes(filters.searchQuery.toLowerCase())) return false;
-      if (filters.status !== "all" && dpp.metadata.status !== filters.status) return false;
+      
+      // Status Filter Logic
+      if (filters.status !== "all") {
+        if (filters.status === "archived") {
+          // Show only soft-deleted items if "Archived" is selected
+          if (!dpp.metadata.isArchived) return false;
+        } else {
+          // For other specific statuses, ensure it's not soft-deleted AND matches the status
+          if (dpp.metadata.isArchived || dpp.metadata.status !== filters.status) return false;
+        }
+      }
+      // If filters.status is "all", no status filtering is done here client-side,
+      // as fetchIncludeArchived=true would have brought all items from API.
+
       if (filters.regulation !== "all") {
         const complianceData = dpp.compliance[filters.regulation as keyof typeof dpp.compliance];
         if (!complianceData || (typeof complianceData === 'object' && 'status' in complianceData && complianceData.status !== 'compliant')) return false;
@@ -132,15 +156,22 @@ export function useDPPLiveData() {
   }, [processedDPPs, filters, sortConfig]);
 
   const metrics = useMemo(() => {
-    const totalDPPs = dpps.length;
-    const compliantPercentage = dpps.length > 0 
-      ? ((processedDPPs.filter(p => p.overallCompliance.text.toLowerCase().includes('compliant')).length / totalDPPs) * 100).toFixed(1) + "%" 
+    const nonArchivedDpps = dpps.filter(dpp => !dpp.metadata.isArchived);
+    const totalDPPs = nonArchivedDpps.length;
+    
+    const fullyCompliantDPPsCount = nonArchivedDpps.filter(dpp => {
+        const complianceDetails = getOverallComplianceDetails(dpp);
+        return complianceDetails.text.toLowerCase().includes('compliant');
+    }).length;
+
+    const compliantPercentage = totalDPPs > 0 
+      ? ((fullyCompliantDPPsCount / totalDPPs) * 100).toFixed(1) + "%" 
       : "0%";
-    const pendingReviewDPPs = dpps.filter(d => d.metadata.status === 'pending_review').length;
-    const totalConsumerScans = dpps.reduce((sum, dpp) => sum + (dpp.consumerScans || 0), 0);
+    const pendingReviewDPPs = nonArchivedDpps.filter(d => d.metadata.status === 'pending_review').length;
+    const totalConsumerScans = nonArchivedDpps.reduce((sum, dpp) => sum + (dpp.consumerScans || 0), 0);
     const averageConsumerScans = totalDPPs > 0 ? (totalConsumerScans / totalDPPs).toFixed(1) : "0";
     const averageCompleteness = totalDPPs > 0 
-      ? (processedDPPs.reduce((sum, p) => sum + p.completeness.score, 0) / totalDPPs).toFixed(1) + "%" 
+      ? (processedDPPs.filter(p => !p.metadata.isArchived).reduce((sum, p) => sum + p.completeness.score, 0) / totalDPPs).toFixed(1) + "%" 
       : "0%";
 
     return { totalDPPs, compliantPercentage, pendingReviewDPPs, totalConsumerScans, averageConsumerScans, averageCompleteness };
@@ -190,15 +221,28 @@ export function useDPPLiveData() {
       userProducts = userProducts.filter(p => p.id !== productToDeleteId);
       localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
     }
-    setDpps(prevDpps => prevDpps.filter(p => p.id !== productToDeleteId));
+    
+    // For mock products, we simulate soft delete by updating the MOCK_DPPS array instance
+    // and then re-filtering from the main dpps state which includes MOCK_DPPS.
+    const productIndex = dpps.findIndex(p => p.id === productToDeleteId);
+    if (productIndex !== -1) {
+      const updatedDpps = dpps.map(p => 
+        p.id === productToDeleteId 
+          ? { ...p, metadata: { ...p.metadata, isArchived: true, last_updated: new Date().toISOString() } } 
+          : p
+      );
+      setDpps(updatedDpps); // This will trigger re-calculation of sortedAndFilteredDPPs
+    }
+
+
     const productName = dpps.find(p=>p.id === productToDeleteId)?.productName || productToDeleteId;
-    toast({ title: "Product Deleted", description: `Product "${productName}" has been deleted.` });
+    toast({ title: "Product Archived", description: `Product "${productName}" has been archived (soft deleted).` });
     setIsDeleteDialogOpen(false);
     setProductToDeleteId(null);
   }, [productToDeleteId, toast, dpps]);
 
   return {
-    dpps: processedDPPs, // Return processed DPPs which include completeness
+    dpps: processedDPPs, 
     filters,
     sortConfig,
     productToDeleteId,
@@ -218,3 +262,4 @@ export function useDPPLiveData() {
     toast   
   };
 }
+
