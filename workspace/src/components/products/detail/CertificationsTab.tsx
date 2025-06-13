@@ -1,4 +1,3 @@
-
 // --- File: CertificationsTab.tsx ---
 // Description: Displays product certifications in a dedicated tab.
 "use client";
@@ -117,4 +116,3 @@ export default function CertificationsTab({ product }: CertificationsTabProps) {
     </Card>
   );
 }
-

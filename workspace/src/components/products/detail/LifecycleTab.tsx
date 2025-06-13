@@ -4,7 +4,7 @@
 "use client";
 
 import type { SimpleProductDetail, SimpleLifecycleEvent } from "@/types/dpp";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -96,7 +96,6 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
         newLifecycleStageName: targetEvent.eventName,
       });
 
-      // Advance the local lifecycle state using the state machine
       const machine = lifecycleMachineRef.current;
       const nextStateCandidate = Object.values(DppLifecycleState).find(
         state => state.toLowerCase().replace(/_/g, ' ') === targetEvent.eventName.toLowerCase().replace(/_/g, ' ')
@@ -152,7 +151,7 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center">
-            <LucideIcons.History className="mr-2 h-5 w-5 text-primary" /> Product Lifecycle
+            <LucideIcons.History className="mr-2 h-5 w-5 text-primary" /> Product Lifecycle Journey
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -168,6 +167,7 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
         <CardTitle className="text-lg font-semibold flex items-center">
           <LucideIcons.History className="mr-2 h-5 w-5 text-primary" /> Product Lifecycle Journey
         </CardTitle>
+        <CardDescription>Track the product's progress through its key lifecycle stages and associated compliance checks.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="relative pl-6 space-y-6">
@@ -211,6 +211,24 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
                     )}
                   </div>
                   {event.notes && <p className="text-sm text-foreground/80 mb-3">{event.notes}</p>}
+                  
+                  {event.keyDocuments && event.keyDocuments.length > 0 && (
+                    <div className="mt-2 mb-3">
+                      <h5 className="text-xs font-semibold text-muted-foreground mb-1">Key Documents:</h5>
+                      <ul className="space-y-1">
+                        {event.keyDocuments.map(doc => (
+                          <li key={doc.name} className="text-xs">
+                            <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center">
+                              <LucideIcons.FileText className="h-3.5 w-3.5 mr-1.5 text-primary/80" />
+                              {doc.name} ({doc.type})
+                              <LucideIcons.ExternalLink className="h-3 w-3 ml-1 text-primary/70" />
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
 
                   {canAdvance && (
                     <Button 
@@ -233,10 +251,4 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
             );
           })}
         </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-    
-
+      

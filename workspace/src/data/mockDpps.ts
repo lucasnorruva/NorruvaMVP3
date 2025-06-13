@@ -1,4 +1,3 @@
-
 import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, OwnershipNftLink } from '@/types/dpp'; // Added OwnershipNftLink
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
@@ -86,11 +85,16 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     consumerScans: 1250,
     lifecycleEvents: [
-      {id: "evt1", type: "Manufactured", timestamp: "2024-01-15T00:00:00Z", transactionHash: "0xabc...def", responsibleParty: "GreenTech Appliances"}
+      { id: "evt_dpp001_mfg", type: "Manufacturing Complete", timestamp: "2024-01-15T08:00:00Z", location: "GreenTech Plant A, Stuttgart", responsibleParty: "GreenTech Appliances", data: { batchId: "BATCH_X500_20240115_A", qualityControlRef: "QC_X500_A_001" }, transactionHash: "0xmock_mfg_tx_dpp001", vcId: "vc:mfg:dpp001:01" },
+      { id: "evt_dpp001_qa", type: "Quality Assurance Passed", timestamp: "2024-01-16T10:00:00Z", location: "GreenTech Plant A, Stuttgart", responsibleParty: "QA Department", data: { reportId: "QA_RPT_X500_A_001", standardsMet: ["ISO 9001", "CE LVD"] } },
+      { id: "evt_dpp001_ship", type: "Shipped to Distributor", timestamp: "2024-01-20T14:00:00Z", location: "DHL Hub, Frankfurt", responsibleParty: "DHL Logistics", data: { trackingNumber: "DHLTRACK12345", destinationHub: "Paris Logistics Center" }, transactionHash: "0xmock_ship_tx_dpp001" },
+      { id: "evt_dpp001_retail", type: "First Retail Sale", timestamp: "2024-02-10T16:30:00Z", location: "Paris Central Store", responsibleParty: "EcoMart Paris", data: { customerSegment: "Eco-Conscious Urban" } },
+      { id: "evt_dpp001_service", type: "Scheduled Maintenance Due", timestamp: "2025-02-15T00:00:00Z", location: "Customer Location", responsibleParty: "Customer/Service Partner", data: { serviceType: "Filter Replacement", recommendedInterval: "12 months" } },
+      { id: "evt_dpp001_eol", type: "Projected End-of-Life", timestamp: "2039-01-15T00:00:00Z", data: { expectedRecyclability: "95%", primaryRecyclableMaterials: ["Steel", "Copper", "Plastics (PP, ABS)"] } }
     ],
     certifications: [
-      {id: "cert1", name: "Energy Star", issuer: "EPA", issueDate: "2024-01-01T11:00:00Z", documentUrl: "#", transactionHash: "0xcertAnchor1", standard: "Energy Star Program Requirements for Refrigerators v6.0"},
-      {id: "cert2", name: "ISO 14001", issuer: "TUV Rheinland", issueDate: "2024-01-20T00:00:00Z", expiryDate: "2026-11-14", documentUrl: "#iso14001", vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015"}
+      {id: "cert1", name: "Energy Star v6.0", issuer: "EPA", issueDate: "2024-01-01T11:00:00Z", documentUrl: "#", transactionHash: "0xcertAnchor1", standard: "Energy Star Program Requirements for Refrigerators v6.0", vcId: "vc:energystar:dpp001"},
+      {id: "cert2", name: "ISO 14001:2015", issuer: "TUV Rheinland", issueDate: "2024-01-20T00:00:00Z", expiryDate: "2026-11-14", documentUrl: "#iso14001", vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015", transactionHash: "0xcertAnchorISO14001"}
     ],
     verifiableCredentials: [
         {
@@ -130,8 +134,21 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
           stepName: 'Manufactured',
           actorDid: 'did:example:greentech',
           timestamp: '2024-01-15T00:00:00Z',
-          location: 'Factory A',
+          location: 'Factory A, Stuttgart, Germany',
           transactionHash: '0xstep1'
+        },
+        {
+          stepName: 'Quality Control Passed',
+          actorDid: 'did:example:greentech_qc',
+          timestamp: '2024-01-16T10:00:00Z',
+          location: 'Factory A, Stuttgart, Germany',
+        },
+        {
+          stepName: 'Shipped to Central Warehouse',
+          actorDid: 'did:example:dhl_logistics',
+          timestamp: '2024-01-20T14:00:00Z',
+          location: 'DHL Hub, Frankfurt, Germany',
+          transactionHash: '0xmock_ship_tx_dpp001'
         }
       ]
     },
@@ -155,7 +172,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     authenticationVcId: "vc_auth_DPP002_mock456", 
     productDetails: {
-      description: "A sustainable t-shirt made from organic cotton.",
+      description: "A sustainable t-shirt made from 100% GOTS certified organic cotton.",
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "cotton t-shirt apparel",
       materials: [{name: "Organic Cotton", percentage: 100}],
@@ -514,9 +531,3 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
-
-    
-    
-    
-
-
