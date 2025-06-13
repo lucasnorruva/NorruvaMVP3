@@ -9,8 +9,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
-// Corrected import based on the error message and available exports
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -48,7 +47,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     parsedSpecifications = product.specifications;
   }
 
-  // Use the imported functions
   const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus); 
   const ebsiBadgeClasses = getStatusBadgeClasses(product.ebsiStatus);
 
@@ -134,7 +132,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
-              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & EBSI Details
+              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & Token Details 
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
@@ -196,6 +194,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
           </CardContent>
         </Card>
+
+
       </div>
 
       {/* Right Column: Description, Key Points, Specifications, Custom Attributes */}
@@ -351,7 +351,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+    
 
-    
-    
     
