@@ -5,14 +5,15 @@ import type { SimpleProductDetail } from "@/types/dpp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { AspectRatio } from "@/components/ui/aspect-ratio"; 
 import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
-import { getEbsiStatusBadge } from "@/utils/dppDisplayUtils"; 
+import { getEbsiStatusDetails } from "@/utils/dppDisplayUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 
 interface OverviewTabProps {
+
   product: SimpleProductDetail;
 }
 
@@ -168,7 +169,11 @@ export default function OverviewTab({ product }: OverviewTabProps) {
              {product.ebsiStatus && (
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
-                <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiStatus)}</div>
+                <div className="flex items-center mt-0.5">
+<Badge variant={getEbsiStatusDetails(product.ebsiStatus).variant}>
+                  {getEbsiStatusDetails(product.ebsiStatus).icon} {getEbsiStatusDetails(product.ebsiStatus).text}
+</Badge>
+</div>
                 {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
                    <TooltipProvider><Tooltip><TooltipTrigger asChild>
                     <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
