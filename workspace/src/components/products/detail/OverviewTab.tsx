@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Shirt, Construction } from "lucide-react";
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Shirt, Construction } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
-import NextLink from "next/link";
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import NextLink from "next/link"; 
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -49,7 +49,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     parsedSpecifications = product.specifications;
   }
 
-  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus); // Use the imported function
+  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus);
+
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -61,8 +62,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <Image
                 src={imageDisplayUrl}
                 alt={product.productName}
-                fill
-                className="object-contain"
+                fill 
+                className="object-contain" 
                 data-ai-hint={aiHint}
                 priority={!imageDisplayUrl.startsWith("data:")}
               />
@@ -102,7 +103,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center">
-                <KeyRound className="mr-2 h-5 w-5 text-primary" />
+                <KeyRound className="mr-2 h-5 w-5 text-primary" /> 
                 Authenticity & Ownership
               </CardTitle>
             </CardHeader>
@@ -141,14 +142,14 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <p><strong className="text-muted-foreground flex items-center"><Layers3 className="mr-1.5 h-4 w-4 text-teal-600"/>Platform:</strong> {product.blockchainPlatform}</p>
             )}
             {product.contractAddress && (
-              <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong>
+              <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong> 
                 <TooltipProvider><Tooltip><TooltipTrigger asChild>
                    <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
                 </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></TooltipProvider>
               </p>
             )}
             {product.tokenId && (
-              <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong>
+              <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong> 
                  <TooltipProvider><Tooltip><TooltipTrigger asChild>
                    <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
                  </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></TooltipProvider>
@@ -156,7 +157,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
             {product.anchorTransactionHash && (
               <div>
-                <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong>
+                <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong> 
                 <TooltipProvider><Tooltip><TooltipTrigger asChild>
                    <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
                 </TooltipTrigger><TooltipContent><p>{product.anchorTransactionHash}</p></TooltipContent></Tooltip></TooltipProvider>
@@ -174,13 +175,10 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">
-                   <Badge
-                    variant={ebsiDetails.variant}
-                    className={cn("capitalize", getStatusBadgeClasses(product.ebsiStatus))}
-                  >
-                    {React.cloneElement(ebsiDetails.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
-                    {ebsiDetails.text}
-                  </Badge>
+                   <Badge variant={ebsiDetails.variant} className={cn("capitalize", getStatusBadgeClasses(product.ebsiStatus))}>
+                      {React.cloneElement(ebsiDetails.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
+                      {ebsiDetails.text}
+                   </Badge>
                 </div>
                 {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
                    <TooltipProvider><Tooltip><TooltipTrigger asChild>
@@ -359,4 +357,3 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   );
 }
 
-    
