@@ -1,17 +1,15 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Users } from 'lucide-react';
+import { ArrowRight, Users, Info } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import { useRole, type UserRole } from '@/contexts/RoleContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
 
 const HOMEPAGE_SELECTED_ROLE_KEY = 'norruvaHomepageSelectedRole';
 
@@ -20,40 +18,53 @@ export default function HomePage() {
   const { currentRole: roleFromContext, setCurrentRole: setRoleInContext, availableRoles } = useRole();
   
   const [selectedRole, setSelectedRole] = useState<UserRole>(() => {
+    let initialRole: UserRole = 'admin'; // Default fallback
     if (typeof window !== 'undefined') {
       const storedRole = localStorage.getItem(HOMEPAGE_SELECTED_ROLE_KEY);
       if (storedRole && availableRoles.includes(storedRole as UserRole)) {
-        return storedRole as UserRole;
+        initialRole = storedRole as UserRole;
+      } else if (roleFromContext && availableRoles.includes(roleFromContext)) {
+        initialRole = roleFromContext;
+      } else if (availableRoles.length > 0) {
+        initialRole = availableRoles[0];
       }
+    } else { 
+        if (roleFromContext && availableRoles.includes(roleFromContext)) {
+            initialRole = roleFromContext;
+        } else if (availableRoles.length > 0) {
+            initialRole = availableRoles[0];
+        }
     }
-    // If no stored role, use the role from context if valid, otherwise default
-    if (roleFromContext && availableRoles.includes(roleFromContext)) {
-      return roleFromContext;
-    }
-    return availableRoles.length > 0 ? availableRoles[0] : 'admin'; // Default to admin if no other info
+    return initialRole;
   });
 
-  // Effect to update selectedRole if roleFromContext changes and is valid
   useEffect(() => {
     if (roleFromContext && availableRoles.includes(roleFromContext) && roleFromContext !== selectedRole) {
       setSelectedRole(roleFromContext);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(HOMEPAGE_SELECTED_ROLE_KEY, roleFromContext);
+      }
     }
   }, [roleFromContext, availableRoles, selectedRole]);
 
-  const handleRoleChange = (newRole: UserRole) => {
-    setSelectedRole(newRole);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(HOMEPAGE_SELECTED_ROLE_KEY, newRole);
+  const handleRoleChange = (newRoleString: string) => {
+    const newRole = newRoleString as UserRole;
+    if (availableRoles.includes(newRole)) {
+        setSelectedRole(newRole);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(HOMEPAGE_SELECTED_ROLE_KEY, newRole);
+        }
     }
   };
 
   const handleRoleSelectAndNavigate = () => {
-    if (selectedRole) {
-      setRoleInContext(selectedRole); // Update the global context
-      // The AppHeader will pick up this role and navigate to the correct dashboard
-      // via its own logic that watches currentRole.
-      // Or, more directly:
+    if (selectedRole && availableRoles.includes(selectedRole)) {
+      setRoleInContext(selectedRole); 
       router.push(`/${selectedRole}-dashboard`);
+    } else if (availableRoles.length > 0) {
+      const fallbackRole = availableRoles[0];
+      setRoleInContext(fallbackRole);
+      router.push(`/${fallbackRole}-dashboard`);
     }
   };
 
@@ -100,7 +111,7 @@ export default function HomePage() {
           size="lg" 
           className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto"
           onClick={handleRoleSelectAndNavigate}
-          disabled={!selectedRole}
+          disabled={!selectedRole || !availableRoles.includes(selectedRole)}
         >
           Go to {selectedRole ? (selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)) : ''} Dashboard
           <ArrowRight className="ml-2 h-5 w-5" />
