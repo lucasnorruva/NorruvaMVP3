@@ -14,10 +14,9 @@ import LifecycleTab from './LifecycleTab';
 import SupplyChainTab from './SupplyChainTab';
 import CertificationsTab from './CertificationsTab';
 import QrCodeTab from './QrCodeTab';
-import HistoryTab from './HistoryTab'; // Import the new HistoryTab
+import HistoryTab from './HistoryTab'; // Ensure this import is correct
 
-import { Package, Leaf, ShieldCheck, History as HistoryIcon, Layers, Award, QrCode } from 'lucide-react';
-
+import { Package, Leaf, ShieldCheck, History as HistoryIcon, Layers, Award, QrCode, ListChecks } from 'lucide-react'; // HistoryIcon is for Lifecycle, ListChecks for History
 
 interface ProductContainerProps {
   product: SimpleProductDetail;
@@ -40,14 +39,15 @@ export default function ProductContainer({
     return <p>Product not found.</p>;
   }
   
+  // Define tab items configuration
   const tabItems = [
     { value: "overview", label: "Overview", icon: Package },
     { value: "sustainability", label: "Sustainability", icon: Leaf },
     { value: "compliance", label: "Compliance", icon: ShieldCheck },
     { value: "certifications", label: "Certifications", icon: Award },
-    { value: "lifecycle", label: "Lifecycle", icon: HistoryIcon },
+    { value: "lifecycle", label: "Lifecycle", icon: HistoryIcon }, // Uses Lucide's History icon
     { value: "supplyChain", label: "Supply Chain", icon: Layers },
-    { value: "history", label: "History", icon: HistoryIcon }, // Added History tab
+    { value: "history", label: "History", icon: ListChecks }, // This is the History tab entry
     { value: "qrCode", label: "QR Code", icon: QrCode },
   ];
 
@@ -56,7 +56,7 @@ export default function ProductContainer({
       <ProductHeader product={product} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-1.5"> {/* Adjusted grid columns */}
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-1.5"> {/* Adjusted grid columns for 8 tabs */}
           {tabItems.map(tab => (
             <TabsTrigger 
               key={tab.value} 
@@ -97,11 +97,11 @@ export default function ProductContainer({
           <SupplyChainTab product={product} onSupplyChainLinksChange={onSupplyChainUpdate} />
         </TabsContent>
 
-        <TabsContent value="history" className="mt-6"> {/* Added TabsContent for History */}
+        <TabsContent value="history" className="mt-6">
           <HistoryTab productId={product.id} />
         </TabsContent>
 
-        <TabsContent value="qrCode" className="mt-6">
+        <TabsContent value="qrCode" className="mt-6"> 
           <QrCodeTab productId={product.id} productName={product.productName} />
         </TabsContent>
       </Tabs>
