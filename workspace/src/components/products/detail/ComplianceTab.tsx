@@ -8,7 +8,7 @@ import ProductComplianceHeader from "./ProductComplianceHeader";
 import ComplianceDetailItemDisplay, { type ComplianceDetailItemProps } from "./ComplianceDetailItemDisplay"; // Import the new component and its props type
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging, ShieldCheck } from "lucide-react"; // Added BatteryCharging & ShieldCheck
+import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging, ShieldCheck, Settings2 } from "lucide-react"; // Added BatteryCharging & ShieldCheck, Settings2
 import Link from "next/link";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -122,7 +122,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
   }
 
   // Handle Battery Regulation explicitly
-  if (summary.battery) {
+  if (summary.battery && summary.battery.status !== 'not_applicable') { // Show only if applicable
     const batteryNotesParts: string[] = [];
     if (summary.battery.batteryChemistry) batteryNotesParts.push(`Chemistry: ${summary.battery.batteryChemistry}`);
     if (summary.battery.carbonFootprint?.value !== undefined && summary.battery.carbonFootprint.value !== null) {
@@ -172,10 +172,10 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     <div className="space-y-6">
       <ProductComplianceHeader
         overallStatusText={summary.overallStatus}
-        // notifications={product.notifications} // This prop does not exist on SimpleProductDetail
+        notifications={product.notifications || []} // Pass product notifications if they exist
       />
 
-      {allComplianceItems.length > 0 && (
+      {allComplianceItems.length > 0 ? (
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -190,9 +190,39 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
             ))}
           </CardContent>
         </Card>
+      ) : (
+         <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <ListChecks className="mr-2 h-5 w-5 text-primary" />
+              Detailed Compliance Checkpoints
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">No specific compliance checkpoints detailed for this product.</p>
+          </CardContent>
+        </Card>
       )}
+      <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+                <Settings2 className="mr-2 h-5 w-5 text-primary" /> Compliance Management
+            </CardTitle>
+            <CardDescription>Access further compliance tools and resources.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+                <Button variant="outline" asChild>
+                  <Link href={`/compliance/pathways?productCategory=${encodeURIComponent(product.category)}`}>
+                    View Relevant Compliance Pathways
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                   <Link href={`/copilot?contextQuery=What are the main compliance concerns for a ${encodeURIComponent(product.category)} product like ${encodeURIComponent(product.productName)}?`}>
+                    Ask AI Co-Pilot
+                  </Link>
+                </Button>
+          </CardContent>
+      </Card>
     </div>
   );
 }
-
-    

@@ -6,27 +6,38 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, AlertTriangle, History as HistoryIconLucide, User, Edit, CalendarDays, Info as InfoIcon, FileText, ShieldCheck, CheckCircle, Layers, PlusCircle, Anchor, FileCog, UploadCloud } from 'lucide-react';
+import { Loader2, AlertTriangle, History as HistoryIconLucide, User, Edit, CalendarDays, Info as InfoIcon, FileText, ShieldCheck, CheckCircle, Layers, PlusCircle, Anchor, FileCog, UploadCloud, Link as LinkIconPath, Tag, KeyRound, Layers3, Sigma, MessageSquareWarning, Hash, FileLock } from 'lucide-react';
 import type { HistoryEntry } from '@/types/dpp';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 interface HistoryTabProps {
   productId: string;
 }
 
 const getActionIcon = (actionType: string): React.ElementType => {
-  if (actionType.toLowerCase().includes("created")) return PlusCircle;
-  if (actionType.toLowerCase().includes("lifecycle")) return Layers;
-  if (actionType.toLowerCase().includes("certif")) return Award;
-  if (actionType.toLowerCase().includes("ebsi")) return ShieldCheck;
-  if (actionType.toLowerCase().includes("status")) return Edit;
-  if (actionType.toLowerCase().includes("anchor")) return Anchor;
-  if (actionType.toLowerCase().includes("ownership")) return User;
-  if (actionType.toLowerCase().includes("document")) return FileText;
-  if (actionType.toLowerCase().includes("vc hash")) return FileCog;
-  if (actionType.toLowerCase().includes("critical")) return AlertTriangle;
+  const lowerAction = actionType.toLowerCase();
+  if (lowerAction.includes("created")) return PlusCircle;
+  if (lowerAction.includes("lifecycle event: manufacturing") || lowerAction.includes("lifecycle event: quality assurance")) return FileCog;
+  if (lowerAction.includes("lifecycle event: shipped") || lowerAction.includes("lifecycle event: distribution")) return UploadCloud;
+  if (lowerAction.includes("lifecycle event: in use") || lowerAction.includes("lifecycle event: sold")) return CheckCircle;
+  if (lowerAction.includes("lifecycle event: end of life") || lowerAction.includes("lifecycle event: recycled")) return Recycle;
+  if (lowerAction.includes("lifecycle")) return Layers; // Generic lifecycle
+  if (lowerAction.includes("certif")) return Award;
+  if (lowerAction.includes("ebsi")) return ShieldCheck;
+  if (lowerAction.includes("status") && !lowerAction.includes("onchain")) return Edit; // General status update
+  if (lowerAction.includes("anchor")) return Anchor;
+  if (lowerAction.includes("ownership") && !lowerAction.includes("nft")) return User;
+  if (lowerAction.includes("document")) return FileText;
+  if (lowerAction.includes("vc hash")) return Hash;
+  if (lowerAction.includes("critical")) return MessageSquareWarning;
+  if (lowerAction.includes("auth vc")) return FileLock;
+  if (lowerAction.includes("nft link")) return Tag;
+  if (lowerAction.includes("onchainstatusupdate")) return Sigma; 
+  if (lowerAction.includes("onchainlifecyclestageupdate")) return Layers3; 
   return Edit; // Default icon
 };
 
@@ -40,7 +51,13 @@ export default function HistoryTab({ productId }: HistoryTabProps) {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/v1/dpp/history/${productId}`);
+        // Use API key for fetching history if your middleware is set up for it
+        const apiKey = process.env.NEXT_PUBLIC_MOCK_API_KEY || "SANDBOX_KEY_123";
+        const response = await fetch(`/api/v1/dpp/history/${productId}`, {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`
+          }
+        });
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error?.message || `Failed to fetch history: ${response.status}`);
@@ -135,10 +152,19 @@ export default function HistoryTab({ productId }: HistoryTabProps) {
                       </span>
                     </div>
                     {entry.details && (
-                        <p className="text-xs text-foreground/90 p-1.5 bg-muted/30 rounded-sm whitespace-pre-line">
-                            <InfoIcon className="inline h-3.5 w-3.5 mr-1 text-info align-text-bottom"/>
-                            {entry.details}
-                        </p>
+                        <TooltipProvider delayDuration={150}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="text-xs text-foreground/90 p-1.5 bg-muted/30 rounded-sm whitespace-pre-line truncate cursor-help">
+                                  <InfoIcon className="inline h-3.5 w-3.5 mr-1 text-info align-text-bottom"/>
+                                  {entry.details.length > 100 ? `${entry.details.substring(0, 100)}...` : entry.details}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-md bg-popover text-popover-foreground shadow-lg rounded-md p-2 border">
+                              <p className="text-xs whitespace-pre-line">{entry.details}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                     )}
                   </div>
                 </div>
@@ -150,4 +176,3 @@ export default function HistoryTab({ productId }: HistoryTabProps) {
     </Card>
   );
 }
-

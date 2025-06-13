@@ -66,7 +66,7 @@ const ComplianceDetailItemDisplay: React.FC<ComplianceDetailItemProps> = ({
         </h4>
         <div className="flex items-center gap-2">
           {actionButton}
-          <Badge variant={badgeVariant} className={cn("text-xs", badgeClasses)}>
+          <Badge variant={badgeVariant} className={cn("text-xs px-2.5 py-1", badgeClasses)}>
             {React.cloneElement(StatusIconComponent, { className: "mr-1.5 h-3.5 w-3.5"})}
             {formattedStatus}
           </Badge>
@@ -74,6 +74,16 @@ const ComplianceDetailItemDisplay: React.FC<ComplianceDetailItemProps> = ({
       </div>
       <div className="text-xs space-y-1 text-muted-foreground pl-7"> {/* Indent details slightly */}
         <p>{detailsText}</p>
+        {verificationId && (
+            <TooltipProvider delayDuration={100}>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                <p className="truncate cursor-help">Verification ID: <span className="font-mono">{verificationId}</span></p>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="start"><p className="text-xs break-all">{verificationId}</p></TooltipContent>
+            </Tooltip>
+            </TooltipProvider>
+        )}
         {notes && <p><strong className="text-foreground/80">Notes:</strong> <span className="text-foreground/90">{notes}</span></p>}
         {url && (
           <Button variant="link" size="sm" asChild className="p-0 h-auto text-primary mt-1.5">

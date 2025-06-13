@@ -1,4 +1,5 @@
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, OwnershipNftLink } from '@/types/dpp'; // Added OwnershipNftLink
+
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, OwnershipNftLink, DocumentReference } from '@/types/dpp'; // Added OwnershipNftLink, DocumentReference
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -26,20 +27,35 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         chainName: "MockEthereum",
     },
     productDetails: {
-      description: "An eco friendly fridge.",
+      description: "The EcoSmart Refrigerator X500 is a flagship product from GreenTech Appliances, meticulously designed for households that prioritize both cutting-edge technology and environmental responsibility. This spacious 400-liter unit boasts an A++ energy rating, significantly reducing electricity consumption compared to conventional models. Its construction heavily features recycled steel (70% by weight), contributing to circular economy goals. The refrigerator employs an advanced AI-driven FrostFree system, which not only prevents ice build-up but also optimizes cooling cycles for maximum efficiency and food preservation. Key components like the compressor are engineered for a 15-year lifespan, backed by extensive durability testing. Smart connectivity allows users to monitor and control energy usage remotely, further enhancing its eco-friendly profile. GreenTech Appliances provides comprehensive transparency through this Digital Product Passport, detailing its manufacturing processes, material origins, and end-of-life recyclability (rated at 95%).",
       energyLabel: "A++",
       imageUrl: "https://placehold.co/600x400.png",
-      imageHint: "refrigerator appliance",
-      materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}],
-      specifications: JSON.stringify({ "Capacity (Liters)": "400", "Annual Energy Consumption (kWh)": "150", "Noise Level (dB)": "38", "Dimensions (HxWxD cm)": "180x70x65", "Color": "Stainless Steel" }, null, 2),
+      imageHint: "refrigerator kitchen",
+      materials: [
+        {name: "Recycled Steel (Frame & Door)", percentage: 70, isRecycled: true, origin: "Germany"},
+        {name: "Polyurethane (Insulation)", percentage: 15, origin: "Belgium"},
+        {name: "Tempered Glass (Shelves)", percentage: 5, origin: "Poland"},
+        {name: "ABS Plastic (Interior)", percentage: 5, recycledContentPercentage: 20, isRecycled: true, origin: "Netherlands"},
+        {name: "Copper (Piping)", percentage: 2, origin: "Chile"},
+        {name: "Refrigerant R600a", percentage: 0.1, origin: "Germany"},
+      ],
+      sustainabilityClaims: [
+        { claim: "A++ Energy Efficiency Rating", verificationDetails: "EU Energy Label Certified" },
+        { claim: "Constructed with 70% recycled steel content", verificationDetails: "Supplier Declaration & Material Traceability Report #MTR789" },
+        { claim: "Designed for 95% recyclability at end-of-life", verificationDetails: "Internal Assessment based on EN 45555" },
+        { claim: "Low Global Warming Potential (GWP) refrigerant R600a used", verificationDetails: "F-Gas Regulation Compliant" },
+        { claim: "15-year designed lifespan for critical components", evidenceVcId: "vc:durability:greentech:dpp001", verificationDetails: "Internal Durability Test Protocol DTP-005" }
+      ],
+      specifications: JSON.stringify({ "Capacity (Liters)": "400", "Annual Energy Consumption (kWh)": "150", "Noise Level (dB)": "38", "Dimensions (HxWxD cm)": "180x70x65", "Color": "Stainless Steel", "Refrigerant Type": "R600a", "Defrost Type": "FrostFree AI" }, null, 2),
       customAttributes: [
         {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
-        {key: "Special Feature", value: "AI Defrost Technology"},
-        {key: "Warranty Period", value: "5 Years"},
-        {key: "Country of Origin", value: "Germany"}
+        {key: "Special Feature", value: "AI Defrost Technology, Smart Home Integration"},
+        {key: "Warranty Period", value: "5 Years Full, 10 Years Compressor"},
+        {key: "Country of Origin", value: "Germany"},
+        {key: "Manufacturing Plant ID", value: "GT-PLANT-001-STG"}
       ],
       repairabilityScore: { value: 8.5, scale: 10, reportUrl: "https://greentech.com/repair/X500-ECO-report.pdf", vcId: "vc:repair:greentech:dpp001" },
-      sparePartsAvailability: "7 years from date of purchase",
+      sparePartsAvailability: "7 years from date of purchase for all parts, 10 years for compressor and cooling system components.",
       repairManualUrl: "https://greentech.com/manuals/X500-ECO-repair.pdf",
       disassemblyInstructionsUrl: "https://greentech.com/manuals/X500-ECO-disassembly.pdf",
       recyclabilityInformation: { instructionsUrl: "https://greentech.com/recycling/X500-ECO", recycledContentPercentage: 70, designForRecycling: true, vcId: "vc:recycle:greentech:dpp001"},
@@ -126,7 +142,9 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     documents: [
       { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
       { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
-    ],
+      { name: "Declaration of Conformity (EU)", url: "#doc_eu_dpp001.pdf", type: "Declaration of Conformity", addedTimestamp: "2024-01-10T00:00:00Z" },
+      { name: "Recycling Instructions", url: "#recycling_dpp001.pdf", type: "End-of-Life Information", addedTimestamp: "2024-01-15T00:00:00Z" },
+    ] as DocumentReference[],
     traceability: {
     originCountry: "DE",
       supplyChainSteps: [
@@ -177,7 +195,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageHint: "cotton t-shirt apparel",
       materials: [{name: "Organic Cotton", percentage: 100}],
       specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
-      customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}]
+      customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}],
     },
     textileInformation: {
       fiberComposition: [
@@ -531,3 +549,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
+
+    
+    
+    
