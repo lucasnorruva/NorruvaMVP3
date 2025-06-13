@@ -8,17 +8,18 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import useDebounce from "@/hooks/useDebounce";
 import type { DashboardFiltersState } from "@/types/dpp";
-import { Filter, ListFilter, Search, Link as LinkIcon, SlidersHorizontal, XCircle } from "lucide-react";
+import { Filter, ListFilter, Search, Link as LinkIcon, SlidersHorizontal, XCircle, Building, Sigma, Percent } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"; // Added Badge import
+import { Badge } from "@/components/ui/badge";
 
 interface DashboardFiltersComponentProps {
   filters: DashboardFiltersState;
   onFiltersChange: (newFilters: Partial<DashboardFiltersState>) => void;
   availableRegulations: Array<{ value: string, label: string }>;
   availableCategories: string[];
+  availableManufacturers: string[]; // Added
 }
 
 const defaultFilters: DashboardFiltersState = {
@@ -27,6 +28,9 @@ const defaultFilters: DashboardFiltersState = {
   category: "all",
   searchQuery: "",
   blockchainAnchored: "all",
+  manufacturer: "all", // Added
+  completeness: "all", // Added
+  onChainStatus: "all",
 };
 
 export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps> = ({
@@ -34,6 +38,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
   onFiltersChange,
   availableRegulations,
   availableCategories,
+  availableManufacturers, // Added
 }) => {
   const [searchValue, setSearchValue] = useState(filters.searchQuery);
   const debouncedSearch = useDebounce(searchValue, 300);
@@ -62,12 +67,32 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
     { value: "not_anchored", label: "Not Anchored" },
   ];
 
+  const completenessOptions = [
+    { value: "all", label: "All Completeness Levels" },
+    { value: ">75", label: "Good (>75%)" },
+    { value: "50-75", label: "Fair (50-75%)" },
+    { value: "<50", label: "Needs Improvement (<50%)" },
+  ];
+
+  const onChainStatusOptions = [
+    { value: "all", label: "All On-Chain Statuses" },
+    { value: "Unknown", label: "Unknown" },
+    { value: "Active", label: "Active" },
+    { value: "Pending Activation", label: "Pending Activation" },
+    { value: "Recalled", label: "Recalled" },
+    { value: "Flagged for Review", label: "Flagged for Review" },
+    { value: "Archived", label: "Archived" },
+  ];
+
   const activeFilterCount = [
     filters.searchQuery && filters.searchQuery.length > 0,
     filters.status !== defaultFilters.status,
     filters.regulation !== defaultFilters.regulation,
     filters.category !== defaultFilters.category,
     filters.blockchainAnchored !== defaultFilters.blockchainAnchored,
+    filters.manufacturer !== defaultFilters.manufacturer, // Added
+    filters.completeness !== defaultFilters.completeness, // Added
+    filters.onChainStatus !== defaultFilters.onChainStatus,
   ].filter(Boolean).length;
 
   const handleClearFilters = () => {
@@ -76,7 +101,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
 
   return (
     <Card className="shadow-md">
-      <CardContent className="p-0"> {/* Remove CardContent padding, accordion will handle it */}
+      <CardContent className="p-0"> 
         <Accordion type="single" collapsible defaultValue="filter-section" className="w-full">
           <AccordionItem value="filter-section" className="border-b-0">
             <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg [&[data-state=open]]:rounded-b-none [&[data-state=open]]:border-b">
@@ -93,17 +118,17 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                 )}
               </div>
             </AccordionTrigger>
-            <AccordionContent className="pt-0"> {/* AccordionContent has pb-4 by default */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end p-4 border-t">
+            <AccordionContent className="pt-0"> 
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 items-end p-4 border-t">
                 <div>
                   <Label htmlFor="search-query" className="text-sm font-medium mb-1 flex items-center">
                     <Search className="h-4 w-4 mr-1.5 text-primary" />
-                    Search by Product Name
+                    Search
                   </Label>
                   <Input
                     id="search-query"
                     type="text"
-                    placeholder="Enter product name..."
+                    placeholder="Name, ID, GTIN..."
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     className="w-full"
@@ -112,7 +137,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                 <div>
                   <Label htmlFor="status-filter" className="text-sm font-medium mb-1 flex items-center">
                     <Filter className="h-4 w-4 mr-1.5 text-primary" />
-                    Filter by Status
+                    Status
                   </Label>
                   <Select
                     value={filters.status}
@@ -133,7 +158,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                 <div>
                   <Label htmlFor="regulation-filter" className="text-sm font-medium mb-1 flex items-center">
                     <Filter className="h-4 w-4 mr-1.5 text-primary" />
-                    Regulation (Compliant)
+                    Regulation
                   </Label>
                   <Select
                     value={filters.regulation}
@@ -154,7 +179,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                 <div>
                   <Label htmlFor="category-filter" className="text-sm font-medium mb-1 flex items-center">
                     <ListFilter className="h-4 w-4 mr-1.5 text-primary" />
-                    Filter by Category
+                    Category
                   </Label>
                   <Select
                     value={filters.category}
@@ -174,19 +199,40 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="anchoring-filter" className="text-sm font-medium mb-1 flex items-center">
-                    <LinkIcon className="h-4 w-4 mr-1.5 text-primary" />
-                    Blockchain Anchoring
+                  <Label htmlFor="manufacturer-filter" className="text-sm font-medium mb-1 flex items-center">
+                    <Building className="h-4 w-4 mr-1.5 text-primary" />
+                    Manufacturer
                   </Label>
                   <Select
-                    value={filters.blockchainAnchored || 'all'}
-                    onValueChange={(value) => onFiltersChange({ blockchainAnchored: value as DashboardFiltersState['blockchainAnchored'] })}
+                    value={filters.manufacturer || 'all'}
+                    onValueChange={(value) => onFiltersChange({ manufacturer: value as DashboardFiltersState['manufacturer'] })}
                   >
-                    <SelectTrigger id="anchoring-filter" className="w-full">
-                      <SelectValue placeholder="Select anchoring status" />
+                    <SelectTrigger id="manufacturer-filter" className="w-full">
+                      <SelectValue placeholder="Select manufacturer" />
                     </SelectTrigger>
                     <SelectContent>
-                      {anchoringOptions.map((option) => (
+                      {availableManufacturers.map((manufacturer) => (
+                        <SelectItem key={manufacturer} value={manufacturer}>
+                          {manufacturer === "all" ? "All Manufacturers" : manufacturer}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="completeness-filter" className="text-sm font-medium mb-1 flex items-center">
+                    <Percent className="h-4 w-4 mr-1.5 text-primary" />
+                    Completeness
+                  </Label>
+                  <Select
+                    value={filters.completeness || 'all'}
+                    onValueChange={(value) => onFiltersChange({ completeness: value as DashboardFiltersState['completeness'] })}
+                  >
+                    <SelectTrigger id="completeness-filter" className="w-full">
+                      <SelectValue placeholder="Select completeness" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {completenessOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
@@ -194,9 +240,31 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label htmlFor="onchain-status-filter" className="text-sm font-medium mb-1 flex items-center">
+                    <Sigma className="h-4 w-4 mr-1.5 text-primary" />
+                    On-Chain Status
+                  </Label>
+                  <Select
+                    value={filters.onChainStatus || 'all'}
+                    onValueChange={(value) => onFiltersChange({ onChainStatus: value as DashboardFiltersState['onChainStatus'] })}
+                  >
+                    <SelectTrigger id="onchain-status-filter" className="w-full">
+                      <SelectValue placeholder="Select on-chain status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {onChainStatusOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
               </div>
               {activeFilterCount > 0 && (
-                <div className="p-4 pt-0 text-right">
+                <div className="p-4 pt-2 text-right">
                   <Button variant="outline" size="sm" onClick={handleClearFilters}>
                     <XCircle className="mr-2 h-4 w-4" /> Clear All Filters
                   </Button>

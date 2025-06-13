@@ -155,9 +155,12 @@ export interface DashboardFiltersState {
   blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
   isTextileProduct?: boolean;
   isConstructionProduct?: boolean;
+  manufacturer?: 'all' | string; // Added manufacturer filter
+  completeness?: 'all' | '>75' | '50-75' | '<50'; // Added completeness filter
+  onChainStatus?: string;
 }
 
-export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus';
+export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus' | 'manufacturer.name' | 'completenessScore';
 
 export interface SortConfig {
   key: SortableKeys | null;
@@ -421,6 +424,7 @@ export interface DisplayableProduct {
     repairManualUrl?: string;
     disassemblyInstructionsUrl?: string;
   };
+  completeness?: { score: number; filledFields: number; totalFields: number; missingFields: string[] }; // Added for completeness
 }
 
 export interface AnchorResult {
