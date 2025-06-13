@@ -6,10 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt, Wrench } from "lucide-react";
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react";
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link";
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
+// Corrected import: getEbsiStatusDetails and getStatusBadgeClasses instead of getEbsiStatusBadge
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import React from "react";
@@ -49,9 +50,9 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     parsedSpecifications = product.specifications;
   }
 
+  // Use the imported utility functions for EBSI status
   const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus);
-  const ebsiBadgeAdditionalClasses = getStatusBadgeClasses(product.ebsiStatus);
-
+  const ebsiBadgeClasses = getStatusBadgeClasses(product.ebsiStatus);
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -131,7 +132,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             </CardContent>
           </Card>
         )}
-
+        
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -176,8 +177,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">
-                  <Badge variant={ebsiDetails.variant} className={cn("capitalize", ebsiBadgeAdditionalClasses)}>
-                    {React.cloneElement(ebsiDetails.icon, { className: cn(ebsiDetails.icon.props.className, "mr-1.5 h-3.5 w-3.5")})}
+                  <Badge variant={ebsiDetails.variant} className={cn("capitalize", ebsiBadgeClasses)}>
+                    {React.cloneElement(ebsiDetails.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
                     {ebsiDetails.text}
                   </Badge>
                 </div>
@@ -192,7 +193,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 <div className="mt-2 pt-2 border-t border-border/50">
                   <h4 className="font-medium text-sm text-muted-foreground mb-1">Conceptual On-Chain State:</h4>
                   {product.onChainStatus && <p><strong className="text-muted-foreground flex items-center"><Sigma className="mr-1.5 h-4 w-4 text-purple-600"/>Status:</strong> <span className="font-semibold capitalize text-foreground/90">{product.onChainStatus.replace(/_/g, ' ')}</span></p>}
-                  {product.onChainLifecycleStage && <p className="mt-1"><strong className="text-muted-foreground flex items-center"><LayersIconShadcn className="mr-1.5 h-4 w-4 text-purple-600"/>Lifecycle Stage:</strong> <span className="font-semibold capitalize text-foreground/90">{product.onChainLifecycleStage.replace(/([A-Z])/g, ' $1$2').trim()}</span></p>}
+                  {product.onChainLifecycleStage && <p className="mt-1"><strong className="text-muted-foreground flex items-center"><LayersIconShadcn className="mr-1.5 h-4 w-4 text-purple-600"/>Lifecycle Stage:</strong> <span className="font-semibold capitalize text-foreground/90">{product.onChainLifecycleStage.replace(/([A-Z])/g, ' $1').trim()}</span></p>}
                 </div>
             )}
             {!(product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.ebsiStatus || product.onChainStatus || product.onChainLifecycleStage) && (
@@ -200,8 +201,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
           </CardContent>
         </Card>
-
-
       </div>
 
       {/* Right Column: Description, Key Points, Specifications, Custom Attributes */}
@@ -242,7 +241,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               )}
             </CardContent>
           </Card>
-
+          
           <Card className="shadow-sm">
             <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><ShieldCheck className="mr-2 h-5 w-5 text-blue-600" />Key Compliance</CardTitle></CardHeader>
             <CardContent>
