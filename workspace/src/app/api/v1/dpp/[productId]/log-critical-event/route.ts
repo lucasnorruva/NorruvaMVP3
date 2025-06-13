@@ -83,5 +83,4 @@ export async function POST(
     updatedProduct: product,
   }, { status: 200 });
 }
-
     
