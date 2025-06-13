@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { GlobeMethods } from 'react-globe.gl';
 import type { Feature as GeoJsonFeature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { MeshPhongMaterial } from 'three';
-import { Loader2, Info, X, Package, Truck, Ship, Plane, CalendarDays, AlertTriangle } from 'lucide-react'; 
+import { Loader2, Info, X, Package, Truck, Ship, Plane, CalendarDays, AlertTriangle, BarChart3 } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; 
@@ -15,6 +15,16 @@ import { MOCK_DPPS } from '@/data';
 import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS, type TransitProduct, type CustomsAlert } from '@/data'; 
 import SelectedProductCustomsInfoCard from '@/components/dpp-tracker/SelectedProductCustomsInfoCard'; 
 
+// Dynamically import Globe for client-side rendering
+const Globe = dynamic(() => import('react-globe.gl'), { 
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-screen w-screen bg-white">
+      <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      <p className="ml-4 text-lg text-muted-foreground">Loading Globe...</p>
+    </div>
+  )
+});
 
 // Accurate list of EU member state ISO A3 codes
 const EU_COUNTRY_CODES = new Set([
@@ -31,6 +41,11 @@ interface CountryProperties extends GeoJsonProperties {
 }
 
 type CountryFeature = GeoJsonFeature<Geometry, CountryProperties>;
+
+interface CountryStat {
+  countryCode: string;
+  count: number;
+}
 
 export default function GlobeV2Page() {
   const globeEl = useRef<GlobeMethods | undefined>(undefined);
@@ -53,6 +68,8 @@ export default function GlobeV2Page() {
 
   const [countryFilter, setCountryFilter] = useState<'all' | 'eu' | 'supplyChain'>('all');
   const [clickedCountryInfo, setClickedCountryInfo] = useState<CountryProperties | null>(null); 
+  const [countryStatsData, setCountryStatsData] = useState<CountryStat[]>([]);
+  const [maxDppCount, setMaxDppCount] = useState(1); // For scaling altitude
 
   const HEADER_HEIGHT = 64; 
 
@@ -93,7 +110,7 @@ export default function GlobeV2Page() {
     'Hong Kong': { lat: 22.3193, lng: 114.1694 }, 
     'Australia': { lat: -25.2744, lng: 133.7751 },
     'South Korea': { lat: 35.9078, lng: 127.7669 },
-    'Shanghai': { lat: 31.2304, lng: 121.4737 }, // City as fallback
+    'Shanghai': { lat: 31.2304, lng: 121.4737 }, 
     'Mumbai': { lat: 19.0760, lng: 72.8777 },
     'Shenzhen': { lat: 22.5431, lng: 114.0579 },
     'Ho Chi Minh City': { lat: 10.8231, lng: 106.6297 },
@@ -103,22 +120,26 @@ export default function GlobeV2Page() {
     'Zurich': { lat: 47.3769, lng: 8.5417 },
     'Prague': { lat: 50.0755, lng: 14.4378 },
     'Nairobi': { lat: -1.2921, lng: 36.8219 },
+    'DEU': { lat: 51.1657, lng: 10.4515 }, 'FRA': { lat: 46.6034, lng: 1.8883 },
+    'POL': { lat: 51.9194, lng: 19.1451 }, 'CHN': { lat: 35.8617, lng: 104.1954 },
+    'USA': { lat: 37.0902, lng: -95.7129 }, 'IND': { lat: 20.5937, lng: 78.9629 },
+    'BEL': { lat: 50.5039, lng: 4.4699 }, 'NLD': { lat: 52.1326, lng: 5.2913 },
+    'SWE': { lat: 60.1282, lng: 18.6435 },
+    'UNKNOWN': { lat: 0, lng: 0}, // Fallback for unknown
   }), []);
 
   const getCountryFromLocationString = (locationString: string): string | null => {
       if (!locationString) return null;
       const parts = locationString.split(',').map(p => p.trim());
-      const country = parts.pop(); // Assume country is last
-      // Basic check if it might be a country name or known code
-      if (country && (country.length === 2 || country.length === 3 || mockCountryCoordinates[country] || EU_COUNTRY_CODES.has(country.toUpperCase()))) {
+      const country = parts.pop(); 
+      if (country && (mockCountryCoordinates[country] || EU_COUNTRY_CODES.has(country.toUpperCase()))) {
           return country;
       }
-      // If it's a city name, check if we have coords for it
       if (parts.length > 0) {
           const city = parts.pop();
-          if (city && mockCountryCoordinates[city]) return city; // Treat city as key if coords exist
+          if (city && mockCountryCoordinates[city]) return city; 
       }
-      return country || null; // Return last part as best guess if all else fails
+      return country || null; 
   };
 
   useEffect(() => {
@@ -130,20 +151,25 @@ export default function GlobeV2Page() {
         setLandPolygons(geoJson.features);
       })
       .catch((err) => {
-        console.error('Error fetching or processing country polygons:', err);
+        console.error('Error fetching country polygons:', err);
       })
       .finally(() => {
         setDataLoaded(true);
       });
+
+    fetch('/api/v1/dpp/country-stats')
+      .then(res => res.json())
+      .then((stats: CountryStat[]) => {
+        setCountryStatsData(stats);
+        const max = Math.max(1, ...stats.map(s => s.count)); // Ensure max is at least 1
+        setMaxDppCount(max);
+      })
+      .catch(err => console.error("Error fetching country stats:", err));
   }, []);
 
   useEffect(() => {
-    // Reset states when selectedProduct changes or becomes null
-    setHighlightedCountries([]);
-    setArcsData([]);
-    setSelectedProductTransitInfo(null);
-    setSelectedProductAlerts([]);
-    setClickedCountryInfo(null);
+    setHighlightedCountries([]); setArcsData([]); setSelectedProductTransitInfo(null);
+    setSelectedProductAlerts([]); setClickedCountryInfo(null);
 
     if (!selectedProduct) {
       if (globeEl.current) globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.5 }, 1000);
@@ -157,8 +183,8 @@ export default function GlobeV2Page() {
     if (transitInfo) {
       const originCountry = getCountryFromLocationString(transitInfo.origin);
       const destinationCountry = getCountryFromLocationString(transitInfo.destination);
-      const originCoords = originCountry ? mockCountryCoordinates[originCountry] : null;
-      const destinationCoords = destinationCountry ? mockCountryCoordinates[destinationCountry] : null;
+      const originCoords = originCountry ? (mockCountryCoordinates[originCountry] || mockCountryCoordinates[originCountry.toUpperCase()]) : null;
+      const destinationCoords = destinationCountry ? (mockCountryCoordinates[destinationCountry] || mockCountryCoordinates[destinationCountry.toUpperCase()]) : null;
 
       const newHighlights: string[] = [];
       if (originCountry) newHighlights.push(originCountry);
@@ -169,45 +195,36 @@ export default function GlobeV2Page() {
         setArcsData([{
           startLat: originCoords.lat, startLng: originCoords.lng,
           endLat: destinationCoords.lat, endLng: destinationCoords.lng,
-          color: '#3B82F6', // Blue for transit
-          label: `${transitInfo.name} Transit`
+          color: '#3B82F6', label: `${transitInfo.name} Transit`
         }]);
-        if (globeEl.current) { // Focus view on transit arc
+        if (globeEl.current) { 
              const midLat = (originCoords.lat + destinationCoords.lat) / 2;
              const midLng = (originCoords.lng + destinationCoords.lng) / 2;
              globeEl.current.pointOfView({ lat: midLat, lng: midLng, altitude: 2.0 }, 1000);
         }
       } else {
         setArcsData([]);
-        // If no transit arc, fall back to supply chain view or default Europe
         if (globeEl.current) globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
       }
     } else {
-      // Fallback: If no transit info, fetch supply chain graph (or simulate)
       const dpp = MOCK_DPPS.find(d => d.id === selectedProduct);
       const countries = new Set<string>();
       let manufacturerCountry: string | null = null;
 
-      if (dpp?.manufacturer?.address) {
+      const primaryOriginCountryISO = dpp?.traceability?.originCountry;
+      if (primaryOriginCountryISO && mockCountryCoordinates[primaryOriginCountryISO]) {
+          countries.add(primaryOriginCountryISO);
+          manufacturerCountry = primaryOriginCountryISO;
+      } else if (dpp?.manufacturer?.address) {
         const country = getCountryFromLocationString(dpp.manufacturer.address);
-        if (country) {
-          countries.add(country);
-          manufacturerCountry = country;
-        }
-      } else if (dpp?.traceability?.originCountry) {
-        // If no manufacturer address, use originCountry as a proxy for main location
-        const country = getCountryFromLocationString(dpp.traceability.originCountry);
-         if (country) {
-          countries.add(country);
-          manufacturerCountry = country; // Use origin as the 'center' for supply arcs
-        }
+        if (country) { countries.add(country); manufacturerCountry = country; }
       }
       
       dpp?.supplyChainLinks?.forEach(link => {
-        const supplier = MOCK_DPPS.find(s => s.id === link.supplierId) || MOCK_TRANSIT_PRODUCTS.find(s => s.id === link.supplierId); // Check both for supplier location
-        const supplierLocation = (supplier as any)?.location || (supplier as any)?.origin; // Simple check
+        const supplier = MOCK_DPPS.find(s => s.id === link.supplierId) || MOCK_TRANSIT_PRODUCTS.find(s => s.id === link.supplierId);
+        const supplierLocation = (supplier as any)?.location || (supplier as any)?.origin || (dpp?.traceability?.originCountry);
         if (supplierLocation) {
-          const country = getCountryFromLocationString(supplierLocation);
+          const country = getCountryFromLocationString(supplierLocation) || (supplier as any)?.traceability?.originCountry;
           if (country) countries.add(country);
         }
       });
@@ -216,18 +233,17 @@ export default function GlobeV2Page() {
       setHighlightedCountries(supplyChainCountries);
       
       const newSupplyArcs = [];
-      if (manufacturerCountry && supplyChainCountries.length > 1) {
-        const manufacturerCoords = mockCountryCoordinates[manufacturerCountry];
+      if (manufacturerCountry && supplyChainCountries.length > 0) {
+        const manufacturerCoords = mockCountryCoordinates[manufacturerCountry] || mockCountryCoordinates[manufacturerCountry.toUpperCase()];
         if (manufacturerCoords) {
             supplyChainCountries.forEach(countryName => {
                 if (countryName !== manufacturerCountry) {
-                    const supplierCoords = mockCountryCoordinates[countryName];
+                    const supplierCoords = mockCountryCoordinates[countryName] || mockCountryCoordinates[countryName.toUpperCase()];
                     if (supplierCoords) {
                         newSupplyArcs.push({
                             startLat: manufacturerCoords.lat, startLng: manufacturerCoords.lng,
                             endLat: supplierCoords.lat, endLng: supplierCoords.lng,
-                            color: '#F59E0B', // Orange for supply chain
-                            label: `Supply Link`
+                            color: '#F59E0B', label: `Supply Link`
                         });
                     }
                 }
@@ -235,9 +251,9 @@ export default function GlobeV2Page() {
         }
       }
       setArcsData(newSupplyArcs as any[]);
-      if (globeEl.current) { // Focus view based on supply chain if any
-        if (countries.has('China') || countries.has('Japan') || countries.has('India')) globeEl.current.pointOfView({ lat: 20, lng: 90, altitude: 2.5 }, 1000);
-        else if (countries.has('United States') || countries.has('Canada')) globeEl.current.pointOfView({ lat: 45, lng: -90, altitude: 2.5 }, 1000);
+      if (globeEl.current) { 
+        if (countries.has('CHN') || countries.has('JPN') || countries.has('IND')) globeEl.current.pointOfView({ lat: 20, lng: 90, altitude: 2.5 }, 1000);
+        else if (countries.has('USA') || countries.has('CAN')) globeEl.current.pointOfView({ lat: 45, lng: -90, altitude: 2.5 }, 1000);
         else globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
       }
     }
@@ -253,8 +269,8 @@ export default function GlobeV2Page() {
     } else if (countryFilter === 'supplyChain' && selectedProduct && highlightedCountries.length > 0) { 
       filtered = landPolygons.filter(feat => {
         const adminName = feat.properties?.ADMIN || feat.properties?.NAME_LONG || '';
-        // Check against full country names in highlightedCountries, which now includes transit origin/dest
-        return highlightedCountries.some(hc => adminName.toLowerCase().includes(hc.toLowerCase()));
+        const adm0_a3 = feat.properties?.ADM0_A3 || feat.properties?.ISO_A3 || '';
+        return highlightedCountries.some(hc => adminName.toLowerCase().includes(hc.toLowerCase()) || adm0_a3.toLowerCase() === hc.toLowerCase());
       });
     }
     setFilteredLandPolygons(filtered);
@@ -281,16 +297,27 @@ export default function GlobeV2Page() {
     if (clickedCountryInfo && (clickedCountryInfo.ADM0_A3 === iso || clickedCountryInfo.ADMIN === name) ) return '#ff4500';
     if (hoverD && (hoverD.properties.ADM0_A3 === iso || hoverD.properties.ADMIN === name)) return '#ffa500';
     
-    // highlightedCountries now contains either transit origin/dest or supply chain nodes
-    if (highlightedCountries.some(hc => name.toLowerCase().includes(hc.toLowerCase()))) {
-        return isEU(iso) ? '#FFBF00' : '#f97316'; // Amber for EU highlighted, Orange for Non-EU highlighted
+    if (highlightedCountries.some(hc => name.toLowerCase().includes(hc.toLowerCase()) || (iso && iso.toLowerCase() === hc.toLowerCase()))) {
+        return isEU(iso) ? '#FFBF00' : '#f97316'; 
     }
     return isEU(iso) ? '#002D62' : '#CCCCCC'; 
   }, [isEU, highlightedCountries, clickedCountryInfo, hoverD]);
 
+  const getPolygonAltitude = useCallback((feat: object) => {
+    const properties = (feat as CountryFeature).properties;
+    const iso = properties?.ADM0_A3 || properties?.ISO_A3;
+    const countryStat = countryStatsData.find(stat => stat.countryCode === iso);
+    const baseAltitude = 0.008;
+    const maxAltitudeScale = 0.05; // Max additional altitude
+    if (countryStat && maxDppCount > 0) {
+        return baseAltitude + (countryStat.count / maxDppCount) * maxAltitudeScale;
+    }
+    return baseAltitude;
+  }, [countryStatsData, maxDppCount]);
+
+
   const handleDismissProductInfo = () => {
     setSelectedProduct(null);
-    // URL update will trigger useEffect to clear dependent states
     router.push(`/dpp-global-tracker-v2`, { scroll: false });
   };
 
@@ -310,19 +337,21 @@ export default function GlobeV2Page() {
             ref={globeEl} globeImageUrl={null} globeMaterial={globeMaterial} backgroundColor="rgba(255, 255, 255, 1)"
             arcsData={arcsData} arcColor={'color'} arcDashLength={0.4} arcDashGap={0.1} arcDashAnimateTime={2000} arcStroke={0.5}
             showAtmosphere={false} polygonsData={filteredLandPolygons} polygonCapColor={getPolygonCapColor}
-            polygonSideColor={() => 'rgba(0, 0, 0, 0.05)'} polygonStrokeColor={() => '#000000'} polygonAltitude={0.008}
+            polygonSideColor={() => 'rgba(0, 0, 0, 0.05)'} polygonStrokeColor={() => '#000000'} 
+            polygonAltitude={getPolygonAltitude} // Use dynamic altitude
             onPolygonHover={setHoverD as (feature: GeoJsonFeature | null) => void} onPolygonClick={handlePolygonClick} 
             polygonLabel={({ properties }: object) => {
               const p = properties as CountryProperties; const iso = p?.ADM0_A3 || p?.ISO_A3; const name = p?.ADMIN || p?.NAME_LONG || 'Country';
-              const isEUCountry = isEU(iso); const isHighlighted = highlightedCountries.some(hc => name.toLowerCase().includes(hc.toLowerCase()));
+              const isEUCountry = isEU(iso); const isHighlighted = highlightedCountries.some(hc => name.toLowerCase().includes(hc.toLowerCase()) || (iso && iso.toLowerCase() === hc.toLowerCase()));
+              const stat = countryStatsData.find(s => s.countryCode === iso);
+              const dppCount = stat ? stat.count : 0;
               let roleInContext = "";
               if (isHighlighted) {
                   if (selectedProductTransitInfo?.origin && getCountryFromLocationString(selectedProductTransitInfo.origin) === name) roleInContext += "Transit Origin. ";
                   if (selectedProductTransitInfo?.destination && getCountryFromLocationString(selectedProductTransitInfo.destination) === name) roleInContext += "Transit Destination. ";
-                  // Could add supply chain role if not transit origin/dest, but might get too busy.
                   if (!roleInContext) roleInContext = "Supply Chain Node."
               }
-              return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${name}</b>${iso ? ` (${iso})` : ''}<br/>${isEUCountry ? 'EU Member' : 'Non-EU Member'}<br/>${roleInContext.trim()}</div>`;
+              return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${name}</b>${iso ? ` (${iso})` : ''}<br/>${isEUCountry ? 'EU Member' : 'Non-EU Member'}<br/>DPPs: ${dppCount}<br/>${roleInContext.trim()}</div>`;
             }}
             polygonsTransitionDuration={100} width={dimensions.width} height={dimensions.height}
             onGlobeReady={() => setGlobeReady(true)} enablePointerInteraction={true}
@@ -373,10 +402,10 @@ export default function GlobeV2Page() {
           </CardHeader>
           <CardContent className="text-xs space-y-1">
             <p><strong className="text-muted-foreground">ISO A3:</strong> {clickedCountryInfo.ADM0_A3 || clickedCountryInfo.ISO_A3 || 'N/A'}</p>
-            <p><strong className="text-muted-foreground">DPPs Originating:</strong> {Math.floor(Math.random() * 50)} (Mock)</p>
+            <p><strong className="text-muted-foreground">DPPs Originating:</strong> {(countryStatsData.find(s => s.countryCode === (clickedCountryInfo.ADM0_A3 || clickedCountryInfo.ISO_A3))?.count || 0).toLocaleString()} </p>
             <p><strong className="text-muted-foreground">DPPs Transiting:</strong> {Math.floor(Math.random() * 20)} (Mock)</p>
             {isEU(clickedCountryInfo.ADM0_A3 || clickedCountryInfo.ISO_A3) && <p className="text-green-600 font-medium">EU Member State</p>}
-            {highlightedCountries.includes(clickedCountryInfo.ADMIN || '') && <p className="text-orange-600 font-medium">Part of Focus Area</p>}
+            {highlightedCountries.some(hc => (clickedCountryInfo.ADMIN || '').toLowerCase().includes(hc.toLowerCase()) || ((clickedCountryInfo.ADM0_A3 || clickedCountryInfo.ISO_A3 || '').toLowerCase() === hc.toLowerCase())) && <p className="text-orange-600 font-medium">Part of Focus Area</p>}
             <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2" disabled>View DPPs for {clickedCountryInfo.ADMIN?.substring(0,15) || 'Country'}... (Conceptual)</Button>
           </CardContent>
         </Card>
@@ -390,15 +419,18 @@ export default function GlobeV2Page() {
         />
       )}
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs p-2 rounded-md shadow-lg pointer-events-none">
-        <Info className="inline h-3 w-3 mr-1" />
-        {countryFilter === 'all' ? 'EU: Dark Blue | Non-EU: Grey.' : 
-         countryFilter === 'eu' ? 'Displaying EU Countries.' : 
-         countryFilter === 'supplyChain' && selectedProduct ? `Displaying Focus Area for ${selectedProduct}.` :
-         'Select a product to view its focus area.'
-        }
-        {selectedProduct && highlightedCountries.length > 0 && ` Highlighted: Amber/Orange.`}
-        {arcsData.length > 0 && (arcsData[0].color === '#3B82F6' ? ` Transit Arc: Blue.` : ` Supply Arc(s): Orange.`)}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs p-2 rounded-md shadow-lg pointer-events-none flex items-center gap-2">
+        <Info className="inline h-3 w-3" />
+        <span>
+            {countryFilter === 'all' ? 'EU: Dark Blue | Non-EU: Grey.' : 
+            countryFilter === 'eu' ? 'Displaying EU Countries.' : 
+            countryFilter === 'supplyChain' && selectedProduct ? `Displaying Focus Area for ${selectedProduct}.` :
+            'Select a product to view its focus area.'
+            }
+            {selectedProduct && highlightedCountries.length > 0 && ` Highlighted: Amber/Orange.`}
+        </span>
+        <BarChart3 className="inline h-3 w-3" />
+        <span>Altitude indicates DPP count.</span>
       </div>
     </div>
   </>
