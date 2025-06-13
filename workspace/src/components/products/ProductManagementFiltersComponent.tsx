@@ -6,10 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox"; 
-import { Filter, ListFilter, Search, Tag, ShieldAlert, CheckSquare, Link as LinkIcon, XCircle, SlidersHorizontal, Shirt, Construction, Sigma } from "lucide-react"; // Added Sigma
+import { Filter, ListFilter, Search, Tag, ShieldAlert, CheckSquare, Link as LinkIcon, XCircle, SlidersHorizontal, Shirt, Construction, Sigma } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge"; // Added this import
 
 export interface ProductManagementFilterState {
   searchQuery: string;
@@ -94,12 +95,12 @@ export default function ProductManagementFiltersComponent({
                 <SlidersHorizontal className="h-5 w-5 mr-2 text-primary" />
                 Filter & Search Products
                 {activeFilterCount > 0 && (
-                  <span className={cn(
+                  <Badge className={cn(
                     "ml-2 px-2 py-0.5 text-xs font-semibold rounded-full",
-                    "bg-primary/20 text-primary" 
+                    "bg-primary/20 text-primary border-primary/30" 
                   )}>
                     {activeFilterCount} active
-                  </span>
+                  </Badge>
                 )}
               </div>
             </AccordionTrigger>
