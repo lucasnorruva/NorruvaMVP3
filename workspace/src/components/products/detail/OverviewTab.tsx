@@ -9,7 +9,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 import { Badge } from "@/components/ui/badge"; 
 import React from "react"; 
@@ -174,9 +174,11 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 <div className="flex items-center mt-0.5">
                   {(() => {
                     const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus);
+                    const ebsiBadgeClasses = getStatusBadgeClasses(product.ebsiStatus); 
+                    const EbsiIcon = ebsiDetails.icon.type; 
                     return (
-                      <Badge variant={ebsiDetails.variant} className={cn("capitalize", getStatusBadgeClasses(product.ebsiStatus))}>
-                        {React.cloneElement(ebsiDetails.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
+                      <Badge variant={ebsiDetails.variant} className={cn("capitalize", ebsiBadgeClasses)}>
+                        <EbsiIcon className="mr-1.5 h-3.5 w-3.5" /> {/* Render the icon component */}
                         {ebsiDetails.text}
                       </Badge>
                     );
@@ -359,3 +361,4 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   );
 }
 
+    
