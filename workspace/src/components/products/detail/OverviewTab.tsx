@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Badge } from "@/components/ui/badge"; 
 import { 
     FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, 
     Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, 
@@ -13,8 +14,8 @@ import {
 } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
-import { Badge } from "@/components/ui/badge";
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 import { cn } from "@/lib/utils";
 import React from "react"; 
 
@@ -169,16 +170,16 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">
-                {(() => {
-                  const ebsiStatusDetails = getEbsiStatusDetails(product.ebsiStatus);
-                  const badgeClass = getStatusBadgeClasses(product.ebsiStatus);
-                  return (
-                    <Badge variant={ebsiStatusDetails.variant} className={cn(badgeClass, "capitalize")}>
-                      {React.cloneElement(ebsiStatusDetails.icon, {className: "mr-1.5 h-3.5 w-3.5"})}
-                      {ebsiStatusDetails.text}
-                    </Badge>
-                  );
-                })()}
+                  {(() => {
+                    const ebsiStatusDetails = getEbsiStatusDetails(product.ebsiStatus);
+                    const badgeClass = getStatusBadgeClasses(product.ebsiStatus); // Use the status for class lookup
+                    return (
+                      <Badge variant={ebsiStatusDetails.variant} className={cn(badgeClass, "capitalize")}>
+                        {React.cloneElement(ebsiStatusDetails.icon, {className: "mr-1.5 h-3.5 w-3.5"})}
+                        {ebsiStatusDetails.text}
+                      </Badge>
+                    );
+                  })()}
                 </div>
                 {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
                     <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
@@ -330,7 +331,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </Card>
         )}
 
-
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -358,3 +358,4 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   );
 }
 
+    
