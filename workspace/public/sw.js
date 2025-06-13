@@ -1,2 +1,3 @@
-// This file is intentionally blank after PWA functionality removal.
-// If you wish to re-enable PWA features, you will need to restore or recreate this file.
+// This service worker file is intentionally left blank to disable PWA functionality.
+// Any previous service worker should be unregistered from the browser's developer tools.
+// console.log('[ServiceWorker] Disabled.');
