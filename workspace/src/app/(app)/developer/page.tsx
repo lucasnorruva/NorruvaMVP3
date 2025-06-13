@@ -238,11 +238,11 @@ export default function DeveloperPortalPage() {
   const [getAttestationsSnippetLang, setGetAttestationsSnippetLang] = useState("cURL");
   const [getAttestationsCodeSnippet, setGetAttestationsCodeSnippet] = useState("");
 
-  const [getConfidentialMaterialsProductId, setGetConfidentialMaterialsProductId] = useState<string>("DPP001"); // New state
-  const [getConfidentialMaterialsResponse, setGetConfidentialMaterialsResponse] = useState<string | null>(null); // New state
-  const [isGetConfidentialMaterialsLoading, setIsGetConfidentialMaterialsLoading] = useState(false); // New state
-  const [getConfidentialMaterialsSnippetLang, setGetConfidentialMaterialsSnippetLang] = useState("cURL"); // New state
-  const [getConfidentialMaterialsCodeSnippet, setGetConfidentialMaterialsCodeSnippet] = useState(""); // New state
+  const [getConfidentialMaterialsProductId, setGetConfidentialMaterialsProductId] = useState<string>("DPP001"); 
+  const [getConfidentialMaterialsResponse, setGetConfidentialMaterialsResponse] = useState<string | null>(null); 
+  const [isGetConfidentialMaterialsLoading, setIsGetConfidentialMaterialsLoading] = useState(false); 
+  const [getConfidentialMaterialsSnippetLang, setGetConfidentialMaterialsSnippetLang] = useState("cURL"); 
+  const [getConfidentialMaterialsCodeSnippet, setGetConfidentialMaterialsCodeSnippet] = useState(""); 
 
 
   const [postComponentTransferProductId, setPostComponentTransferProductId] = useState<string>("DPP001");
@@ -324,6 +324,7 @@ export default function DeveloperPortalPage() {
   const [importDppsCodeSnippet, setImportDppsCodeSnippet] = useState("");
   const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState("");
   const [getStatusCodeSnippet, setGetStatusCodeSnippet] = useState("");
+  const [anchorDppCodeSnippet, setAnchorDppCodeSnippet] = useState(""); 
   const [postOnchainStatusCodeSnippet, setPostOnchainStatusCodeSnippet] = useState("");
   const [postOnchainLifecycleCodeSnippet, setPostOnchainLifecycleCodeSnippet] = useState("");
   const [postLogCriticalEventCodeSnippet, setPostLogCriticalEventCodeSnippet] = useState("");
@@ -374,7 +375,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet), [postRegisterVcHashProductId, postRegisterVcHashBody, postRegisterVcHashSnippetLang, updateSnippet]);
   
   useEffect(() => updateSnippet("getPrivateSupplierAttestations", "GET", getAttestationsSnippetLang, { productId: getAttestationsProductId, supplierId: getAttestationsSupplierId }, null, setGetAttestationsCodeSnippet), [getAttestationsProductId, getAttestationsSupplierId, getAttestationsSnippetLang, updateSnippet]);
-  useEffect(() => updateSnippet("getConfidentialMaterials", "GET", getConfidentialMaterialsSnippetLang, { productId: getConfidentialMaterialsProductId }, null, setGetConfidentialMaterialsCodeSnippet), [getConfidentialMaterialsProductId, getConfidentialMaterialsSnippetLang, updateSnippet]); // New useEffect for confidential materials
+  useEffect(() => updateSnippet("getConfidentialMaterials", "GET", getConfidentialMaterialsSnippetLang, { productId: getConfidentialMaterialsProductId }, null, setGetConfidentialMaterialsCodeSnippet), [getConfidentialMaterialsProductId, getConfidentialMaterialsSnippetLang, updateSnippet]); 
   useEffect(() => updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet), [postComponentTransferProductId, postComponentTransferBody, postComponentTransferSnippetLang, updateSnippet]);
 
   useEffect(() => updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet), [zkpSubmitDppId, zkpSubmitBody, zkpSubmitSnippetLang, updateSnippet]);
@@ -541,8 +542,8 @@ export default function DeveloperPortalPage() {
   const handleMockLogCriticalEvent = () => { updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLogCriticalEventProductId}/log-critical-event`, 'POST', postLogCriticalEventBody, setIsPostLogCriticalEventLoading, setPostLogCriticalEventResponse); }
   const handleMockRegisterVcHash = () => { updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet); makeApiCall(`/api/v1/dpp/${postRegisterVcHashProductId}/register-vc-hash`, 'POST', postRegisterVcHashBody, setIsPostRegisterVcHashLoading, setPostRegisterVcHashResponse); }
   
-  const handleMockGetPrivateSupplierAttestations = () => { updateSnippet("getPrivateSupplierAttestations", "GET", getAttestationsSnippetLang, { productId: getAttestationsProductId, supplierId: getAttestationsSupplierId }, null, setGetAttestationsCodeSnippet); makeApiCall(`/api/v1/private/dpp/${getAttestationsProductId}/supplier/${getAttestationsSupplierId}/attestations`, 'GET', null, setIsGetAttestationsLoading, setGetAttestationsResponse); }
-  const handleMockGetConfidentialMaterials = () => { updateSnippet("getConfidentialMaterials", "GET", getConfidentialMaterialsSnippetLang, { productId: getConfidentialMaterialsProductId }, null, setGetConfidentialMaterialsCodeSnippet); makeApiCall(`/api/v1/private/dpp/${getConfidentialMaterialsProductId}/confidential-materials`, 'GET', null, setIsGetConfidentialMaterialsLoading, setGetConfidentialMaterialsResponse); } // New handler
+  const handleMockGetPrivateSupplierAttestations = () => { updateSnippet("getPrivateSupplierAttestations", "GET", getAttestationsSnippetLang, { productId: getAttestationsProductId, supplierId: getAttestationsSupplierId }, null, setGetAttestationsCodeSnippet); makeApiCall(`/api/v1/private/dpp/${getAttestationsProductId}/supplier/${getAttestationsSupplierId}/attestations`, 'GET', null, setIsGetAttestationsLoading, setGetAttestationsResponse); };
+  const handleMockGetConfidentialMaterials = () => { updateSnippet("getConfidentialMaterials", "GET", getConfidentialMaterialsSnippetLang, { productId: getConfidentialMaterialsProductId }, null, setGetConfidentialMaterialsCodeSnippet); makeApiCall(`/api/v1/private/dpp/${getConfidentialMaterialsProductId}/confidential-materials`, 'GET', null, setIsGetConfidentialMaterialsLoading, setGetConfidentialMaterialsResponse); };
   const handleMockPostComponentTransfer = () => { updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet); makeApiCall(`/api/v1/private/dpp/${postComponentTransferProductId}/component-transfer`, 'POST', postComponentTransferBody, setIsPostComponentTransferLoading, setPostComponentTransferResponse); }
 
   const handleMockZkpSubmitProof = () => { updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet); makeApiCall(`/api/v1/zkp/submit-proof/${zkpSubmitDppId}`, 'POST', zkpSubmitBody, setIsZkpSubmitLoading, setZkpSubmitResponse); }
@@ -1028,7 +1029,7 @@ export default function DeveloperPortalPage() {
         )
     },
     {
-        id: 'get-confidential-materials', // New endpoint ID
+        id: 'get-confidential-materials', 
         section: 'private',
         title: 'GET /api/v1/private/dpp/{productId}/confidential-materials',
         description: '[Private Layer] Retrieve private confidential material details.',
