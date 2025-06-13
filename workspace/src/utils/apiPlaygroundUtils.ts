@@ -6,7 +6,7 @@
 interface ApiPlaygroundParams {
   productId?: string;
   productIdPath?: string; // For endpoints where productId is part of the path but not a direct query/body param e.g. /verify/{productId}
-  supplierId?: string; // Added for supplier-specific endpoints
+  supplierId?: string; 
   status?: string;
   category?: string;
   searchQuery?: string;
@@ -117,3 +117,5 @@ export const generateMockCodeSnippet = (
   }
   return "Code snippet not available for this language.";
 };
+
+    
