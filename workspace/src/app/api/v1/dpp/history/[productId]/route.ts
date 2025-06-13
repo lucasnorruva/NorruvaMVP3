@@ -15,15 +15,16 @@ const createHistoryEntry = (
     details: string,
     changedBy: string
 ): Omit<HistoryEntry, 'version'> | null => {
-    if (!timestamp || isNaN(new Date(timestamp).getTime())) {
-        // If timestamp is invalid or missing, try to use a fallback or skip this entry
-        // For now, we'll skip if truly invalid, or use a very old date if undefined but details present
-        if (!timestamp && details) { // If timestamp is undefined but there are details, use a default past date
-             return { timestamp: "1970-01-01T00:00:00Z", actionType, details, changedBy };
-        }
+    // Use a very old default if timestamp is undefined but details exist, otherwise skip if invalid
+    const validTimestamp = (timestamp && !isNaN(new Date(timestamp).getTime())) 
+                           ? timestamp 
+                           : (!timestamp && details) ? "1970-01-01T00:00:00Z" : null;
+    
+    if (!validTimestamp) {
+        console.warn(`Skipping history entry due to invalid/missing timestamp. Action: ${actionType}, Details: ${details}`);
         return null; 
     }
-    return { timestamp, actionType, details, changedBy };
+    return { timestamp: validTimestamp, actionType, details, changedBy };
 };
 
 
@@ -45,18 +46,17 @@ export async function GET(
   }
 
   const potentialHistory: Array<Omit<HistoryEntry, 'version'>> = [];
-  let maxEventTimestamp = 0;
+  let maxEventTimestamp = 0; // Used to determine if a generic "DPP Data Updated" is needed
 
   // Initial creation
-  const creationTimestamp = product.metadata.created_at || product.metadata.last_updated; // Fallback if created_at is missing
+  const creationTimestamp = product.metadata.created_at || product.metadata.last_updated;
   const creationEntry = createHistoryEntry(creationTimestamp, "DPP Created", `Initial version of DPP for ${product.productName}. Status: ${product.metadata.status}.`, "System/Initial Importer");
   if (creationEntry) {
     potentialHistory.push(creationEntry);
     maxEventTimestamp = Math.max(maxEventTimestamp, new Date(creationEntry.timestamp).getTime());
   }
   
-
-  // Lifecycle events
+  // Lifecycle events from product.lifecycleEvents
   if (product.lifecycleEvents && product.lifecycleEvents.length > 0) {
     product.lifecycleEvents.forEach((event: LifecycleEvent) => {
       const entry = createHistoryEntry(
@@ -106,20 +106,42 @@ export async function GET(
   // Blockchain Identifiers (Conceptual Anchor Event)
   if (product.blockchainIdentifiers?.anchorTransactionHash && product.metadata.last_updated) { 
     const entry = createHistoryEntry(
-        product.metadata.last_updated, 
+        product.metadata.last_updated, // Assume anchor happens around last update if no specific anchor time
         "DPP Anchored to Blockchain",
         `Product DPP anchored on platform ${product.blockchainIdentifiers.platform || 'Unknown'}. Tx: ${product.blockchainIdentifiers.anchorTransactionHash.substring(0,15)}...`,
         "System (Blockchain Service)"
     );
     if(entry) potentialHistory.push(entry);
   }
+  
+  // Conceptual On-Chain Status Update
+  if (product.metadata.onChainStatus && product.metadata.onChainStatus !== "Unknown" && product.metadata.last_updated) {
+    const entry = createHistoryEntry(
+      product.metadata.last_updated, // Assume this update coincides with last_updated
+      "OnChainStatusUpdate",
+      `Conceptual on-chain status set to: ${product.metadata.onChainStatus}.`,
+      "System/Admin Action (Blockchain Mgmt)"
+    );
+    if (entry) potentialHistory.push(entry);
+  }
+
+  // Conceptual On-Chain Lifecycle Stage Update
+  if (product.metadata.onChainLifecycleStage && product.metadata.onChainLifecycleStage !== "Unknown" && product.metadata.last_updated) {
+    const entry = createHistoryEntry(
+      product.metadata.last_updated, // Assume this update coincides with last_updated
+      "OnChainLifecycleStageUpdate",
+      `Conceptual on-chain lifecycle stage set to: ${product.metadata.onChainLifecycleStage}.`,
+      "System/Admin Action (Blockchain Mgmt)"
+    );
+    if (entry) potentialHistory.push(entry);
+  }
 
   // Ownership NFT Link
   if (product.ownershipNftLink && product.metadata.last_updated) { 
     const entry = createHistoryEntry(
-        product.metadata.last_updated, 
+        product.metadata.last_updated, // Assume link happens around last update
         "Ownership NFT Linked",
-        `NFT (Token ID: ${product.ownershipNftLink.tokenId}, Contract: ${product.ownershipNftLink.contractAddress.substring(0,10)}...) linked for ownership.`,
+        `NFT (Token ID: ${product.ownershipNftLink.tokenId || 'N/A'}, Contract: ${(product.ownershipNftLink.contractAddress || 'N/A').substring(0,10)}...) linked.`,
         "System/User Action"
     );
     if(entry) potentialHistory.push(entry);
@@ -128,7 +150,7 @@ export async function GET(
   // Auth VC Issued
   if (product.authenticationVcId && product.metadata.last_updated) {
     const entry = createHistoryEntry(
-        product.metadata.last_updated, 
+        product.metadata.last_updated, // Assume issuance coincides with last_updated
         "Authentication VC Issued",
         `Authentication VC (ID: ${product.authenticationVcId.substring(0,15)}...) conceptually issued.`,
         "System/User Action"
@@ -171,12 +193,11 @@ export async function GET(
   // General updates based on last_updated (if significantly different from creation/last event)
   const productLastUpdatedTime = new Date(product.metadata.last_updated).getTime();
   if (productLastUpdatedTime > maxEventTimestamp) {
-     // Only add generic update if it's significantly later than specific events
      if (productLastUpdatedTime - maxEventTimestamp > 60000) { // e.g., more than 1 minute after last known event
         const entry = createHistoryEntry(
             product.metadata.last_updated,
             "DPP Data Updated", 
-            `Product information was updated. Status: ${product.metadata.status}.`,
+            `Product information was updated. Current status: ${product.metadata.status}.`,
             "User/System (Generic Update)"
         );
         if(entry) potentialHistory.push(entry);
