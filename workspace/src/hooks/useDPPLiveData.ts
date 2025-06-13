@@ -10,6 +10,7 @@ import { MOCK_DPPS } from '@/data';
 import { getSortValue } from '@/utils/sortUtils';
 import { calculateDppCompletenessForList, getOverallComplianceDetails } from '@/utils/dppDisplayUtils'; // Import completeness calculation
 import { useToast } from '@/hooks/use-toast';
+import { useRole, type UserRole } from '@/contexts/RoleContext'; // Import useRole
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
@@ -23,6 +24,7 @@ export interface ProcessedDPP extends DigitalProductPassport {
 export function useDPPLiveData() {
   const router = useRouter();
   const { toast } = useToast();
+  const { currentRole } = useRole(); // Get current role
 
   const [dpps, setDpps] = useState<DigitalProductPassport[]>([]);
   const [filters, setFilters] = useState<DashboardFiltersState>({
@@ -50,6 +52,46 @@ export function useDPPLiveData() {
     setDpps(combinedProducts);
   }, []);
 
+  // Effect to set role-based default filters
+  useEffect(() => {
+    let roleBasedFilters: Partial<DashboardFiltersState> = {
+      status: "all", // Default for most
+      regulation: "all",
+      category: "all",
+      // searchQuery: "", // Don't clear search query on role change
+      blockchainAnchored: "all",
+      manufacturer: "all",
+      completeness: "all",
+      onChainStatus: "all",
+    };
+
+    switch (currentRole) {
+      case 'admin':
+      case 'manufacturer':
+        // Admins and Manufacturers see all by default
+        break;
+      case 'supplier':
+      case 'retailer':
+        roleBasedFilters.status = "published";
+        break;
+      case 'recycler':
+        roleBasedFilters.status = "published"; // Or perhaps "archived" or "all"
+        roleBasedFilters.category = "Electronics"; // Example: recyclers focus on electronics
+        break;
+      case 'verifier':
+        roleBasedFilters.status = "pending_review";
+        break;
+      default:
+        break;
+    }
+    // Preserve search query if it exists, otherwise apply full role-based defaults
+    setFilters(prevFilters => ({
+      ...roleBasedFilters, // Apply new role-based defaults
+      searchQuery: prevFilters.searchQuery, // Keep existing search query
+    }));
+  }, [currentRole]);
+
+
   const availableCategories = useMemo(() => {
     const categories = new Set(dpps.map(dpp => dpp.category));
     return Array.from(categories).sort();
@@ -69,33 +111,23 @@ export function useDPPLiveData() {
   }, [dpps]);
 
   const sortedAndFilteredDPPs: ProcessedDPP[] = useMemo(() => {
-    // Determine if API needs to include archived based on UI filter
     const fetchIncludeArchived = filters.status === 'archived' || filters.status === 'all';
-
-    // Simulate API call based on fetchIncludeArchived
     let apiFetchedDpps = processedDPPs;
     if (!fetchIncludeArchived) {
       apiFetchedDpps = processedDPPs.filter(dpp => !dpp.metadata.isArchived);
     }
-    // If fetchIncludeArchived is true, API would return all items,
-    // client-side filtering below will handle showing only 'isArchived' if needed.
-
+    
     let filtered = apiFetchedDpps.filter((dpp) => {
       if (filters.searchQuery && !dpp.productName.toLowerCase().includes(filters.searchQuery.toLowerCase())) return false;
       
-      // Status Filter Logic
       if (filters.status !== "all") {
         if (filters.status === "archived") {
-          // Show only soft-deleted items if "Archived" is selected
           if (!dpp.metadata.isArchived) return false;
         } else {
-          // For other specific statuses, ensure it's not soft-deleted AND matches the status
           if (dpp.metadata.isArchived || dpp.metadata.status !== filters.status) return false;
         }
       }
-      // If filters.status is "all", no status filtering is done here client-side,
-      // as fetchIncludeArchived=true would have brought all items from API.
-
+      
       if (filters.regulation !== "all") {
         const complianceData = dpp.compliance[filters.regulation as keyof typeof dpp.compliance];
         if (!complianceData || (typeof complianceData === 'object' && 'status' in complianceData && complianceData.status !== 'compliant')) return false;
@@ -126,7 +158,7 @@ export function useDPPLiveData() {
         } else if (sortConfig.key === 'manufacturer.name') {
             valA = a.manufacturer?.name;
             valB = b.manufacturer?.name;
-        } else if (sortConfig.key === 'overallCompliance') { // Sorting by overall compliance text
+        } else if (sortConfig.key === 'overallCompliance') { 
             valA = a.overallCompliance.text;
             valB = b.overallCompliance.text;
         } else {
@@ -222,8 +254,6 @@ export function useDPPLiveData() {
       localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
     }
     
-    // For mock products, we simulate soft delete by updating the MOCK_DPPS array instance
-    // and then re-filtering from the main dpps state which includes MOCK_DPPS.
     const productIndex = dpps.findIndex(p => p.id === productToDeleteId);
     if (productIndex !== -1) {
       const updatedDpps = dpps.map(p => 
@@ -231,7 +261,7 @@ export function useDPPLiveData() {
           ? { ...p, metadata: { ...p.metadata, isArchived: true, last_updated: new Date().toISOString() } } 
           : p
       );
-      setDpps(updatedDpps); // This will trigger re-calculation of sortedAndFilteredDPPs
+      setDpps(updatedDpps); 
     }
 
 
@@ -262,4 +292,3 @@ export function useDPPLiveData() {
     toast   
   };
 }
-
