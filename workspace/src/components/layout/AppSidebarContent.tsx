@@ -19,19 +19,19 @@ import {
   Globe2,
   Users,
   Fingerprint,
-  Building, // For Manufacturer icon
-  Recycle as RecycleIconLucide, // For Recycler icon
-  UploadCloud, // For Supplier icon
-  Inbox, // For Supplier icon
-  BadgeCheck, // For Verifier icon
-  History as HistoryIconLucide, // For Verifier icon
-  ShoppingCart, // For Retailer icon
+  Building, 
+  Recycle as RecycleIconLucide, 
+  UploadCloud, 
+  Inbox, 
+  BadgeCheck, 
+  History as HistoryIconLucide, 
+  ShoppingCart, 
   PlusCircle,
-  Users2, // For Supplier Directory / User Management
-  Landmark, // For GDPR Center (Admin)
-  HardDrive, // For Recycler EOL Data
-  FileSearch, // For Verifier - DPPs for Verification
-  ClipboardEdit, // For Verifier - Submit Report
+  Users2, 
+  Landmark, 
+  HardDrive, 
+  FileSearch, 
+  ClipboardEdit,
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
@@ -90,9 +90,9 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   supplier: {
     primary: [
       { href: "/dashboard", label: "Supplier Dashboard", icon: UploadCloud, exactMatch: true },
-      { href: "/products/new", label: "Submit Component/Material Data", icon: PlusCircle, exactMatch: true }, // Re-purposing
-      { href: "/dpp-live-dashboard?suppliedBy=myOrg", label: "Products Using My Components", icon: Package }, // Conceptual filter
-      { href: "/dashboard#data-requests", label: "View Data Requests", icon: Inbox }, // Conceptual
+      { href: "/products/new", label: "Submit Component/Material Data", icon: PlusCircle, exactMatch: true },
+      { href: "/dpp-live-dashboard?suppliedBy=myOrg", label: "Products Using My Components", icon: Package },
+      { href: "/dashboard#data-requests", label: "View Data Requests", icon: Inbox },
     ],
     secondary: [
       { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot, exactMatch: true },
@@ -115,7 +115,7 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
       { href: "/dashboard", label: "Recycler Dashboard", icon: RecycleIconLucide, exactMatch: true },
       { href: "/dpp-live-dashboard?status=all&includeArchived=true", label: "Search All DPPs (Incl. EOL)", icon: FileSearch },
       { href: "/dpp-live-dashboard?searchQuery=disassembly%20OR%20recycling%20instructions%20OR%20material%20composition&includeArchived=true", label: "Access EOL & Material Data", icon: HardDrive },
-      { href: "/dashboard#report-recovery", label: "Report Recovered Materials", icon: RecycleIconLucide }, // Conceptual
+      { href: "/dashboard#report-recovery", label: "Report Recovered Materials", icon: RecycleIconLucide },
     ],
     secondary: [
       { href: "/copilot", label: "EOL Co-Pilot", icon: Bot, exactMatch: true },
@@ -127,7 +127,7 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
       { href: "/dashboard", label: "Verifier Dashboard", icon: BadgeCheck, exactMatch: true },
       { href: "/dpp-live-dashboard?status=pending_review&status=flagged", label: "DPPs for Verification", icon: FileSearch },
       { href: "/audit-log", label: "View Audit Trails", icon: HistoryIconLucide, exactMatch: true },
-      { href: "/dashboard#submit-report", label: "Submit Verification Report", icon: ClipboardEdit }, // Conceptual
+      { href: "/dashboard#submit-report", label: "Submit Verification Report", icon: ClipboardEdit },
     ],
     secondary: [
       { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot, exactMatch: true },
@@ -142,25 +142,32 @@ export default function AppSidebarContent() {
   const { state: sidebarState, isMobile } = useSidebar();
   const { currentRole } = useRole();
 
-  const { primary: navItems, secondary: secondaryNavItems } = ALL_NAV_ITEMS[currentRole] || ALL_NAV_ITEMS.admin; 
+  let roleNavConfig = ALL_NAV_ITEMS[currentRole];
+
+  if (!roleNavConfig) {
+    console.warn(`[AppSidebarContent] No navigation config found for role: "${currentRole}". Defaulting to minimal set.`);
+    roleNavConfig = {
+      primary: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exactMatch: true }],
+      secondary: [{ href: "/settings", label: "Settings", icon: Settings, exactMatch: true }],
+    };
+  }
+
+  const { primary: navItems, secondary: secondaryNavItems } = roleNavConfig;
 
   const commonButtonClass = (href: string, exactMatch?: boolean) => {
     let isActive: boolean;
-    const basePath = href.split('?')[0]; // Ignore query params for matching
+    const basePath = href.split('?')[0];
 
     if (exactMatch) {
       isActive = pathname === basePath;
     } else {
       isActive = pathname.startsWith(basePath);
-      // Special case for /products to not be active if /products/new is active
       if (href === "/products" && pathname.startsWith("/products/new")) {
         isActive = false;
       }
-      // Special case for /sustainability to not be active if /sustainability/compare is active
       if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
         isActive = false;
       }
-      // Prevent /compliance/pathways from being active if on /copilot or /gdpr
       if (href === "/compliance/pathways" && (pathname.startsWith("/copilot") || pathname.startsWith("/gdpr"))) {
         isActive = false;
       }
@@ -207,7 +214,7 @@ export default function AppSidebarContent() {
           {navItems.map((item) => {
             const { className, isActive } = commonButtonClass(item.href, item.exactMatch);
             return (
-              <SidebarMenuItem key={item.label}> 
+              <SidebarMenuItem key={`${currentRole}-${item.label}`}> 
                 <Link href={item.href} asChild>
                   <SidebarMenuButton
                     className={className}
@@ -231,7 +238,7 @@ export default function AppSidebarContent() {
               {secondaryNavItems.map((item) => {
                 const { className, isActive } = commonButtonClass(item.href, item.exactMatch);
                 return (
-                  <SidebarMenuItem key={item.label}> 
+                  <SidebarMenuItem key={`${currentRole}-secondary-${item.label}`}> 
                     <Link href={item.href} asChild>
                       <SidebarMenuButton
                         className={className}
@@ -252,4 +259,3 @@ export default function AppSidebarContent() {
     </>
   );
 }
-
