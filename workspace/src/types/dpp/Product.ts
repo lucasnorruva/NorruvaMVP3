@@ -83,7 +83,7 @@ export interface DigitalProductPassport {
     dataSchemaVersion?: string;
     onChainStatus?: string;
     onChainLifecycleStage?: string;
-    isArchived?: boolean; // Added for soft delete
+    isArchived?: boolean; // Added for soft delete management
   };
 
   blockchainIdentifiers?: {
@@ -218,6 +218,7 @@ export interface SimpleProductDetail {
     repairManualUrl?: string;
     disassemblyInstructionsUrl?: string;
   };
+  metadata?: Partial<DigitalProductPassport['metadata']>; // Added to allow access to isArchived
 }
 
 export interface StoredUserProduct {
@@ -276,7 +277,7 @@ export interface StoredUserProduct {
   authenticationVcId?: string; 
   ownershipNftLink?: OwnershipNftLink; 
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  metadata?: Partial<DigitalProductPassport['metadata']>;
+  metadata?: Partial<DigitalProductPassport['metadata']>; // Ensure metadata is part of StoredUserProduct
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
 }
@@ -301,10 +302,10 @@ export interface RichMockProduct {
   specifications?: string; 
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
-  batteryChemistry?: string; 
-  stateOfHealth?: number | null; 
-  carbonFootprintManufacturing?: number | null; 
-  recycledContentPercentage?: number | null; 
+  batteryChemistry?: string;
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
   ebsiVerification?: EbsiVerificationDetails;
   certifications?: Certification[];
   documents?: DocumentReference[];
@@ -483,7 +484,6 @@ export interface CustomsAlert {
   regulation?: string;
 }
 
-// InspectionEvent is already defined in Lifecycle.ts and re-exported by index.ts
-// No need to redefine here.
-    
-    
+// LifecycleEvent, SimpleLifecycleEvent, InspectionEvent, etc. from Lifecycle.ts
+// Certification, EbsiVerificationDetails, etc. from Compliance.ts
+// are now directly imported or their relevant parts are included here.

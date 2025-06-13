@@ -21,16 +21,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useRole } from "@/contexts/RoleContext";
-import { useToast } from "@/hooks/use-toast";
-import type { StoredUserProduct, RichMockProduct, DisplayableProduct, DigitalProductPassport, SortConfig as ProductSortConfig, SortableKeys as ProductSortableKeys } from "@/types/dpp"; 
-import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from "@/types/dpp";
+import type { SortConfig as ProductSortConfig, SortableKeys as ProductSortableKeys } from "@/types/dpp"; 
 import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ProductListRow } from "@/components/products/ProductListRow";
-import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils";
 import { cn } from "@/lib/utils";
-import { MOCK_DPPS as InitialMockDppsData } from '@/data'; 
-import { useDPPLiveData, ProcessedDPP } from '@/hooks/useDPPLiveData'; 
+import { useDPPLiveData, type ProcessedDPP } from '@/hooks/useDPPLiveData'; 
 
 
 const SortableTableHead: React.FC<{
@@ -60,44 +56,47 @@ export default function ProductsPage() {
     sortConfig, 
     isDeleteDialogOpen, 
     availableCategories,
-    availableManufacturers, // Now available from the hook
+    availableManufacturers, 
     sortedAndFilteredDPPs, 
-    metrics, // Metrics are now derived from filtered data in the hook
+    metrics, 
     handleFiltersChange, 
     handleSort, 
     handleDeleteRequest, 
     confirmDeleteProduct, 
     setIsDeleteDialogOpen,
-    toast
-  } = useDPPLiveData(); // Use the comprehensive hook
+  } = useDPPLiveData(); 
 
   const [productToDeleteForDialog, setProductToDeleteForDialog] = useState<ProcessedDPP | null>(null);
 
   const openDeleteConfirmDialog = (product: ProcessedDPP) => {
     setProductToDeleteForDialog(product);
-    handleDeleteRequest(product.id); // This will set productToDeleteId in the hook and open the dialog
+    handleDeleteRequest(product.id); 
   };
 
-  const handleDeleteProduct = () => {
-    confirmDeleteProduct(); // Call the hook's delete function
-    setProductToDeleteForDialog(null); // Clear local state after hook handles it
+  const handleDeleteProductLocal = () => { 
+    confirmDeleteProduct(); 
+    setProductToDeleteForDialog(null); 
   };
 
   const canAddProducts = currentRole === 'admin' || currentRole === 'manufacturer';
 
-  const statusOptions = useMemo(() => {
-    const uniqueStatuses = new Set(sortedAndFilteredDPPs.map(p => p.metadata.status).filter(Boolean).sort());
-    return ["All", ...Array.from(uniqueStatuses)];
-  }, [sortedAndFilteredDPPs]);
+  const statusOptionsForFilter = useMemo(() => {
+    const allPossibleStatuses = new Set(metrics.allDpps.map(p => p.metadata.status).filter(Boolean));
+    if (metrics.allDpps.some(p => p.metadata.isArchived)) {
+        allPossibleStatuses.add('archived'); // Ensure 'archived' is an option if any product is archived
+    }
+    return ["all", ...Array.from(allPossibleStatuses).sort()];
+  }, [metrics.allDpps]);
 
-  const complianceOptions = useMemo(() => {
-    const uniqueCompliance = new Set(sortedAndFilteredDPPs.map(p => p.overallCompliance.text).filter(Boolean).sort());
-    return ["All", ...Array.from(uniqueCompliance)];
-  }, [sortedAndFilteredDPPs]);
-
+  const complianceOptionsForFilter = useMemo(() => {
+    const allPossibleCompliance = new Set(metrics.allDpps.map(p => p.overallCompliance.text).filter(Boolean).sort());
+    return ["all", ...Array.from(allPossibleCompliance)];
+  }, [metrics.allDpps]);
+  
   const categoryOptionsForFilter = useMemo(() => {
-    return ["All", ...availableCategories];
+    return ["all", ...availableCategories];
   }, [availableCategories]);
+
 
   return (
     <div className="space-y-8">
@@ -115,17 +114,17 @@ export default function ProductsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <MetricCard title="Total Products" value={metrics.totalDPPs} icon={PackageIcon} />
-        <MetricCard title="Active Products" value={metrics.metrics?.active || 0} icon={CheckCircle2} /> {/* Corrected to use metrics from hook */}
-        <MetricCard title="Draft Products" value={metrics.metrics?.draft || 0} icon={Edit3} /> {/* Corrected */}
-        <MetricCard title="Compliance Issues" value={metrics.metrics?.issues || 0} trendDirection={(metrics.metrics?.issues || 0) > 0 ? "up" : "neutral"} /> {/* Corrected */}
+        <MetricCard title="Active Products" value={metrics.metrics?.active || 0} icon={CheckCircle2} /> 
+        <MetricCard title="Draft Products" value={metrics.metrics?.draft || 0} icon={Edit3} /> 
+        <MetricCard title="Compliance Issues" value={metrics.metrics?.issues || 0} trendDirection={(metrics.metrics?.issues || 0) > 0 ? "up" : "neutral"} /> 
         <MetricCard title="Avg. DPP Completeness" value={metrics.averageCompleteness} icon={PieChart} />
       </div>
 
       <ProductManagementFiltersComponent
         filters={filters}
         onFilterChange={handleFiltersChange}
-        statusOptions={statusOptions}
-        complianceOptions={complianceOptions}
+        statusOptions={statusOptionsForFilter}
+        complianceOptions={complianceOptionsForFilter}
         categoryOptions={categoryOptionsForFilter}
       />
 
@@ -175,12 +174,12 @@ export default function ProductsPage() {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action will archive product "{productToDeleteForDialog?.productName || productToDeleteId}". 
-              Archived products can be viewed by adjusting filters.
+              Archived products can be viewed by adjusting filters or selecting the "Archived" status.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDeleteProductLocal} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Archive Product
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -189,3 +188,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

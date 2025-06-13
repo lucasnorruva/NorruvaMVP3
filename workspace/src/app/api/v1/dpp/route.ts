@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       dppStandardVersion: "CIRPASS v1.0 Draft",
       onChainStatus: "Unknown", // Default value for new products
       onChainLifecycleStage: "Design", // Default value for new products
-      isArchived: false, // New products are not archived
+      isArchived: false, 
     },
     productDetails: {
       description: productDetails?.description || undefined,
@@ -125,13 +125,16 @@ export async function GET(request: NextRequest) {
   const blockchainAnchored = searchParams.get('blockchainAnchored') as DashboardFiltersState['blockchainAnchored'] | null;
   const isTextileProductParam = searchParams.get('isTextileProduct');
   const isConstructionProductParam = searchParams.get('isConstructionProduct');
-  const includeArchivedParam = searchParams.get('includeArchived'); // Parameter to control inclusion of archived items
+  const includeArchivedParam = searchParams.get('includeArchived'); 
 
   let filteredDPPs: DigitalProductPassport[] = [...MOCK_DPPS];
 
-  // Handle includeArchived parameter
-  // If includeArchived is not 'true', filter out items where metadata.isArchived is true.
-  if (includeArchivedParam !== 'true') {
+  // If 'status=archived' is requested, specifically include archived items.
+  // Otherwise, if `includeArchived=true` is passed, include all.
+  // By default (neither of the above), filter out archived items.
+  if (status === 'archived') {
+    filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.isArchived === true);
+  } else if (includeArchivedParam !== 'true') {
     filteredDPPs = filteredDPPs.filter(dpp => !dpp.metadata.isArchived);
   }
   
@@ -145,15 +148,9 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (status && status !== 'all') {
-    // The 'archived' status filter is now primarily handled by the `includeArchived` logic
-    // and client-side for specific "Show Archived" views.
-    // For other statuses, we filter by metadata.status as before.
-    if (status !== 'archived') {
-        filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
-    }
-    // If status === 'archived' and includeArchived === 'true', items with metadata.isArchived=true are already included.
-    // The client will then specifically filter for these.
+  // Apply status filter *after* the archived logic, unless the status *is* "archived"
+  if (status && status !== 'all' && status !== 'archived') {
+    filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
   }
 
 
@@ -191,8 +188,9 @@ export async function GET(request: NextRequest) {
       blockchainAnchored,
       isTextileProduct, 
       isConstructionProduct, 
-      includeArchived: includeArchivedParam === 'true', 
+      includeArchived: includeArchivedParam === 'true' || status === 'archived', 
     },
     totalCount: filteredDPPs.length,
   });
 }
+
