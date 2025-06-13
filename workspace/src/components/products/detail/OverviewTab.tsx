@@ -4,8 +4,8 @@
 import React from "react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge"; // Ensured Badge is imported
-import type { SimpleProductDetail as Product } from "@/types/dpp"; // Using SimpleProductDetail as Product type
+import { Badge } from "@/components/ui/badge"; 
+import type { SimpleProductDetail as Product } from "@/types/dpp";
 import { Separator } from "@/components/ui/separator";
 import { 
   Truck, 
@@ -22,7 +22,7 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  Database, // For EBSI section title
+  Database, 
   Fingerprint,
   Layers3,
   FileCog,
@@ -36,15 +36,14 @@ import {
   Weight,
   FileText as FileTextIcon,
   KeyRound,
-  Info as InfoIcon, // Renamed to avoid conflict if another Info exists
+  Info as InfoIcon,
   Heart
 } from "lucide-react";
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link";
-// CORRECTED IMPORT:
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils";
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils"; // For cn utility
+import { cn } from "@/lib/utils";
 
 interface OverviewTabProps {
   product: Product;
@@ -230,16 +229,15 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                   View Token on Mock Explorer <ExternalLink className="ml-1 h-3 w-3" />
                 </NextLink>
               )}
-            {/* CORRECTED EBSI STATUS BADGE RENDERING */}
-            {product.ebsiStatus && (
+             {product.ebsiStatus && ( 
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">
                   {(() => {
-                    const ebsiStatusDetails = getEbsiStatusDetails(product.ebsiStatus); // Use the imported function
-                    const badgeClasses = getStatusBadgeClasses(product.ebsiStatus); // Use the imported function
+                    const ebsiStatusDetails = getEbsiStatusDetails(product.ebsiStatus);
+                    const badgeClass = getStatusBadgeClasses(product.ebsiStatus); 
                     return (
-                      <Badge variant={ebsiStatusDetails.variant} className={cn(badgeClasses, "capitalize")}>
+                      <Badge variant={ebsiStatusDetails.variant} className={cn(badgeClass, "capitalize")}>
                         {React.cloneElement(ebsiStatusDetails.icon, {className: "mr-1.5 h-3.5 w-3.5"})}
                         {ebsiStatusDetails.text}
                       </Badge>
@@ -400,19 +398,19 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                     <CardTitle className="text-lg font-semibold flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-lime-600" />EU Battery Regulation Details</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm space-y-1.5">
-                    <p><strong className="text-muted-foreground flex items-center"><InfoIcon className="mr-1.5 h-4 w-4"/>Status:</strong> <Badge variant="outline" className="capitalize">{product.batteryRegulation.status?.replace('_', ' ') || 'N/A'}</Badge></p>
-                    {product.batteryRegulation.batteryChemistry && <p><strong className="text-muted-foreground flex items-center"><Thermometer className="mr-1.5 h-4 w-4"/>Chemistry:</strong> {product.batteryRegulation.batteryChemistry}</p>}
-                    {product.batteryRegulation.batteryPassportId && <p><strong className="text-muted-foreground flex items-center"><Barcode className="mr-1.5 h-4 w-4"/>Passport ID:</strong> <span className="font-mono">{product.batteryRegulation.batteryPassportId}</span></p>}
+                    <p><strong className="text-muted-foreground flex items-center"><InfoIcon className="mr-1.5 h-4 w-4 text-blue-500" />Status:</strong> <Badge variant="outline" className="capitalize">{product.batteryRegulation.status?.replace('_', ' ') || 'N/A'}</Badge></p>
+                    {product.batteryRegulation.batteryChemistry && <p><strong className="text-muted-foreground flex items-center"><Thermometer className="mr-1.5 h-4 w-4 text-blue-500" />Chemistry:</strong> {product.batteryRegulation.batteryChemistry}</p>}
+                    {product.batteryRegulation.batteryPassportId && <p><strong className="text-muted-foreground flex items-center"><Barcode className="mr-1.5 h-4 w-4 text-blue-500" />Passport ID:</strong> <span className="font-mono">{product.batteryRegulation.batteryPassportId}</span></p>}
                     {product.batteryRegulation.carbonFootprint && (product.batteryRegulation.carbonFootprint.value !== null && product.batteryRegulation.carbonFootprint.value !== undefined) && (
                         <div className="mt-1 pt-1 border-t border-border/30">
-                            <strong className="text-muted-foreground flex items-center"><Zap className="mr-1.5 h-4 w-4"/>Carbon Footprint:</strong>
+                            <strong className="text-muted-foreground flex items-center"><Zap className="mr-1.5 h-4 w-4 text-orange-500" />Carbon Footprint:</strong>
                             <p className="pl-5">Value: {product.batteryRegulation.carbonFootprint.value} {product.batteryRegulation.carbonFootprint.unit || ''}</p>
                             {product.batteryRegulation.carbonFootprint.calculationMethod && <p className="pl-5">Method: {product.batteryRegulation.carbonFootprint.calculationMethod}</p>}
                         </div>
                     )}
                     {product.batteryRegulation.recycledContent && product.batteryRegulation.recycledContent.length > 0 && (
                         <div className="mt-1 pt-1 border-t border-border/30">
-                            <strong className="text-muted-foreground flex items-center"><Recycle className="mr-1.5 h-4 w-4"/>Recycled Content:</strong>
+                            <strong className="text-muted-foreground flex items-center"><Recycle className="mr-1.5 h-4 w-4 text-green-600" />Recycled Content:</strong>
                             <ul className="list-disc list-inside ml-5">
                                 {product.batteryRegulation.recycledContent.map((rc, idx) => (
                                     <li key={idx}>{rc.material}: {rc.percentage ?? 'N/A'}%</li>
@@ -422,7 +420,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                     )}
                     {product.batteryRegulation.stateOfHealth && (product.batteryRegulation.stateOfHealth.value !== null && product.batteryRegulation.stateOfHealth.value !== undefined) && (
                         <div className="mt-1 pt-1 border-t border-border/30">
-                            <strong className="text-muted-foreground flex items-center"><Heart className="mr-1.5 h-4 w-4"/>State of Health:</strong>
+                            <strong className="text-muted-foreground flex items-center"><Heart className="mr-1.5 h-4 w-4 text-red-500" />State of Health:</strong>
                             <p className="pl-5">Value: {product.batteryRegulation.stateOfHealth.value}{product.batteryRegulation.stateOfHealth.unit || '%'}</p>
                             {product.batteryRegulation.stateOfHealth.measurementDate && <p className="pl-5">Measured: {new Date(product.batteryRegulation.stateOfHealth.measurementDate).toLocaleDateString()}</p>}
                         </div>
@@ -455,5 +453,3 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
-
-    
