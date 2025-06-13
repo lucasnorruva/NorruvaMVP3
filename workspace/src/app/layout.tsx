@@ -7,8 +7,8 @@ import { SkipToContent } from '@/components/layout/SkipToContent'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 
 export const metadata: Metadata = {
-  title: 'Norruva DPP - ROOT LAYOUT DEBUG',
-  description: 'Forcing update propagation check on root layout.',
+  title: 'Norruva Digital Product Passport',
+  description: 'Secure and Compliant Product Data Management with AI-Powered Insights.',
   manifest: '/manifest.json',
 };
 
@@ -17,41 +17,31 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const timestamp = new Date().toISOString();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preload"
+          as="style"
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#FF0000" />
-        <style>{`
-          #root-layout-debug-banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #FF0000 !important; /* Bright Red */
-            color: white !important;
-            padding: 10px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
-            z-index: 999999;
-            border-bottom: 5px solid #FFFF00; /* Yellow border */
-          }
-        `}</style>
+        <meta name="theme-color" content="#1A202C" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Norruva DPP" />
       </head>
       <body className="font-body antialiased">
-        <div id="root-layout-debug-banner">
-          ROOT LAYOUT DEBUG BANNER - LOADED AT: {timestamp} -- If you see this, layout.tsx is updating.
-        </div>
-        <div style={{ paddingTop: '70px' }}> {/* Add padding to push content below banner */}
-          <SkipToContent />
-          <ServiceWorkerRegister />
-          <RoleProvider>
-            {children}
-          </RoleProvider>
-          <Toaster />
-        </div>
+        <SkipToContent />
+        <ServiceWorkerRegister />
+        <RoleProvider>
+          {children}
+        </RoleProvider>
+        <Toaster />
       </body>
     </html>
   );

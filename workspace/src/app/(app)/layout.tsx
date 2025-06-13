@@ -1,32 +1,58 @@
 
-"use client"; 
+"use client";
 import type { ReactNode } from 'react';
-import React from 'react'; 
-import { usePathname } from 'next/navigation'; 
+import React from 'react';
+import { usePathname } from 'next/navigation';
+import { SidebarProvider } from "@/components/ui/sidebar/SidebarProvider";
+import { Sidebar, SidebarInset } from "@/components/ui/sidebar/Sidebar";
+import AppHeader from "@/components/layout/AppHeader";
+import AppSidebarContent from "@/components/layout/AppSidebarContent";
+
+// Runtime patch to strip asChild from DOM elements
+if (typeof window !== 'undefined' && React.createElement) {
+  type CreateElementFn = typeof React.createElement;
+  type AnyComponent = React.ComponentType<Record<string, unknown>>;
+
+  const originalCreateElement: CreateElementFn = React.createElement;
+
+  const patchedCreateElement = (
+    type: string | AnyComponent,
+    props: Record<string, unknown> | null,
+    ...children: ReactNode[]
+  ): ReturnType<CreateElementFn> => {
+    if (props && 'asChild' in props && typeof type === 'string') {
+      const { asChild, ...cleanProps } = props;
+      return originalCreateElement(type, cleanProps, ...children);
+    }
+    return originalCreateElement(type, props, ...children);
+  };
+
+  React.createElement = patchedCreateElement as unknown as CreateElementFn;
+}
+
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname(); 
-  const timestamp = new Date().toISOString();
+  const pathname = usePathname();
 
   if (pathname.startsWith('/developer')) {
     return (
       <main id="main-content" className="flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground min-h-screen">
-        <div style={{border: "3px dashed #0000FF", padding: "10px", backgroundColor: "#e0e0ff", margin: "10px"}}>
-          (APP)/LAYOUT (DEVELOPER VIEW) - LOADED AT: {timestamp}
-        </div>
         {children}
       </main>
     );
   }
 
   return (
-    <div style={{border: "5px solid #FF8C00", padding: "20px", backgroundColor: "#FFF3E0", margin: "10px"}}>
-      <div style={{backgroundColor: "#FFDAB9", padding: "10px", fontWeight: "bold", textAlign: "center", fontSize: "18px"}}>
-        (APP)/LAYOUT MINIMAL DEBUG - LOADED AT: {timestamp}
-      </div>
-      <main id="main-content" className="flex-1 p-4 md:p-6 lg:p-8">
-        {children}
-      </main>
-    </div>
+    <SidebarProvider defaultOpen={true}>
+      <Sidebar variant="sidebar" collapsible="icon">
+        <AppSidebarContent />
+      </Sidebar>
+      <SidebarInset>
+        <AppHeader />
+        <main id="main-content" className="flex-1 p-4 md:p-6 lg:p-8">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
