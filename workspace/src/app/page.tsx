@@ -19,7 +19,6 @@ export default function HomePage() {
   const router = useRouter();
   const { currentRole: roleFromContext, setCurrentRole: setRoleInContext, availableRoles } = useRole();
   
-  // Initialize selectedRole: try localStorage, then context, then first available, then default
   const [selectedRole, setSelectedRole] = useState<UserRole>(() => {
     if (typeof window !== 'undefined') {
       const storedRole = localStorage.getItem(HOMEPAGE_SELECTED_ROLE_KEY);
@@ -33,7 +32,6 @@ export default function HomePage() {
     return availableRoles.length > 0 ? availableRoles[0] : 'admin';
   });
 
-  // Sync local state if context changes (e.g., user navigates back after context was set elsewhere)
   useEffect(() => {
     if (roleFromContext && availableRoles.includes(roleFromContext) && roleFromContext !== selectedRole) {
       setSelectedRole(roleFromContext);
@@ -49,19 +47,13 @@ export default function HomePage() {
 
   const handleRoleSelectAndNavigate = () => {
     if (selectedRole) {
-      setRoleInContext(selectedRole); // Update global context
+      setRoleInContext(selectedRole); 
       router.push(`/${selectedRole}-dashboard`);
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-background to-secondary p-6 text-center">
-      {/* <div style={{ border: '2px dashed red', padding: '10px', backgroundColor: '#ffeeee', margin: '10px 0' }}>
-        HOMEPAGE DEBUG - Timestamp: {new Date().toISOString()} <br />
-        Selected Role (state): {selectedRole} <br />
-        Role from Context: {roleFromContext} <br />
-        Available Roles: {availableRoles.join(', ')}
-      </div> */}
       <div className="mb-12">
         <Logo className="h-16 w-auto text-primary" />
       </div>
