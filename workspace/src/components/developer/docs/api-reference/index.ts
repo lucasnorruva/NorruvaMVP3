@@ -11,7 +11,7 @@ export { default as ApiReferenceZkpLayerEndpoints } from './ApiReferenceZkpLayer
 export { default as IssueDppAuthVc } from './IssueDppAuthVc';
 export { default as LinkDppOwnershipNft } from './LinkDppOwnershipNft';
 export { default as ApiReferenceGraphEndpoints } from './ApiReferenceGraphEndpoints';
-export { default as AnchorDpp } from './AnchorDpp'; // Added export for AnchorDpp
+export { default as AnchorDpp } from './AnchorDpp'; 
 
 // Ensure ApiReferenceDppEndpoints is also exported if it's the main aggregator,
 // or export the new components directly if they are separate files.
@@ -22,5 +22,4 @@ export { default as AnchorDpp } from './AnchorDpp'; // Added export for AnchorDp
 
 // However, the current plan seems to integrate these into ApiReferenceDppEndpoints.tsx,
 // so no new exports might be needed here unless that structure changes.
-
 

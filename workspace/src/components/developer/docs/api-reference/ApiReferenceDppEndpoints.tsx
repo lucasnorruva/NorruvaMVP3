@@ -244,7 +244,7 @@ interface DppEndpointsProps {
   exampleLogCriticalEventRequestBody: string;
   exampleRegisterVcHashRequestBody: string;
   exampleUpdatedDppResponse: string; 
-  exampleAnchorDppResponse: string; // Added for AnchorDpp
+  exampleAnchorDppResponse: string; 
   error401: string;
   error404: string;
   error500: string;
@@ -319,7 +319,7 @@ export default function ApiReferenceDppEndpoints(props: DppEndpointsProps) {
         error404={props.error404}
         error500={props.error500}
       />
-      <IssueDppAuthVc 
+      <IssueDppAuthVc
         exampleDppResponse={props.exampleUpdatedDppResponse}
         error401={props.error401}
         error404={props.error404}
@@ -369,4 +369,5 @@ export default function ApiReferenceDppEndpoints(props: DppEndpointsProps) {
 }
 
 ApiReferenceDppEndpoints.defaultProps = {
-  error400_general: JSON.stringify({ error: { code: 400, message: "Invalid
+  error400_general: JSON.stringify({ error: { code: 400, message: "Invalid request body or parameters." } }, null, 2)
+};

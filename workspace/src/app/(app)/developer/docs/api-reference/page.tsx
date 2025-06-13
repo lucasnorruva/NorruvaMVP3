@@ -83,7 +83,7 @@ export default function ApiReferencePage() {
   }, null, 2);
 
   const error401 = JSON.stringify({ error: { code: 401, message: "API key missing or invalid." } }, null, 2);
-  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }); 
+  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, null, 2); 
   const error400_general = JSON.stringify({ error: { code: 400, message: "Invalid request payload or parameters." } }, null, 2);
   const error400_qr = JSON.stringify({ error: { code: 400, message: "Invalid request body. 'qrIdentifier' is required." } }, null, 2);
   const error500 = JSON.stringify({ error: { code: 500, message: "An unexpected error occurred on the server." } }, null, 2);
@@ -107,7 +107,13 @@ export default function ApiReferencePage() {
       ]
     },
     textileInformation: { /* ... */ },
-    constructionProductInformation: { /* ... */ }
+    constructionProductInformation: { /* ... */ },
+    authenticationVcId: "vc_auth_example_123",
+    ownershipNftLink: {
+        contractAddress: "0xNFTContractForSmartWatch",
+        tokenId: "1001",
+        chainName: "Polygon"
+    }
   }, null, 2);
 
   const conceptualCreateDppResponseBody = JSON.stringify({
@@ -152,6 +158,12 @@ export default function ApiReferencePage() {
     },
     textileInformation: { /* ... */ },
     constructionProductInformation: { /* ... */ },
+    authenticationVcId: "vc_auth_example_123",
+    ownershipNftLink: {
+        contractAddress: "0xNFTContractForSmartWatch",
+        tokenId: "1001",
+        chainName: "Polygon"
+    },
     ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
     lifecycleEvents: [],
     certifications: [],
@@ -376,7 +388,7 @@ export default function ApiReferencePage() {
   const exampleRegisterVcHashRequestBody = JSON.stringify({ vcId: "urn:uuid:some-vc-id-123", vcHash: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2" }, null, 2);
   
   const dppForOnChainOps = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
-  const exampleUpdatedDppResponse = JSON.stringify({ 
+  const exampleUpdatedDppResponse = JSON.stringify({ // Used for several endpoints that return the updated DPP
     ...dppForOnChainOps,
     metadata: {
         ...dppForOnChainOps.metadata,
