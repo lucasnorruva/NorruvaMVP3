@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Shirt, Construction } from "lucide-react";
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Shirt, Construction } from "lucide-react";
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link";
 import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
@@ -129,7 +129,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             </CardContent>
           </Card>
         )}
-
+        
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -201,6 +201,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
           </CardContent>
         </Card>
+
+
       </div>
 
       {/* Right Column: Description, Key Points, Specifications, Custom Attributes */}
@@ -241,7 +243,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               )}
             </CardContent>
           </Card>
-
+          
           <Card className="shadow-sm">
             <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><ShieldCheck className="mr-2 h-5 w-5 text-blue-600" />Key Compliance</CardTitle></CardHeader>
             <CardContent>
@@ -329,6 +331,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </Card>
         )}
 
+
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -355,3 +358,5 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+
+    
