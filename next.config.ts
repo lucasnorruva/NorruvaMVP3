@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
   },
   allowedDevOrigins: [
     'https://9003-firebase-studio-1749131649534.cluster-axf5tvtfjjfekvhwxwkkkzsk2y.cloudworkstations.dev',
-    'https://9000-firebase-studio-1749754683363.cluster-6dx7corvpngoivimwvvljgokdw.cloudworkstations.dev', // Added this new origin
+    'https://9000-firebase-studio-1749754683363.cluster-6dx7corvpngoivimwvvljgokdw.cloudworkstations.dev', // This is the origin from the error log
   ],
 };
 
