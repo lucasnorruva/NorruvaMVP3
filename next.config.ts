@@ -28,6 +28,9 @@ const nextConfig: NextConfig = {
     'https://9000-firebase-studio-1749754683363.cluster-6dx7corvpngoivimwvvljgokdw.cloudworkstations.dev',
     'https://9003-firebase-studio-1749754683363.cluster-6dx7corvpngoivimwvvljgokdw.cloudworkstations.dev', // Added this line
   ],
+  experimental: {
+    turbopack: false, // Explicitly disable Turbopack
+  },
 };
 
 export default nextConfig;
