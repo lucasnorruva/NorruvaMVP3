@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRole } from "@/contexts/RoleContext";
 import { useToast } from "@/hooks/use-toast";
-import type { StoredUserProduct, RichMockProduct, DisplayableProduct, DigitalProductPassport } from "@/types/dpp"; 
+import type { StoredUserProduct, RichMockProduct, DisplayableProduct, DigitalProductPassport, SortConfig as ProductSortConfig, SortableKeys as ProductSortableKeys } from "@/types/dpp"; 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from "@/types/dpp";
 import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
@@ -30,46 +30,14 @@ import { ProductListRow } from "@/components/products/ProductListRow";
 import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils";
 import { cn } from "@/lib/utils";
 import { MOCK_DPPS as InitialMockDppsData } from '@/data'; 
+import { useDPPLiveData, ProcessedDPP } from '@/hooks/useDPPLiveData'; // Import useDPPLiveData and ProcessedDPP
 
-const initialMockProductsData: RichMockProduct[] = InitialMockDppsData.map(dpp => ({
-  ...dpp,
-  productId: dpp.id,
-  status: dpp.metadata.status as RichMockProduct['status'], 
-  compliance: dpp.complianceSummary?.overallStatus || "N/A", 
-  lastUpdated: dpp.metadata.last_updated,
-  description: dpp.productDetails?.description,
-  imageUrl: dpp.productDetails?.imageUrl,
-  imageHint: dpp.productDetails?.imageHint,
-  materials: dpp.productDetails?.materials?.map(m => m.name).join(', '),
-  sustainabilityClaims: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).join(', '),
-  energyLabel: dpp.productDetails?.energyLabel,
-  specifications: dpp.productDetails?.specifications,
-  lifecycleEvents: dpp.lifecycleEvents?.map(e => ({ id: e.id, eventName: e.type, date: e.timestamp, status: 'Completed' })),
-  complianceSummary: dpp.complianceSummary,
-  ebsiVerification: dpp.ebsiVerification,
-  certifications: dpp.certifications,
-  documents: dpp.documents,
-  supplyChainLinks: dpp.supplyChainLinks,
-  customAttributes: dpp.productDetails?.customAttributes,
-  blockchainIdentifiers: dpp.blockchainIdentifiers,
-  authenticationVcId: dpp.authenticationVcId,
-  ownershipNftLink: dpp.ownershipNftLink,
-  metadata: dpp.metadata, 
-}));
-
-
-type SortableProductKeys = keyof Pick<DisplayableProduct, 'id' | 'productName' | 'status' | 'compliance' | 'lastUpdated' | 'manufacturer'> | 'category' | 'completenessScore' | 'metadata.onChainStatus';
-
-interface SortConfig {
-  key: SortableProductKeys | null;
-  direction: 'ascending' | 'descending' | null;
-}
 
 const SortableTableHead: React.FC<{
-  columnKey: SortableProductKeys;
+  columnKey: ProductSortableKeys;
   title: string;
-  onSort: (key: SortableProductKeys) => void;
-  sortConfig: SortConfig;
+  onSort: (key: ProductSortableKeys) => void;
+  sortConfig: ProductSortConfig;
   className?: string;
 }> = ({ columnKey, title, onSort, sortConfig, className }) => {
   const isSorted = sortConfig.key === columnKey;
@@ -84,190 +52,71 @@ const SortableTableHead: React.FC<{
   );
 };
 
-interface ProductWithCompleteness extends DisplayableProduct {
-  completeness: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; 
-  metadata?: Partial<DigitalProductPassport['metadata']>; 
-}
-
 
 export default function ProductsPage() {
   const { currentRole } = useRole();
-  const [allProducts, setAllProducts] = useState<ProductWithCompleteness[]>([]); 
-  const [productToDelete, setProductToDelete] = useState<ProductWithCompleteness | null>(null);
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const { toast } = useToast();
+  const { 
+    dpps: processedDpps, // Note: dpps from the hook are already ProcessedDPP
+    filters, 
+    sortConfig, 
+    productToDeleteId, 
+    isDeleteDialogOpen, 
+    availableCategories,
+    availableManufacturers,
+    sortedAndFilteredDPPs, 
+    handleFiltersChange, 
+    handleSort, 
+    handleDeleteRequest, 
+    confirmDeleteProduct, 
+    setIsDeleteDialogOpen,
+    toast
+  } = useDPPLiveData();
 
-  const [filters, setFilters] = useState<ProductManagementFilterState>({
-    searchQuery: "",
-    status: "All",
-    compliance: "All",
-    category: "All",
-    blockchainAnchored: "all", 
-    isTextileProduct: undefined, 
-    isConstructionProduct: undefined, 
-    onChainStatus: "All",
-  });
-
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
-
-  useEffect(() => {
-    const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
-    const userAddedStoredProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
-
-    const userAddedDisplayable: ProductWithCompleteness[] = userAddedStoredProducts.map(p => ({
-      ...p,
-      productId: p.id,
-      complianceSummary: p.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: p.lastUpdated }, ebsi: { status: 'N/A', lastChecked: p.lastUpdated } },
-      lifecycleEvents: p.lifecycleEvents || [],
-      supplyChainLinks: p.supplyChainLinks || [],
-      completeness: calculateDppCompletenessForList(p as DisplayableProduct), 
-      metadata: p.metadata, 
-    }));
-
-    const initialDisplayable: ProductWithCompleteness[] = initialMockProductsData.map(mock => ({
-      ...mock,
-      productId: mock.productId || mock.id,
-      complianceSummary: mock.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: mock.lastUpdated }, ebsi: { status: 'N/A', lastChecked: mock.lastUpdated } },
-      lifecycleEvents: mock.lifecycleEvents || [],
-      supplyChainLinks: mock.supplyChainLinks || [],
-      completeness: calculateDppCompletenessForList(mock as DisplayableProduct), 
-      blockchainIdentifiers: mock.blockchainIdentifiers, 
-      metadata: mock.metadata, 
-    }));
-
-    const combined = [
-      ...initialDisplayable.filter(mock => !userAddedDisplayable.find(userProd => userProd.id === mock.id)),
-      ...userAddedDisplayable
-    ];
-    setAllProducts(combined);
-  }, []);
-
-  const handleSort = (key: SortableProductKeys) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const filteredAndSortedProducts = useMemo(() => {
-    let tempProducts = [...allProducts];
-
-    if (filters.searchQuery) {
-      const lowerSearchQuery = filters.searchQuery.toLowerCase();
-      tempProducts = tempProducts.filter(p =>
-        p.productName?.toLowerCase().includes(lowerSearchQuery) ||
-        p.gtin?.toLowerCase().includes(lowerSearchQuery) ||
-        p.manufacturer?.toLowerCase().includes(lowerSearchQuery)
-      );
-    }
-    if (filters.status !== "All") {
-      tempProducts = tempProducts.filter(p => p.status === filters.status);
-    }
-    if (filters.compliance !== "All") {
-      tempProducts = tempProducts.filter(p => p.compliance === filters.compliance);
-    }
-    if (filters.category !== "All") {
-      tempProducts = tempProducts.filter(p => (p.category || p.productCategory) === filters.category);
-    }
-    
-    if (filters.blockchainAnchored && filters.blockchainAnchored !== "all") {
-      if (filters.blockchainAnchored === "anchored") {
-        tempProducts = tempProducts.filter(p => !!p.blockchainIdentifiers?.anchorTransactionHash);
-      } else if (filters.blockchainAnchored === "not_anchored") {
-        tempProducts = tempProducts.filter(p => !p.blockchainIdentifiers?.anchorTransactionHash);
-      }
-    }
-
-    if (filters.isTextileProduct !== undefined) {
-      tempProducts = tempProducts.filter(p => !!p.textileInformation === filters.isTextileProduct);
-    }
-    if (filters.isConstructionProduct !== undefined) {
-      tempProducts = tempProducts.filter(p => !!p.constructionProductInformation === filters.isConstructionProduct);
-    }
-    if (filters.onChainStatus && filters.onChainStatus !== "All") {
-      tempProducts = tempProducts.filter(p => p.metadata?.onChainStatus === filters.onChainStatus);
-    }
+  // Rename productToDeleteId to avoid conflict in this component's scope
+  const [productToDeleteForDialog, setProductToDeleteForDialog] = useState<ProcessedDPP | null>(null);
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
 
 
-    const getValue = (product: ProductWithCompleteness, key: SortableProductKeys) => {
-      if (key === 'category') {
-        return product.category || product.productCategory;
-      }
-      if (key === 'completenessScore') {
-        return product.completeness.score;
-      }
-      if (key === 'metadata.onChainStatus') { 
-        return product.metadata?.onChainStatus;
-      }
-      return product[key as keyof ProductWithCompleteness];
-    };
-
-    if (sortConfig.key && sortConfig.direction) {
-      tempProducts.sort((a, b) => {
-        let valA = getValue(a, sortConfig.key!);
-        let valB = getValue(b, sortConfig.key!);
-
-        if (valA === undefined || valA === null) valA = (typeof valA === 'number') ? -Infinity : "";
-        if (valB === undefined || valB === null) valB = (typeof valB === 'number') ? -Infinity : "";
-
-
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          valA = valA.toLowerCase();
-          valB = valB.toLowerCase();
-        }
-
-        if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
-        if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
-        return 0;
-      });
-    }
-    return tempProducts;
-  }, [filters, allProducts, sortConfig]);
-
-
-  const openDeleteConfirmDialog = (product: ProductWithCompleteness) => {
-    setProductToDelete(product);
-    setIsAlertOpen(true);
+  const openDeleteConfirmDialog = (product: ProcessedDPP) => {
+    setProductToDeleteForDialog(product);
+    setIsAlertDialogOpen(true);
   };
 
   const handleDeleteProduct = () => {
-    if (!productToDelete) return;
-
-    if (productToDelete.id.startsWith("USER_PROD")) {
-      const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
-      let userAddedProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
-      userAddedProducts = userAddedProducts.filter(p => p.id !== productToDelete.id);
-      localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userAddedProducts));
+    if (productToDeleteForDialog) {
+      confirmDeleteProduct(); // Call the hook's delete function
     }
-
-    setAllProducts(prevProducts => prevProducts.filter(p => p.id !== productToDelete.id));
-
-    toast({
-      title: "Product Deleted",
-      description: `Product "${productToDelete.productName || productToDelete.id}" has been deleted.`,
-    });
-
-    setIsAlertOpen(false);
-    setProductToDelete(null);
+    setIsAlertDialogOpen(false);
+    setProductToDeleteForDialog(null);
   };
 
   const canAddProducts = currentRole === 'admin' || currentRole === 'manufacturer';
 
-  const statusOptions = useMemo(() => ["All", ...new Set(allProducts.map(p => p.status).filter(Boolean).sort())], [allProducts]);
-  const complianceOptions = useMemo(() => ["All", ...new Set(allProducts.map(p => p.compliance).filter(Boolean).sort())], [allProducts]);
-  const categoryOptions = useMemo(() => ["All", ...new Set(allProducts.map(p => p.category || p.productCategory).filter(Boolean).sort())], [allProducts]);
+  const statusOptions = useMemo(() => {
+    const uniqueStatuses = new Set(processedDpps.map(p => p.metadata.status).filter(Boolean).sort());
+    return ["All", ...Array.from(uniqueStatuses)];
+  }, [processedDpps]);
+
+  const complianceOptions = useMemo(() => {
+    const uniqueCompliance = new Set(processedDpps.map(p => p.overallCompliance.text).filter(Boolean).sort());
+    return ["All", ...Array.from(uniqueCompliance)];
+  }, [processedDpps]);
+
+  const categoryOptionsForFilter = useMemo(() => {
+    return ["All", ...availableCategories];
+  }, [availableCategories]);
+
 
   const summaryMetrics = useMemo(() => {
-    const total = allProducts.length;
-    const active = allProducts.filter(p => p.status === 'Active').length;
-    const draft = allProducts.filter(p => p.status === 'Draft').length;
-    const issues = allProducts.filter(p => p.compliance === 'Non-Compliant' || p.compliance === 'Pending').length;
-    const totalCompletenessScore = allProducts.reduce((sum, p) => sum + p.completeness.score, 0);
+    const sourceForMetrics = sortedAndFilteredDPPs; // Use the filtered list
+    const total = sourceForMetrics.length;
+    const active = sourceForMetrics.filter(p => p.metadata.status === 'published' && !p.metadata.isArchived).length; // Adjusted for soft delete
+    const draft = sourceForMetrics.filter(p => p.metadata.status === 'draft' && !p.metadata.isArchived).length;
+    const issues = sourceForMetrics.filter(p => (p.overallCompliance.text === 'Non-Compliant' || p.overallCompliance.text === 'Pending') && !p.metadata.isArchived).length;
+    const totalCompletenessScore = sourceForMetrics.reduce((sum, p) => sum + (p.completeness?.score || 0), 0);
     const averageCompleteness = total > 0 ? (totalCompletenessScore / total).toFixed(1) + "%" : "0%";
     return { total, active, draft, issues, averageCompleteness };
-  }, [allProducts]);
+  }, [sortedAndFilteredDPPs]);
 
   return (
     <div className="space-y-8">
@@ -293,10 +142,10 @@ export default function ProductsPage() {
 
       <ProductManagementFiltersComponent
         filters={filters}
-        onFilterChange={setFilters}
+        onFilterChange={handleFiltersChange}
         statusOptions={statusOptions}
         complianceOptions={complianceOptions}
-        categoryOptions={categoryOptions}
+        categoryOptions={categoryOptionsForFilter}
       />
 
       <Card className="shadow-lg">
@@ -309,29 +158,29 @@ export default function ProductsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]">Image</TableHead>
-                <SortableTableHead columnKey="id" title="ID" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="productName" title="Name" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="manufacturer" title="Manufacturer" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="category" title="Category" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="status" title="Status" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="compliance" title="Compliance" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="metadata.onChainStatus" title="On-Chain Status" onSort={handleSort} sortConfig={sortConfig} />
-                <SortableTableHead columnKey="completenessScore" title="Completeness" onSort={handleSort} sortConfig={sortConfig} className="w-28" />
-                <SortableTableHead columnKey="lastUpdated" title="Last Updated" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="id" title="ID" onSort={handleSort as (key: ProductSortableKeys) => void} sortConfig={sortConfig as ProductSortConfig} />
+                <SortableTableHead columnKey="productName" title="Name" onSort={handleSort as (key: ProductSortableKeys) => void} sortConfig={sortConfig as ProductSortConfig} />
+                <SortableTableHead columnKey="manufacturer.name" title="Manufacturer" onSort={handleSort as (key: ProductSortableKeys) => void} sortConfig={sortConfig as ProductSortConfig} />
+                <SortableTableHead columnKey="category" title="Category" onSort={handleSort as (key: ProductSortableKeys) => void} sortConfig={sortConfig as ProductSortConfig} />
+                <SortableTableHead columnKey="metadata.status" title="Status" onSort={handleSort as (key: ProductSortableKeys) => void} sortConfig={sortConfig as ProductSortConfig} />
+                <SortableTableHead columnKey="overallCompliance" title="Compliance" onSort={handleSort as (key: ProductSortableKeys) => void} sortConfig={sortConfig as ProductSortConfig} />
+                <SortableTableHead columnKey="metadata.onChainStatus" title="On-Chain Status" onSort={handleSort as (key: ProductSortableKeys) => void} sortConfig={sortConfig as ProductSortConfig} />
+                <SortableTableHead columnKey="completenessScore" title="Completeness" onSort={handleSort as (key: ProductSortableKeys) => void} sortConfig={sortConfig as ProductSortConfig} className="w-28" />
+                <SortableTableHead columnKey="metadata.last_updated" title="Last Updated" onSort={handleSort as (key: ProductSortableKeys) => void} sortConfig={sortConfig as ProductSortConfig} />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAndSortedProducts.map((product) => (
+              {sortedAndFilteredDPPs.map((product) => (
                 <ProductListRow
                     key={product.id}
                     product={product}
                     completenessData={product.completeness}
                     currentRole={currentRole}
-                    onDeleteProduct={openDeleteConfirmDialog}
+                    onDeleteProduct={() => handleDeleteRequest(product.id)} // Pass the ID
                 />
               ))}
-               {filteredAndSortedProducts.length === 0 && (
+               {sortedAndFilteredDPPs.length === 0 && (
                 <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">No products found matching your filters.</TableCell></TableRow>
                 )}
             </TableBody>
@@ -339,19 +188,19 @@ export default function ProductsPage() {
         </CardContent>
       </Card>
 
-      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the product
-              "{productToDelete?.productName || productToDelete?.id}".
+              This action will archive product "{processedDpps.find(p => p.id === productToDeleteId)?.productName || productToDeleteId}". 
+              Archived products can be viewed by adjusting filters.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setProductToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Archive Product
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -8,35 +8,36 @@ import { useRouter } from 'next/navigation';
 import type { DigitalProductPassport, DashboardFiltersState, SortConfig, SortableKeys, DisplayableProduct } from '@/types/dpp';
 import { MOCK_DPPS } from '@/data';
 import { getSortValue } from '@/utils/sortUtils';
-import { calculateDppCompletenessForList, getOverallComplianceDetails } from '@/utils/dppDisplayUtils'; // Import completeness calculation
+import { calculateDppCompletenessForList, getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 import { useToast } from '@/hooks/use-toast';
-import { useRole, type UserRole } from '@/contexts/RoleContext'; // Import useRole
+import { useRole, type UserRole } from '@/contexts/RoleContext';
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
-// Extended type for DPPs processed by the hook
 export interface ProcessedDPP extends DigitalProductPassport {
   completeness: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
   overallCompliance: ReturnType<typeof getOverallComplianceDetails>;
 }
 
+const defaultFiltersBase: DashboardFiltersState = {
+  status: "all",
+  regulation: "all",
+  category: "all",
+  searchQuery: "",
+  blockchainAnchored: "all",
+  manufacturer: "all",
+  completeness: "all",
+  onChainStatus: "all",
+};
+
 
 export function useDPPLiveData() {
   const router = useRouter();
   const { toast } = useToast();
-  const { currentRole } = useRole(); // Get current role
+  const { currentRole } = useRole();
 
   const [dpps, setDpps] = useState<DigitalProductPassport[]>([]);
-  const [filters, setFilters] = useState<DashboardFiltersState>({
-    status: "all",
-    regulation: "all",
-    category: "all",
-    searchQuery: "",
-    blockchainAnchored: "all",
-    manufacturer: "all", 
-    completeness: "all", 
-    onChainStatus: "all",
-  });
+  const [filters, setFilters] = useState<DashboardFiltersState>(defaultFiltersBase);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -52,42 +53,31 @@ export function useDPPLiveData() {
     setDpps(combinedProducts);
   }, []);
 
-  // Effect to set role-based default filters
   useEffect(() => {
-    let roleBasedFilters: Partial<DashboardFiltersState> = {
-      status: "all", // Default for most
-      regulation: "all",
-      category: "all",
-      // searchQuery: "", // Don't clear search query on role change
-      blockchainAnchored: "all",
-      manufacturer: "all",
-      completeness: "all",
-      onChainStatus: "all",
-    };
+    let roleBasedFiltersUpdate: Partial<DashboardFiltersState> = { ...defaultFiltersBase }; // Start with all defaults
 
     switch (currentRole) {
       case 'admin':
       case 'manufacturer':
-        // Admins and Manufacturers see all by default
+        // Admins and Manufacturers see all by default (defaultFiltersBase is fine)
         break;
       case 'supplier':
       case 'retailer':
-        roleBasedFilters.status = "published";
+        roleBasedFiltersUpdate.status = "published";
         break;
       case 'recycler':
-        roleBasedFilters.status = "published"; // Or perhaps "archived" or "all"
-        roleBasedFilters.category = "Electronics"; // Example: recyclers focus on electronics
+        roleBasedFiltersUpdate.status = "archived"; // Show archived for recyclers
         break;
       case 'verifier':
-        roleBasedFilters.status = "pending_review";
+        roleBasedFiltersUpdate.status = "pending_review";
         break;
       default:
         break;
     }
-    // Preserve search query if it exists, otherwise apply full role-based defaults
+    // Apply new role-based defaults, but keep existing search query if user typed one
     setFilters(prevFilters => ({
-      ...roleBasedFilters, // Apply new role-based defaults
-      searchQuery: prevFilters.searchQuery, // Keep existing search query
+      ...roleBasedFiltersUpdate,
+      searchQuery: prevFilters.searchQuery, 
     }));
   }, [currentRole]);
 
@@ -111,19 +101,23 @@ export function useDPPLiveData() {
   }, [dpps]);
 
   const sortedAndFilteredDPPs: ProcessedDPP[] = useMemo(() => {
+    let tempProducts = [...processedDPPs]; // Start with processed DPPs
+
+    // API-like filtering based on includeArchived and status
     const fetchIncludeArchived = filters.status === 'archived' || filters.status === 'all';
-    let apiFetchedDpps = processedDPPs;
     if (!fetchIncludeArchived) {
-      apiFetchedDpps = processedDPPs.filter(dpp => !dpp.metadata.isArchived);
+      tempProducts = tempProducts.filter(dpp => !dpp.metadata.isArchived);
     }
     
-    let filtered = apiFetchedDpps.filter((dpp) => {
+    // Client-side filtering for all other criteria
+    tempProducts = tempProducts.filter((dpp) => {
       if (filters.searchQuery && !dpp.productName.toLowerCase().includes(filters.searchQuery.toLowerCase())) return false;
       
       if (filters.status !== "all") {
         if (filters.status === "archived") {
           if (!dpp.metadata.isArchived) return false;
         } else {
+          // For other specific statuses, also ensure it's not soft-deleted unless explicitly asking for archived.
           if (dpp.metadata.isArchived || dpp.metadata.status !== filters.status) return false;
         }
       }
@@ -136,7 +130,7 @@ export function useDPPLiveData() {
       if (filters.blockchainAnchored === 'anchored' && !dpp.blockchainIdentifiers?.anchorTransactionHash) return false;
       if (filters.blockchainAnchored === 'not_anchored' && dpp.blockchainIdentifiers?.anchorTransactionHash) return false;
       if (filters.manufacturer !== "all" && dpp.manufacturer?.name !== filters.manufacturer) return false;
-      if (filters.onChainStatus !== "all" && dpp.metadata.onChainStatus !== filters.onChainStatus) return false;
+      if (filters.onChainStatus && filters.onChainStatus !== "all" && dpp.metadata.onChainStatus !== filters.onChainStatus) return false;
 
       if (filters.completeness !== "all") {
         const score = dpp.completeness.score;
@@ -148,7 +142,7 @@ export function useDPPLiveData() {
     });
 
     if (sortConfig.key && sortConfig.direction) {
-      filtered.sort((a, b) => {
+      tempProducts.sort((a, b) => {
         let valA: any;
         let valB: any;
 
@@ -165,7 +159,6 @@ export function useDPPLiveData() {
             valA = getSortValue(a, sortConfig.key!);
             valB = getSortValue(b, sortConfig.key!);
         }
-
 
         if (typeof valA === 'string' && typeof valB === 'string') {
           valA = valA.toLowerCase();
@@ -184,47 +177,48 @@ export function useDPPLiveData() {
         return 0;
       });
     }
-    return filtered;
+    return tempProducts;
   }, [processedDPPs, filters, sortConfig]);
 
   const metrics = useMemo(() => {
-    const nonArchivedDpps = dpps.filter(dpp => !dpp.metadata.isArchived);
-    const totalDPPs = nonArchivedDpps.length;
+    const sourceForMetrics = sortedAndFilteredDPPs; // CRITICAL CHANGE: Use filtered data for metrics
+    const totalDPPs = sourceForMetrics.length;
     
-    const fullyCompliantDPPsCount = nonArchivedDpps.filter(dpp => {
-        const complianceDetails = getOverallComplianceDetails(dpp);
-        return complianceDetails.text.toLowerCase().includes('compliant');
-    }).length;
+    const fullyCompliantDPPsCount = sourceForMetrics.filter(dpp => 
+        dpp.overallCompliance.text.toLowerCase().includes('compliant')
+    ).length;
 
     const compliantPercentage = totalDPPs > 0 
       ? ((fullyCompliantDPPsCount / totalDPPs) * 100).toFixed(1) + "%" 
       : "0%";
-    const pendingReviewDPPs = nonArchivedDpps.filter(d => d.metadata.status === 'pending_review').length;
-    const totalConsumerScans = nonArchivedDpps.reduce((sum, dpp) => sum + (dpp.consumerScans || 0), 0);
+    const pendingReviewDPPs = sourceForMetrics.filter(d => d.metadata.status === 'pending_review' && !d.metadata.isArchived).length; // Exclude archived from pending
+    const totalConsumerScans = sourceForMetrics.reduce((sum, dpp) => sum + (dpp.consumerScans || 0), 0);
     const averageConsumerScans = totalDPPs > 0 ? (totalConsumerScans / totalDPPs).toFixed(1) : "0";
     const averageCompleteness = totalDPPs > 0 
-      ? (processedDPPs.filter(p => !p.metadata.isArchived).reduce((sum, p) => sum + p.completeness.score, 0) / totalDPPs).toFixed(1) + "%" 
+      ? (sourceForMetrics.reduce((sum, p) => sum + p.completeness.score, 0) / totalDPPs).toFixed(1) + "%" 
       : "0%";
 
     return { totalDPPs, compliantPercentage, pendingReviewDPPs, totalConsumerScans, averageConsumerScans, averageCompleteness };
-  }, [dpps, processedDPPs]);
+  }, [sortedAndFilteredDPPs]); // Depends on the filtered list
 
   const categoryDistribution = useMemo(() => {
+    const sourceForChart = sortedAndFilteredDPPs; // CRITICAL CHANGE
     const counts: Record<string, number> = {};
-    sortedAndFilteredDPPs.forEach(dpp => {
+    sourceForChart.forEach(dpp => {
       counts[dpp.category] = (counts[dpp.category] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [sortedAndFilteredDPPs]);
+  }, [sortedAndFilteredDPPs]); // Depends on the filtered list
 
   const complianceDistribution = useMemo(() => {
+    const sourceForChart = sortedAndFilteredDPPs; // CRITICAL CHANGE
     const counts: Record<string, number> = {};
-    sortedAndFilteredDPPs.forEach(dpp => {
+    sourceForChart.forEach(dpp => {
       const statusText = dpp.overallCompliance.text;
       counts[statusText] = (counts[statusText] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [sortedAndFilteredDPPs]);
+  }, [sortedAndFilteredDPPs]); // Depends on the filtered list
 
 
   const handleFiltersChange = useCallback((newFilters: Partial<DashboardFiltersState>) => {
@@ -247,24 +241,26 @@ export function useDPPLiveData() {
   const confirmDeleteProduct = useCallback(() => {
     if (!productToDeleteId) return;
     const productIsUserAdded = productToDeleteId.startsWith("USER_PROD");
-    if (productIsUserAdded) {
-      const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
-      let userProducts: DigitalProductPassport[] = storedProductsString ? JSON.parse(storedProductsString) : [];
-      userProducts = userProducts.filter(p => p.id !== productToDeleteId);
-      localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
-    }
     
-    const productIndex = dpps.findIndex(p => p.id === productToDeleteId);
-    if (productIndex !== -1) {
-      const updatedDpps = dpps.map(p => 
+    setDpps(prevDpps => 
+      prevDpps.map(p => 
         p.id === productToDeleteId 
           ? { ...p, metadata: { ...p.metadata, isArchived: true, last_updated: new Date().toISOString() } } 
           : p
-      );
-      setDpps(updatedDpps); 
+      )
+    );
+
+    if (productIsUserAdded) {
+      const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+      let userProducts: DigitalProductPassport[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+      const productIndex = userProducts.findIndex(p => p.id === productToDeleteId);
+      if (productIndex > -1) {
+        userProducts[productIndex].metadata.isArchived = true;
+        userProducts[productIndex].metadata.last_updated = new Date().toISOString();
+        localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
+      }
     }
-
-
+    
     const productName = dpps.find(p=>p.id === productToDeleteId)?.productName || productToDeleteId;
     toast({ title: "Product Archived", description: `Product "${productName}" has been archived (soft deleted).` });
     setIsDeleteDialogOpen(false);
