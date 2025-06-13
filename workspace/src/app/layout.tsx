@@ -17,7 +17,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const timestamp = new Date().toISOString();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -37,9 +36,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Norruva DPP" />
       </head>
       <body className="font-body antialiased">
-        <div style={{ backgroundColor: '#FFCC00', color: '#000000', padding: '15px', textAlign: 'center', fontWeight: 'bold', fontSize: '1.5em', borderBottom: '5px solid red', zIndex: 100000, position: 'relative' }}>
-          ROOT LAYOUT DEBUG - LOADED AT: {timestamp} - IF YOU SEE THIS, LAYOUT.TSX IS UPDATING.
-        </div>
         <SkipToContent />
         <ServiceWorkerRegister />
         <RoleProvider>
