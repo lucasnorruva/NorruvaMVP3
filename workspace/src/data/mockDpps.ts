@@ -187,7 +187,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     modelNumber: "ET-TS-ORG-M",
     metadata: { 
       last_updated: "2024-07-25T14:30:00Z", 
-      status: "draft", 
+      status: "published", 
       created_at: "2024-03-01T10:00:00Z",
       onChainStatus: "Pending Activation", 
       onChainLifecycleStage: "Manufacturing", 
@@ -225,7 +225,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       }, 
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "61091000", // HS Code for cotton t-shirts
+        hsCode: "61091000", 
         countryOfOrigin: "IN",
         netWeightKg: 0.15,
         grossWeightKg: 0.2,
@@ -343,11 +343,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     modelNumber: "CL-MODSOFA-01",
     metadata: { 
       last_updated: "2024-07-20T11:00:00Z", 
-      status: "archived", // Operational status
+      status: "archived", 
       created_at: "2023-12-01T10:00:00Z",
       onChainStatus: "Archived", 
       onChainLifecycleStage: "EndOfLife",
-      isArchived: true, // Soft delete flag
+      isArchived: true, 
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-20T00:00:00Z" },
@@ -419,7 +419,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, 
       battery_regulation: {
-        status: "pending_review", // Changed status
+        status: "pending_review", 
         batteryChemistry: "NMC 811",
         batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
         carbonFootprint: { value: 85.5, unit: "kg CO2e/kWh", calculationMethod: "PEFCR for Batteries v1.2", vcId: "vc:cf:dpp005" },
@@ -431,9 +431,9 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         stateOfHealth: {value: 100, unit: '%', measurementDate: "2024-07-15T00:00:00Z", vcId: "vc:soh:dpp005"},
         vcId: "vc:battreg:overall:dpp005"
       } as BatteryRegulationDetails,
-      eu_espr: { status: "pending_assessment" }, // Changed status
+      eu_espr: { status: "pending_assessment" }, 
       scipNotification: { 
-        status: 'Notified', // Changed status
+        status: 'Notified', 
         notificationId: 'SCIP-BATTERY-XYZ',
         svhcListVersion: '2024/01 (24.0.1)',
         submittingLegalEntity: 'PowerVolt Inc.',
@@ -445,7 +445,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       euCustomsData: { 
         status: 'Pending Documents', 
         declarationId: 'CUSTOMS_EVB_001',
-        hsCode: "85076000", // HS code for lithium-ion batteries
+        hsCode: "85076000", 
         countryOfOrigin: "US",
         netWeightKg: 450.0,
         grossWeightKg: 465.0,
@@ -561,10 +561,3 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
-
-    
-    
-    
-
-
-

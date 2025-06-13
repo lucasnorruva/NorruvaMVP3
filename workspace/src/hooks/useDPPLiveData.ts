@@ -32,6 +32,23 @@ const defaultFiltersBase: DashboardFiltersState = {
   isConstructionProduct: undefined,
 };
 
+const getRoleDefaultFilters = (role: UserRole): Partial<DashboardFiltersState> => {
+  switch (role) {
+    case 'admin':
+      return { ...defaultFiltersBase, status: "all" }; // Admins see all non-archived by default
+    case 'manufacturer':
+      return { ...defaultFiltersBase, status: "all" }; // Manufacturers see all their relevant statuses
+    case 'verifier':
+      return { ...defaultFiltersBase, status: "pending_review" };
+    case 'retailer':
+    case 'supplier':
+      return { ...defaultFiltersBase, status: "published" };
+    case 'recycler':
+      return { ...defaultFiltersBase, status: "all" }; // Recyclers can see published & archived
+    default:
+      return { ...defaultFiltersBase, status: "published" };
+  }
+};
 
 export function useDPPLiveData() {
   const router = useRouter();
@@ -40,17 +57,16 @@ export function useDPPLiveData() {
 
   const [allRawDpps, setAllRawDpps] = useState<DigitalProductPassport[]>([]);
   const [allProcessedDpps, setAllProcessedDpps] = useState<ProcessedDPP[]>([]);
-  const [roleScopedProcessedDpps, setRoleScopedProcessedDpps] = useState<ProcessedDPP[]>([]);
   
   const [filters, setFilters] = useState<DashboardFiltersState>(() => ({
-    ...defaultFiltersBase, 
+    ...getRoleDefaultFilters(currentRole), 
     searchQuery: "" 
   }));
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  // Effect 1: Load and process all DPPs once on initial mount
+  // Effect 1: Load and process all DPPs once on initial mount or when raw data might change externally
   useEffect(() => {
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
     const userAddedProducts: DigitalProductPassport[] = storedProductsString ? JSON.parse(storedProductsString) : [];
@@ -67,69 +83,18 @@ export function useDPPLiveData() {
       overallCompliance: getOverallComplianceDetails(dpp),
     }));
     setAllProcessedDpps(processed);
-  }, []);
+  }, []); // Runs once
 
-  // Effect 2: Determine role-scoped data and reset filters when role or allProcessedDpps change
+  // Effect 2: Update filters when role changes
   useEffect(() => {
-    if (!allProcessedDpps.length) {
-        setRoleScopedProcessedDpps([]);
-        return;
-    }
-
-    let newScopedDpps = [...allProcessedDpps];
-    let roleDefaults: Partial<DashboardFiltersState> = { ...defaultFiltersBase }; // Start with global defaults
-    
-    // Preserve search query across role changes
-    const currentSearchQuery = filters.searchQuery;
-
-    switch (currentRole) {
-      case 'admin':
-        newScopedDpps = allProcessedDpps.filter(dpp => !dpp.metadata.isArchived);
-        roleDefaults = { ...defaultFiltersBase, status: "all" };
-        break;
-      case 'manufacturer':
-        newScopedDpps = allProcessedDpps.filter(dpp =>
-          !dpp.metadata.isArchived && (dpp.metadata.status === 'draft' || dpp.metadata.status === 'published' || dpp.metadata.status === 'pending_review')
-        );
-        roleDefaults = { ...defaultFiltersBase, status: "all"}; 
-        break;
-      case 'verifier':
-        newScopedDpps = allProcessedDpps.filter(dpp =>
-          !dpp.metadata.isArchived && (dpp.metadata.status === 'pending_review' || dpp.metadata.status === 'flagged')
-        );
-        roleDefaults = { ...defaultFiltersBase, status: "pending_review"}; 
-        break;
-      case 'retailer':
-        newScopedDpps = allProcessedDpps.filter(dpp =>
-          !dpp.metadata.isArchived && dpp.metadata.status === 'published'
-        );
-        roleDefaults = { ...defaultFiltersBase, status: "published"};
-        break;
-      case 'recycler':
-        newScopedDpps = allProcessedDpps.filter(dpp =>
-          (dpp.metadata.status === 'published' && !dpp.metadata.isArchived) || dpp.metadata.isArchived === true
-        );
-        roleDefaults = { ...defaultFiltersBase, status: "all" }; 
-        break;
-      case 'supplier':
-        newScopedDpps = allProcessedDpps.filter(dpp =>
-          !dpp.metadata.isArchived && dpp.metadata.status === 'published'
-        );
-        roleDefaults = { ...defaultFiltersBase, status: "published"};
-        break;
-      default:
-        newScopedDpps = allProcessedDpps.filter(dpp => !dpp.metadata.isArchived && dpp.metadata.status === 'published');
-        roleDefaults = { ...defaultFiltersBase, status: "published"};
-        break;
-    }
-    setRoleScopedProcessedDpps(newScopedDpps);
-    // When role changes, reset filters to the new role's defaults, but keep any existing search query
-    setFilters(prevFilters => ({ ...defaultFiltersBase, ...roleDefaults, searchQuery: prevFilters.searchQuery }));
-
-  }, [currentRole, allProcessedDpps]); // Removed filters.searchQuery from here to avoid loops, it's handled by applying it below
+    setFilters(prevFilters => ({
+      ...getRoleDefaultFilters(currentRole),
+      searchQuery: prevFilters.searchQuery, // Preserve search query
+    }));
+  }, [currentRole]);
 
   const availableCategories = useMemo(() => {
-    const categories = new Set(allRawDpps.map(dpp => dpp.category)); // Use allRawDpps for complete list
+    const categories = new Set(allRawDpps.map(dpp => dpp.category));
     return Array.from(categories).sort();
   }, [allRawDpps]);
 
@@ -138,9 +103,51 @@ export function useDPPLiveData() {
     return ["all", ...Array.from(manufacturers).sort()];
   }, [allRawDpps]);
 
-  const sortedAndFilteredDPPs: ProcessedDPP[] = useMemo(() => {
-    let tempProducts = [...roleScopedProcessedDpps]; 
+  const roleScopedAndFilteredDPPs: ProcessedDPP[] = useMemo(() => {
+    let tempProducts = [...allProcessedDpps];
 
+    // Apply Role-Based Scoping First
+    switch (currentRole) {
+      case 'admin':
+        // Admin sees all non-archived by default, unless 'archived' is specifically filtered.
+        if (filters.status !== 'archived') {
+          tempProducts = tempProducts.filter(dpp => !dpp.metadata.isArchived);
+        }
+        break;
+      case 'manufacturer':
+        // Example: filter by manufacturer name for demo. In real app, this would be by user's org.
+        // Also, manufacturer might see draft, pending, published, flagged, but not archived by default.
+        tempProducts = tempProducts.filter(dpp => 
+          !dpp.metadata.isArchived &&
+          (dpp.manufacturer?.name === "GreenTech Appliances" || dpp.manufacturer?.name === "EcoThreads" || dpp.manufacturer?.name === "PowerVolt" || dpp.manufacturer?.name === "BuildGreen Systems" || dpp.id.startsWith("USER_PROD")) &&
+          (filters.status === 'all' || dpp.metadata.status === filters.status || 
+           (filters.status === 'archived' && dpp.metadata.isArchived)) // Allow viewing archived if filter selected
+        );
+        break;
+      case 'verifier':
+        tempProducts = tempProducts.filter(dpp => 
+          !dpp.metadata.isArchived && 
+          (dpp.metadata.status === 'pending_review' || dpp.metadata.status === 'flagged')
+        );
+        break;
+      case 'retailer':
+      case 'supplier':
+        tempProducts = tempProducts.filter(dpp => 
+          !dpp.metadata.isArchived && dpp.metadata.status === 'published'
+        );
+        break;
+      case 'recycler':
+        // Recycler sees published (non-archived) AND all archived products.
+        tempProducts = tempProducts.filter(dpp => 
+            (dpp.metadata.status === 'published' && !dpp.metadata.isArchived) || dpp.metadata.isArchived === true
+        );
+        break;
+      default:
+        tempProducts = tempProducts.filter(dpp => !dpp.metadata.isArchived && dpp.metadata.status === 'published');
+        break;
+    }
+
+    // Apply User-Selected Filters
     if (filters.searchQuery) {
       const lowerSearch = filters.searchQuery.toLowerCase();
       tempProducts = tempProducts.filter(dpp =>
@@ -153,20 +160,10 @@ export function useDPPLiveData() {
     
     if (filters.status !== "all") {
       if (filters.status === "archived") {
-        // When 'archived' status is selected, we want ONLY items where isArchived is true.
-        // roleScopedProcessedDpps for Recycler already includes archived. For others, it doesn't.
-        // This ensures correct display for Recycler and potentially others if they choose 'archived'.
         tempProducts = tempProducts.filter(dpp => dpp.metadata.isArchived === true);
       } else {
-        // For any other specific status, ensure it's not an archived product being shown.
         tempProducts = tempProducts.filter(dpp => dpp.metadata.status === filters.status && !dpp.metadata.isArchived);
       }
-    } else {
-        // If 'all' status is selected, we *still* generally respect the isArchived flag,
-        // unless the role (like Recycler) explicitly includes them in its roleScopedProcessedDpps.
-        // This means if roleScopedProcessedDpps contains archived items (e.g. for Recycler), they will pass this.
-        // If roleScopedProcessedDpps does NOT contain archived items (e.g. for Admin default), they remain filtered out.
-        // This logic seems fine.
     }
     
     if (filters.regulation !== "all") {
@@ -185,7 +182,10 @@ export function useDPPLiveData() {
     
     if (filters.manufacturer !== "all") tempProducts = tempProducts.filter(dpp => dpp.manufacturer?.name === filters.manufacturer);
     
-    if (filters.onChainStatus && filters.onChainStatus !== "all") tempProducts = tempProducts.filter(dpp => dpp.metadata.onChainStatus === filters.onChainStatus);
+    if (filters.onChainStatus && filters.onChainStatus !== "all") { // Changed from "All" to "all"
+        tempProducts = tempProducts.filter(dpp => (dpp.metadata.onChainStatus || "Unknown") === filters.onChainStatus);
+    }
+
 
     if (filters.completeness !== "all") {
       tempProducts = tempProducts.filter(dpp => {
@@ -203,6 +203,7 @@ export function useDPPLiveData() {
     if (filters.isConstructionProduct === true) tempProducts = tempProducts.filter(dpp => !!dpp.constructionProductInformation);
     if (filters.isConstructionProduct === false) tempProducts = tempProducts.filter(dpp => !dpp.constructionProductInformation);
 
+    // Sort the final list
     if (sortConfig.key && sortConfig.direction) {
       tempProducts.sort((a, b) => {
         let valA: any; let valB: any;
@@ -223,10 +224,11 @@ export function useDPPLiveData() {
       });
     }
     return tempProducts;
-  }, [roleScopedProcessedDpps, filters, sortConfig]);
+  }, [allProcessedDpps, filters, sortConfig, currentRole]);
+
 
   const metrics = useMemo(() => {
-    const sourceForMetrics = sortedAndFilteredDPPs; 
+    const sourceForMetrics = roleScopedAndFilteredDPPs; // Base metrics on the fully filtered list
     const totalDPPs = sourceForMetrics.length;
     
     const fullyCompliantDPPsCount = sourceForMetrics.filter(dpp => 
@@ -243,7 +245,7 @@ export function useDPPLiveData() {
       ? (sourceForMetrics.reduce((sum, p) => sum + p.completeness.score, 0) / totalDPPs).toFixed(1) + "%" 
       : "0%";
     
-    const productPageMetrics = { // This is for the Products page's specific metric cards
+    const productPageMetrics = { 
         active: sourceForMetrics.filter(d => d.metadata.status === 'published' && !d.metadata.isArchived).length,
         draft: sourceForMetrics.filter(d => d.metadata.status === 'draft' && !d.metadata.isArchived).length,
         issues: sourceForMetrics.filter(d => d.overallCompliance.text === 'Non-Compliant' && !d.metadata.isArchived).length,
@@ -256,29 +258,29 @@ export function useDPPLiveData() {
         totalConsumerScans, 
         averageConsumerScans, 
         averageCompleteness, 
-        metrics: productPageMetrics,
-        allDpps: allProcessedDpps // Expose all processed DPPs for filter option generation
+        metrics: productPageMetrics, // For Product Management page
+        allDpps: allProcessedDpps // Keep exposing this for filter dropdown population
     };
-  }, [sortedAndFilteredDPPs, filters, allProcessedDpps]); 
+  }, [roleScopedAndFilteredDPPs, filters, allProcessedDpps]); 
 
   const categoryDistribution = useMemo(() => {
-    const sourceForChart = sortedAndFilteredDPPs; 
+    const sourceForChart = roleScopedAndFilteredDPPs; 
     const counts: Record<string, number> = {};
     sourceForChart.forEach(dpp => {
       counts[dpp.category] = (counts[dpp.category] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [sortedAndFilteredDPPs, filters]); 
+  }, [roleScopedAndFilteredDPPs, filters]); 
 
   const complianceDistribution = useMemo(() => {
-    const sourceForChart = sortedAndFilteredDPPs; 
+    const sourceForChart = roleScopedAndFilteredDPPs; 
     const counts: Record<string, number> = {};
     sourceForChart.forEach(dpp => {
       const statusText = dpp.overallCompliance.text;
       counts[statusText] = (counts[statusText] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [sortedAndFilteredDPPs, filters]);
+  }, [roleScopedAndFilteredDPPs, filters]);
 
   const handleFiltersChange = useCallback((newFilters: Partial<DashboardFiltersState>) => {
     setFilters((prevFilters) => ({ ...prevFilters, ...newFilters }));
@@ -301,19 +303,12 @@ export function useDPPLiveData() {
     if (!productToDeleteId) return;
     const productIsUserAdded = productToDeleteId.startsWith("USER_PROD");
     
-    const updatedAllRawDpps = allRawDpps.map(p => 
+    const updatedRawDpps = allRawDpps.map(p => 
       p.id === productToDeleteId 
         ? { ...p, metadata: { ...p.metadata, isArchived: true, status: 'archived', last_updated: new Date().toISOString() } } 
         : p
     );
-    setAllRawDpps(updatedAllRawDpps);
-
-    const updatedAllProcessedDpps = allProcessedDpps.map(p =>
-      p.id === productToDeleteId
-        ? { ...p, metadata: { ...p.metadata, isArchived: true, status: 'archived', last_updated: new Date().toISOString() } }
-        : p
-    );
-    setAllProcessedDpps(updatedAllProcessedDpps);
+    setAllRawDpps(updatedRawDpps); // This will trigger reprocessing
 
     if (productIsUserAdded) {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
@@ -331,17 +326,17 @@ export function useDPPLiveData() {
     toast({ title: "Product Archived", description: `Product "${productName}" has been archived.` });
     setIsDeleteDialogOpen(false);
     setProductToDeleteId(null);
-  }, [productToDeleteId, toast, allRawDpps, allProcessedDpps]);
+  }, [productToDeleteId, toast, allRawDpps]);
 
   return {
-    dpps: allProcessedDpps, 
+    dpps: allProcessedDpps, // This still returns all for things like Scan Product Dialog
     filters,
     sortConfig,
     productToDeleteId,
     isDeleteDialogOpen,
     availableCategories,
     availableManufacturers, 
-    sortedAndFilteredDPPs,
+    sortedAndFilteredDPPs: roleScopedAndFilteredDPPs, // This is the list for display
     metrics,
     categoryDistribution, 
     complianceDistribution, 
@@ -354,4 +349,3 @@ export function useDPPLiveData() {
     toast   
   };
 }
-

@@ -83,7 +83,7 @@ export interface DigitalProductPassport {
     dataSchemaVersion?: string;
     onChainStatus?: string;
     onChainLifecycleStage?: string;
-    isArchived?: boolean; // Added for soft delete management
+    isArchived?: boolean; // Added for explicit soft delete management
   };
 
   blockchainIdentifiers?: {
@@ -161,7 +161,16 @@ export interface DashboardFiltersState {
   onChainStatus?: string;
 }
 
-export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus' | 'manufacturer.name' | 'completenessScore';
+export type SortableKeys = 
+  keyof DigitalProductPassport | 
+  'metadata.status' | 
+  'metadata.last_updated' | 
+  'metadata.onChainStatus' | 
+  'manufacturer.name' | 
+  'overallCompliance' | 
+  'ebsiVerification.status' |
+  'completenessScore';
+
 
 export interface SortConfig {
   key: SortableKeys | null;
@@ -186,7 +195,7 @@ export interface SimpleProductDetail {
   keyCompliancePoints?: string[];
   specifications?: string; 
   customAttributes?: CustomAttribute[];
-  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
+  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean; recycledContentPercentage?: number; }[]; // Added recycledContentPercentage
   energyLabelRating?: string;
   repairabilityScore?: { value: number | null; scale: number | null; reportUrl?: string; vcId?: string };
   sparePartsAvailability?: string; 
@@ -218,7 +227,7 @@ export interface SimpleProductDetail {
     repairManualUrl?: string;
     disassemblyInstructionsUrl?: string;
   };
-  metadata?: Partial<DigitalProductPassport['metadata']>; // Added to allow access to isArchived
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
 }
 
 export interface StoredUserProduct {
@@ -291,7 +300,7 @@ export interface RichMockProduct {
   compliance: string;
   lastUpdated: string;
   gtin?: string;
-  manufacturer?: string; // Changed from Manufacturer object to simple string
+  manufacturer?: string; 
   modelNumber?: string;
   description?: string;
   imageUrl?: string;
@@ -386,7 +395,7 @@ export interface DisplayableProduct {
   compliance: string;
   lastUpdated: string;
   gtin?: string;
-  manufacturer?: string;
+  manufacturer?: string; // This was DigitalProductPassport['manufacturer'], changed to simple string for easier display logic
   modelNumber?: string;
   description?: string;
   productDescription?: string;
@@ -469,7 +478,7 @@ export interface TransitProduct {
   name: string;
   stage: string;
   eta: string; 
-  dppStatus: ProductComplianceSummary['overallStatus']; // Changed to use overallStatus type
+  dppStatus: ProductComplianceSummary['overallStatus']; 
   transport: "Ship" | "Truck" | "Plane";
   origin: string; 
   destination: string; 
@@ -483,7 +492,3 @@ export interface CustomsAlert {
   timestamp: string; 
   regulation?: string;
 }
-
-// LifecycleEvent, SimpleLifecycleEvent, InspectionEvent, etc. from Lifecycle.ts
-// Certification, EbsiVerificationDetails, etc. from Compliance.ts
-// are now directly imported or their relevant parts are included here.

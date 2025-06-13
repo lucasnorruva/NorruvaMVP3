@@ -9,7 +9,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3, Sigma } from "lucide-react"; 
+import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3, Sigma, UserCircle } from "lucide-react"; 
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,6 +64,7 @@ export default function ProductsPage() {
     handleDeleteRequest, 
     confirmDeleteProduct, 
     setIsDeleteDialogOpen,
+    productToDeleteId, // Get productToDeleteId from the hook
   } = useDPPLiveData(); 
 
   const [productToDeleteForDialog, setProductToDeleteForDialog] = useState<ProcessedDPP | null>(null);
@@ -83,7 +84,7 @@ export default function ProductsPage() {
   const statusOptionsForFilter = useMemo(() => {
     const allPossibleStatuses = new Set(metrics.allDpps.map(p => p.metadata.status).filter(Boolean));
     if (metrics.allDpps.some(p => p.metadata.isArchived)) {
-        allPossibleStatuses.add('archived'); // Ensure 'archived' is an option if any product is archived
+        allPossibleStatuses.add('archived');
     }
     return ["all", ...Array.from(allPossibleStatuses).sort()];
   }, [metrics.allDpps]);
@@ -101,7 +102,12 @@ export default function ProductsPage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-headline font-semibold">Product Management</h1>
+        <div>
+          <h1 className="text-3xl font-headline font-semibold">Product Management</h1>
+          <CardDescription className="text-sm text-muted-foreground mt-1 flex items-center">
+            <UserCircle className="mr-1.5 h-4 w-4" /> Viewing as: <span className="font-medium text-foreground ml-1 capitalize">{currentRole}</span>
+          </CardDescription>
+        </div>
         {canAddProducts && (
           <Link href="/products/new" passHref>
             <Button variant="secondary">
@@ -174,11 +180,11 @@ export default function ProductsPage() {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action will archive product "{productToDeleteForDialog?.productName || productToDeleteId}". 
-              Archived products can be viewed by adjusting filters or selecting the "Archived" status.
+              Archived products can be viewed by adjusting filters or selecting the "Archived" status (if your role permits).
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => { setIsDeleteDialogOpen(false); setProductToDeleteForDialog(null); }}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteProductLocal} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Archive Product
             </AlertDialogAction>
@@ -188,4 +194,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-

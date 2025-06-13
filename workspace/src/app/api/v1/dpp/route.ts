@@ -1,4 +1,3 @@
-
 // --- File: src/app/api/v1/dpp/route.ts ---
 // Description: Conceptual API endpoint to create a new Digital Product Passport and list DPPs with filters.
 
@@ -129,12 +128,13 @@ export async function GET(request: NextRequest) {
 
   let filteredDPPs: DigitalProductPassport[] = [...MOCK_DPPS];
 
-  // If 'status=archived' is requested, specifically include archived items.
-  // Otherwise, if `includeArchived=true` is passed, include all.
-  // By default (neither of the above), filter out archived items.
+  // Handle archived filter first
   if (status === 'archived') {
     filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.isArchived === true);
-  } else if (includeArchivedParam !== 'true') {
+  } else if (includeArchivedParam === 'true') {
+    // No filtering based on isArchived if includeArchived is true (client will handle further status filter)
+  } else {
+    // Default: filter out archived items unless status is 'archived' or includeArchived is 'true'
     filteredDPPs = filteredDPPs.filter(dpp => !dpp.metadata.isArchived);
   }
   
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Apply status filter *after* the archived logic, unless the status *is* "archived"
+  // Apply other status filters (if not 'archived' and not 'all')
   if (status && status !== 'all' && status !== 'archived') {
     filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
   }
@@ -193,4 +193,3 @@ export async function GET(request: NextRequest) {
     totalCount: filteredDPPs.length,
   });
 }
-

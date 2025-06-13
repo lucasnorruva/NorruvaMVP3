@@ -1,4 +1,3 @@
-
 // --- File: page.tsx (DPP Live Dashboard) ---
 // Description: Main page component for the Digital Product Passport Live Dashboard.
 "use client";
@@ -7,7 +6,7 @@ import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle } from "lucide-react"; 
+import { PlusCircle, UserCircle } from "lucide-react"; 
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +25,9 @@ import { AiSummaryDialog } from "@/components/dpp-live-dashboard/AiSummaryDialog
 import { useDPPLiveData } from '@/hooks/useDPPLiveData';
 import { generateProductSummary } from '@/ai/flows/generate-product-summary.ts';
 import type { DigitalProductPassport } from "@/types/dpp";
-import { CategoryPieChart } from "@/components/dpp-live-dashboard/CategoryPieChart"; // New import
-import { ComplianceDistributionChart } from "@/components/dpp-live-dashboard/ComplianceDistributionChart"; // New import
+import { CategoryPieChart } from "@/components/dpp-live-dashboard/CategoryPieChart"; 
+import { ComplianceDistributionChart } from "@/components/dpp-live-dashboard/ComplianceDistributionChart"; 
+import { useRole } from "@/contexts/RoleContext"; // Import useRole
 
 const availableRegulations = [
   { value: "all", label: "All Regulations" },
@@ -37,6 +37,7 @@ const availableRegulations = [
 ];
 
 export default function DPPLiveDashboardPage() {
+  const { currentRole } = useRole(); // Get current role
   const {
     dpps, 
     filters,
@@ -63,7 +64,7 @@ export default function DPPLiveDashboardPage() {
   const [selectedProductForSummary, setSelectedProductForSummary] = useState<DigitalProductPassport | null>(null);
 
   const handleViewAISummary = useCallback(async (productId: string) => {
-    const product = dpps.find(p => p.id === productId);
+    const product = dpps.find(p => p.id === productId); // Use all loaded dpps to find the product
     if (!product) {
       toast({ title: "Error", description: "Product not found for AI summary.", variant: "destructive" });
       return;
@@ -126,16 +127,24 @@ export default function DPPLiveDashboardPage() {
     }
   }, [dpps, toast]);
 
+  const canCreateDpp = currentRole === 'admin' || currentRole === 'manufacturer';
 
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-headline font-semibold text-primary">Live DPP Dashboard</h1>
+        <div>
+          <h1 className="text-3xl font-headline font-semibold text-primary">Live DPP Dashboard</h1>
+          <CardDescription className="text-sm text-muted-foreground mt-1 flex items-center">
+            <UserCircle className="mr-1.5 h-4 w-4" /> Viewing as: <span className="font-medium text-foreground ml-1 capitalize">{currentRole}</span>
+          </CardDescription>
+        </div>
         <div className="flex gap-2">
           <ScanProductDialog allDpps={dpps} /> 
-          <Link href="/products/new" passHref>
-            <Button variant="secondary"><PlusCircle className="mr-2 h-5 w-5" />Create New DPP</Button>
-          </Link>
+          {canCreateDpp && (
+            <Link href="/products/new" passHref>
+              <Button variant="secondary"><PlusCircle className="mr-2 h-5 w-5" />Create New DPP</Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -144,7 +153,6 @@ export default function DPPLiveDashboardPage() {
       <div className="grid lg:grid-cols-3 gap-6">
         <CategoryPieChart data={categoryDistribution} />
         <ComplianceDistributionChart data={complianceDistribution} />
-        {/* Placeholder for a third chart or another KPI card */}
         <Card className="shadow-md lg:col-span-1">
           <CardHeader><CardTitle className="font-headline">Future Insights</CardTitle><CardDescription>More visualizations coming soon.</CardDescription></CardHeader>
           <CardContent className="h-[300px] flex items-center justify-center text-muted-foreground">Placeholder</CardContent>
@@ -156,7 +164,7 @@ export default function DPPLiveDashboardPage() {
         onFiltersChange={handleFiltersChange}
         availableRegulations={availableRegulations}
         availableCategories={availableCategories}
-        availableManufacturers={availableManufacturers} // Pass new prop
+        availableManufacturers={availableManufacturers}
       />
       
       <Card className="shadow-lg">
@@ -180,14 +188,15 @@ export default function DPPLiveDashboardPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will delete product "{dpps.find(p=>p.id === productToDeleteId)?.productName || productToDeleteId}".
-              {productToDeleteId && !productToDeleteId.startsWith("USER_PROD") && " (This is a system mock product; deletion is temporary for this session.)"}
+              This action will archive product "{dpps.find(p=>p.id === productToDeleteId)?.productName || productToDeleteId}".
+              {productToDeleteId && !productToDeleteId.startsWith("USER_PROD") && " (This is a system mock product; archiving is temporary for this session.)"}
+              Archived products can be viewed by adjusting filters or selecting the "Archived" status (if your role permits).
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setProductToDeleteId(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+              Archive Product
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
