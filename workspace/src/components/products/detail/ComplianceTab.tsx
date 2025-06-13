@@ -172,7 +172,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     <div className="space-y-6">
       <ProductComplianceHeader
         overallStatusText={summary.overallStatus}
-        notifications={product.notifications || []} // Pass product notifications if they exist
+        // notifications={product.notifications} // product.notifications does not exist on SimpleProductDetail, so it's removed or needs adjustment
       />
 
       {allComplianceItems.length > 0 ? (
@@ -226,3 +226,6 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
+
+    
+    

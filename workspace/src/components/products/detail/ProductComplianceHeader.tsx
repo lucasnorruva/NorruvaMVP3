@@ -82,7 +82,4 @@ const ProductComplianceHeader: React.FC<ProductComplianceHeaderProps> = ({
         </div>
       </CardHeader>
     </Card>
-  );
-};
-
-export default ProductComplianceHeader;
+  

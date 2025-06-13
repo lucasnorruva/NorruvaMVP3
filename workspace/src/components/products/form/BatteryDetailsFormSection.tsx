@@ -1,4 +1,3 @@
-
 // --- File: BatteryDetailsFormSection.tsx ---
 // Description: Form section component for battery-specific details in the product form.
 "use client";

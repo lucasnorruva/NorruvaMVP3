@@ -98,3 +98,5 @@ const ComplianceDetailItemDisplay: React.FC<ComplianceDetailItemProps> = ({
 };
 
 export default ComplianceDetailItemDisplay;
+
+    

@@ -289,3 +289,5 @@ export async function handleSuggestBatteryDetailsAI(
     errorTitle: "Error Suggesting Battery Details",
   });
 }
+
+    
