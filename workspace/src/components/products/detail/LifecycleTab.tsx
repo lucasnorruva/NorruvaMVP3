@@ -72,6 +72,7 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
     
     let currentLifecycleStageName = "Initial Product Phase"; 
     if (currentIndex > 0) {
+        // Find the most recent completed or in-progress event before the current one
         let foundPreviousStage = false;
         for (let i = currentIndex - 1; i >= 0; i--) {
             if (product.lifecycleEvents[i].status === 'Completed' || product.lifecycleEvents[i].status === 'In Progress') {
@@ -80,10 +81,12 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
                 break;
             }
         }
+        // If no such prior event, use the name of the immediately preceding event, or a default
         if (!foundPreviousStage) {
            currentLifecycleStageName = product.lifecycleEvents[currentIndex - 1]?.eventName || "Pre-Production / Design";
         }
     } else if (currentIndex === 0 && (targetEvent.status === 'Upcoming' || targetEvent.status === 'In Progress')) {
+        // If it's the first event and it's being advanced (e.g., from design to manufacturing)
         currentLifecycleStageName = "Pre-Production / Design";
     }
 
@@ -96,11 +99,13 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
         newLifecycleStageName: targetEvent.eventName,
       });
 
+      // Advance the local lifecycle state using the state machine
       const machine = lifecycleMachineRef.current;
-      const nextStateCandidate = Object.values(DppLifecycleState).find(
-        state => state.toLowerCase().replace(/_/g, ' ') === targetEvent.eventName.toLowerCase().replace(/_/g, ' ')
-      );
-
+      // Attempt to map event name to a DppLifecycleState enum member
+      // This is a simplified mapping; a real app might need more robust logic
+      const nextStateCandidateKey = targetEvent.eventName.toUpperCase().replace(/\s+/g, '_') as keyof typeof DppLifecycleState;
+      const nextStateCandidate = DppLifecycleState[nextStateCandidateKey];
+      
       if (nextStateCandidate && machine.canTransition(nextStateCandidate)) {
         try {
           machine.transition(nextStateCandidate);
@@ -114,7 +119,7 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
         }
       } else {
         // eslint-disable-next-line no-console
-        console.warn(`Could not transition to a state matching event: ${targetEvent.eventName}`);
+        console.warn(`Could not transition to a state matching event: ${targetEvent.eventName}. Current SM state: ${machine.getCurrentState()}`);
       }
 
 
@@ -251,4 +256,10 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
             );
           })}
         </div>
-      
+      </CardContent>
+    </Card>
+  );
+}
+    
+    
+
