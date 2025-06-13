@@ -1,3 +1,4 @@
+
 // --- File: page.tsx (DPP Live Dashboard) ---
 // Description: Main page component for the Digital Product Passport Live Dashboard.
 "use client";
@@ -27,7 +28,7 @@ import { generateProductSummary } from '@/ai/flows/generate-product-summary.ts';
 import type { DigitalProductPassport } from "@/types/dpp";
 import { CategoryPieChart } from "@/components/dpp-live-dashboard/CategoryPieChart"; 
 import { ComplianceDistributionChart } from "@/components/dpp-live-dashboard/ComplianceDistributionChart"; 
-import { useRole } from "@/contexts/RoleContext"; // Import useRole
+import { useRole } from "@/contexts/RoleContext"; 
 
 const availableRegulations = [
   { value: "all", label: "All Regulations" },
@@ -37,7 +38,7 @@ const availableRegulations = [
 ];
 
 export default function DPPLiveDashboardPage() {
-  const { currentRole } = useRole(); // Get current role
+  const { currentRole } = useRole(); 
   const {
     dpps, 
     filters,
@@ -64,7 +65,7 @@ export default function DPPLiveDashboardPage() {
   const [selectedProductForSummary, setSelectedProductForSummary] = useState<DigitalProductPassport | null>(null);
 
   const handleViewAISummary = useCallback(async (productId: string) => {
-    const product = dpps.find(p => p.id === productId); // Use all loaded dpps to find the product
+    const product = dpps.find(p => p.id === productId); 
     if (!product) {
       toast({ title: "Error", description: "Product not found for AI summary.", variant: "destructive" });
       return;
@@ -194,7 +195,7 @@ export default function DPPLiveDashboardPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setProductToDeleteId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => { setIsDeleteDialogOpen(false); setProductToDeleteId(null); }}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Archive Product
             </AlertDialogAction>

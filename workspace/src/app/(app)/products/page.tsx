@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useRole } from "@/contexts/RoleContext";
+import { useToast } from "@/hooks/use-toast";
 import type { SortConfig as ProductSortConfig, SortableKeys as ProductSortableKeys } from "@/types/dpp"; 
 import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
@@ -64,7 +65,7 @@ export default function ProductsPage() {
     handleDeleteRequest, 
     confirmDeleteProduct, 
     setIsDeleteDialogOpen,
-    productToDeleteId, // Get productToDeleteId from the hook
+    productToDeleteId, 
   } = useDPPLiveData(); 
 
   const [productToDeleteForDialog, setProductToDeleteForDialog] = useState<ProcessedDPP | null>(null);
@@ -132,6 +133,7 @@ export default function ProductsPage() {
         statusOptions={statusOptionsForFilter}
         complianceOptions={complianceOptionsForFilter}
         categoryOptions={categoryOptionsForFilter}
+        availableManufacturers={availableManufacturers} 
       />
 
       <Card className="shadow-lg">

@@ -1,3 +1,4 @@
+
 // --- File: src/app/api/v1/dpp/route.ts ---
 // Description: Conceptual API endpoint to create a new Digital Product Passport and list DPPs with filters.
 
@@ -124,20 +125,17 @@ export async function GET(request: NextRequest) {
   const blockchainAnchored = searchParams.get('blockchainAnchored') as DashboardFiltersState['blockchainAnchored'] | null;
   const isTextileProductParam = searchParams.get('isTextileProduct');
   const isConstructionProductParam = searchParams.get('isConstructionProduct');
-  const includeArchivedParam = searchParams.get('includeArchived'); 
+  const includeArchived = searchParams.get('includeArchived') === 'true'; // API parameter
 
   let filteredDPPs: DigitalProductPassport[] = [...MOCK_DPPS];
 
-  // Handle archived filter first
-  if (status === 'archived') {
-    filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.isArchived === true);
-  } else if (includeArchivedParam === 'true') {
-    // No filtering based on isArchived if includeArchived is true (client will handle further status filter)
-  } else {
-    // Default: filter out archived items unless status is 'archived' or includeArchived is 'true'
+  // API-level filtering for archived products
+  if (!includeArchived) {
     filteredDPPs = filteredDPPs.filter(dpp => !dpp.metadata.isArchived);
   }
-  
+  // If includeArchived is true, we don't filter by isArchived at this API level.
+  // The client (useDPPLiveData) will handle further status filtering (e.g., if status=published, it will filter out archived items itself).
+
   if (searchQuery) {
     const lowerSearchQuery = searchQuery.toLowerCase();
     filteredDPPs = filteredDPPs.filter(dpp =>
@@ -148,9 +146,20 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Apply other status filters (if not 'archived' and not 'all')
-  if (status && status !== 'all' && status !== 'archived') {
-    filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
+  if (status && status !== 'all') {
+    if (status === 'archived') {
+        // If specific 'archived' status filter, ensure we only return those.
+        // This assumes the API was called with includeArchived=true if this is desired.
+        // Or, if not, the list is already non-archived.
+        filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.isArchived === true);
+    } else {
+        filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
+        // And if 'archived' wasn't the explicit status, ensure we don't include archived ones
+        // unless includeArchived was true (which means the client will handle it).
+        if (!includeArchived) {
+            filteredDPPs = filteredDPPs.filter(dpp => !dpp.metadata.isArchived);
+        }
+    }
   }
 
 
@@ -188,7 +197,7 @@ export async function GET(request: NextRequest) {
       blockchainAnchored,
       isTextileProduct, 
       isConstructionProduct, 
-      includeArchived: includeArchivedParam === 'true' || status === 'archived', 
+      includeArchived: includeArchived, 
     },
     totalCount: filteredDPPs.length,
   });

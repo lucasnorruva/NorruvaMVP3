@@ -159,6 +159,7 @@ export interface DashboardFiltersState {
   manufacturer?: 'all' | string; 
   completeness?: 'all' | '>75' | '50-75' | '<50'; 
   onChainStatus?: string;
+  includeArchived?: boolean; // To explicitly control API calls
 }
 
 export type SortableKeys = 
@@ -391,14 +392,14 @@ export interface DisplayableProduct {
   productName?: string;
   category?: string;
   productCategory?: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
-  compliance: string;
-  lastUpdated: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string; // Mapped from metadata.status
+  compliance: string; // Overall compliance text
+  lastUpdated: string; // From metadata.last_updated
   gtin?: string;
-  manufacturer?: string; // This was DigitalProductPassport['manufacturer'], changed to simple string for easier display logic
+  manufacturer?: string; 
   modelNumber?: string;
   description?: string;
-  productDescription?: string;
+  productDescription?: string; // from StoredUserProduct
   imageUrl?: string;
   imageHint?: string;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -412,7 +413,8 @@ export interface DisplayableProduct {
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
-  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A';
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A'; // From ebsiVerification.status
+  ebsiVerification?: EbsiVerificationDetails; // Keep the full object for DPPTableRow
   supplyChainLinks?: ProductSupplyChainLink[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];

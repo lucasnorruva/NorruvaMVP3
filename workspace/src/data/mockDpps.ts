@@ -343,7 +343,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     modelNumber: "CL-MODSOFA-01",
     metadata: { 
       last_updated: "2024-07-20T11:00:00Z", 
-      status: "archived", 
+      status: "published", // Changed from archived for recycler view
       created_at: "2023-12-01T10:00:00Z",
       onChainStatus: "Archived", 
       onChainLifecycleStage: "EndOfLife",
@@ -366,7 +366,14 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       }
     },
     consumerScans: 850,
-    productDetails: { description: "A modular sofa."},
+    productDetails: { 
+      description: "A modular sofa, designed for easy disassembly and component replacement or recycling.",
+      materials: [
+        { name: "FSC Certified Wood Frame", percentage: 60, origin: "Poland", isRecycled: false },
+        { name: "Recycled Polyester Fabric", percentage: 25, origin: "Turkey", isRecycled: true, recycledContentPercentage: 80 },
+        { name: "Foam Cushions (CertiPUR-US)", percentage: 15, origin: "Germany" }
+      ]
+    },
     documents: [],
     traceability: {
       originCountry: "SE",
@@ -561,3 +568,9 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
+
+    
+    
+    
+
+

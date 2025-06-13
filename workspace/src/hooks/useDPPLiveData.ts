@@ -30,23 +30,26 @@ const defaultFiltersBase: DashboardFiltersState = {
   onChainStatus: "all",
   isTextileProduct: undefined,
   isConstructionProduct: undefined,
+  includeArchived: false, // Default to not including archived
 };
 
 const getRoleDefaultFilters = (role: UserRole): Partial<DashboardFiltersState> => {
   switch (role) {
     case 'admin':
-      return { ...defaultFiltersBase, status: "all" }; // Admins see all non-archived by default
+      return { ...defaultFiltersBase, status: "all", includeArchived: false }; 
     case 'manufacturer':
-      return { ...defaultFiltersBase, status: "all" }; // Manufacturers see all their relevant statuses
+      // For demo, assuming manufacturer "GreenTech Appliances" or "PowerVolt" or user-added.
+      // In a real app, this would be tied to the logged-in user's organization.
+      return { ...defaultFiltersBase, status: "all", manufacturer: "GreenTech Appliances", includeArchived: false };
     case 'verifier':
-      return { ...defaultFiltersBase, status: "pending_review" };
+      return { ...defaultFiltersBase, status: "pending_review", includeArchived: false };
     case 'retailer':
     case 'supplier':
-      return { ...defaultFiltersBase, status: "published" };
+      return { ...defaultFiltersBase, status: "published", includeArchived: false };
     case 'recycler':
-      return { ...defaultFiltersBase, status: "all" }; // Recyclers can see published & archived
+      return { ...defaultFiltersBase, status: "all", includeArchived: true }; // Recyclers see all including archived
     default:
-      return { ...defaultFiltersBase, status: "published" };
+      return { ...defaultFiltersBase, status: "published", includeArchived: false };
   }
 };
 
@@ -59,14 +62,16 @@ export function useDPPLiveData() {
   const [allProcessedDpps, setAllProcessedDpps] = useState<ProcessedDPP[]>([]);
   
   const [filters, setFilters] = useState<DashboardFiltersState>(() => ({
-    ...getRoleDefaultFilters(currentRole), 
-    searchQuery: "" 
+    ...defaultFiltersBase, // Start with base defaults
+    ...getRoleDefaultFilters(currentRole), // Override with role-specific defaults
+    searchQuery: "", // Explicitly ensure search query starts empty or is preserved if needed
   }));
+
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  // Effect 1: Load and process all DPPs once on initial mount or when raw data might change externally
+  // Effect 1: Load and process all DPPs once on initial mount
   useEffect(() => {
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
     const userAddedProducts: DigitalProductPassport[] = storedProductsString ? JSON.parse(storedProductsString) : [];
@@ -83,74 +88,78 @@ export function useDPPLiveData() {
       overallCompliance: getOverallComplianceDetails(dpp),
     }));
     setAllProcessedDpps(processed);
-  }, []); // Runs once
+  }, []); 
 
   // Effect 2: Update filters when role changes
   useEffect(() => {
     setFilters(prevFilters => ({
-      ...getRoleDefaultFilters(currentRole),
-      searchQuery: prevFilters.searchQuery, // Preserve search query
+      ...defaultFiltersBase, // Reset to base defaults
+      ...getRoleDefaultFilters(currentRole), // Apply new role defaults
+      searchQuery: prevFilters.searchQuery, // Preserve existing search query
     }));
   }, [currentRole]);
 
   const availableCategories = useMemo(() => {
-    const categories = new Set(allRawDpps.map(dpp => dpp.category));
+    const categories = new Set(allProcessedDpps.map(dpp => dpp.category));
     return Array.from(categories).sort();
-  }, [allRawDpps]);
+  }, [allProcessedDpps]);
 
   const availableManufacturers = useMemo(() => {
-    const manufacturers = new Set(allRawDpps.map(dpp => dpp.manufacturer?.name).filter(Boolean) as string[]);
+    const manufacturers = new Set(allProcessedDpps.map(dpp => dpp.manufacturer?.name).filter(Boolean) as string[]);
     return ["all", ...Array.from(manufacturers).sort()];
-  }, [allRawDpps]);
+  }, [allProcessedDpps]);
 
-  const roleScopedAndFilteredDPPs: ProcessedDPP[] = useMemo(() => {
-    let tempProducts = [...allProcessedDpps];
+  // Primary data derivation pipeline
+  const sortedAndFilteredDPPs = useMemo(() => {
+    let currentScopedDpps = [...allProcessedDpps];
 
-    // Apply Role-Based Scoping First
+    // 1. Apply Role-Based Scoping (non-overridable base visibility)
     switch (currentRole) {
-      case 'admin':
-        // Admin sees all non-archived by default, unless 'archived' is specifically filtered.
-        if (filters.status !== 'archived') {
-          tempProducts = tempProducts.filter(dpp => !dpp.metadata.isArchived);
-        }
-        break;
-      case 'manufacturer':
-        // Example: filter by manufacturer name for demo. In real app, this would be by user's org.
-        // Also, manufacturer might see draft, pending, published, flagged, but not archived by default.
-        tempProducts = tempProducts.filter(dpp => 
-          !dpp.metadata.isArchived &&
-          (dpp.manufacturer?.name === "GreenTech Appliances" || dpp.manufacturer?.name === "EcoThreads" || dpp.manufacturer?.name === "PowerVolt" || dpp.manufacturer?.name === "BuildGreen Systems" || dpp.id.startsWith("USER_PROD")) &&
-          (filters.status === 'all' || dpp.metadata.status === filters.status || 
-           (filters.status === 'archived' && dpp.metadata.isArchived)) // Allow viewing archived if filter selected
-        );
-        break;
-      case 'verifier':
-        tempProducts = tempProducts.filter(dpp => 
-          !dpp.metadata.isArchived && 
-          (dpp.metadata.status === 'pending_review' || dpp.metadata.status === 'flagged')
-        );
-        break;
-      case 'retailer':
-      case 'supplier':
-        tempProducts = tempProducts.filter(dpp => 
-          !dpp.metadata.isArchived && dpp.metadata.status === 'published'
-        );
-        break;
-      case 'recycler':
-        // Recycler sees published (non-archived) AND all archived products.
-        tempProducts = tempProducts.filter(dpp => 
-            (dpp.metadata.status === 'published' && !dpp.metadata.isArchived) || dpp.metadata.isArchived === true
-        );
-        break;
-      default:
-        tempProducts = tempProducts.filter(dpp => !dpp.metadata.isArchived && dpp.metadata.status === 'published');
-        break;
+        case 'admin':
+            // Admin sees all non-archived by default, unless 'archived' status filter is active
+            if (filters.status !== 'archived') {
+              currentScopedDpps = currentScopedDpps.filter(dpp => !dpp.metadata.isArchived);
+            }
+            break;
+        case 'manufacturer':
+            currentScopedDpps = currentScopedDpps.filter(dpp =>
+                (dpp.manufacturer?.name === "GreenTech Appliances" || 
+                 dpp.manufacturer?.name === "EcoThreads" || 
+                 dpp.manufacturer?.name === "PowerVolt" || 
+                 dpp.manufacturer?.name === "BuildGreen Systems" || 
+                 dpp.id.startsWith("USER_PROD")) &&
+                (filters.status === 'archived' ? dpp.metadata.isArchived : !dpp.metadata.isArchived)
+            );
+            break;
+        case 'verifier':
+            currentScopedDpps = currentScopedDpps.filter(dpp => 
+                !dpp.metadata.isArchived && 
+                (dpp.metadata.status === 'pending_review' || dpp.metadata.status === 'flagged')
+            );
+            break;
+        case 'retailer':
+        case 'supplier':
+            currentScopedDpps = currentScopedDpps.filter(dpp => 
+                !dpp.metadata.isArchived && dpp.metadata.status === 'published'
+            );
+            break;
+        case 'recycler':
+            currentScopedDpps = currentScopedDpps.filter(dpp => 
+                (!dpp.metadata.isArchived && dpp.metadata.status === 'published') || 
+                dpp.metadata.isArchived === true
+            );
+            break;
+        default: // Default to only published, non-archived if role is unknown
+            currentScopedDpps = currentScopedDpps.filter(dpp => !dpp.metadata.isArchived && dpp.metadata.status === 'published');
+            break;
     }
 
-    // Apply User-Selected Filters
+    // 2. Apply User-Selected Filters on top of role-scoped data
+    let userFilteredDpps = [...currentScopedDpps];
+
     if (filters.searchQuery) {
       const lowerSearch = filters.searchQuery.toLowerCase();
-      tempProducts = tempProducts.filter(dpp =>
+      userFilteredDpps = userFilteredDpps.filter(dpp =>
         dpp.productName.toLowerCase().includes(lowerSearch) ||
         dpp.id.toLowerCase().includes(lowerSearch) ||
         (dpp.gtin && dpp.gtin.toLowerCase().includes(lowerSearch)) ||
@@ -160,35 +169,40 @@ export function useDPPLiveData() {
     
     if (filters.status !== "all") {
       if (filters.status === "archived") {
-        tempProducts = tempProducts.filter(dpp => dpp.metadata.isArchived === true);
+        userFilteredDpps = userFilteredDpps.filter(dpp => dpp.metadata.isArchived === true);
       } else {
-        tempProducts = tempProducts.filter(dpp => dpp.metadata.status === filters.status && !dpp.metadata.isArchived);
+        // For other statuses, ensure we are not showing archived items unless the role (like recycler) already included them
+        userFilteredDpps = userFilteredDpps.filter(dpp => dpp.metadata.status === filters.status && 
+            (currentRole === 'recycler' ? true : !dpp.metadata.isArchived)
+        );
       }
+    } else if (currentRole !== 'recycler') { // If status is "all" and not recycler, still exclude archived
+        userFilteredDpps = userFilteredDpps.filter(dpp => !dpp.metadata.isArchived);
     }
+    // For Recycler with 'all' status, `currentScopedDpps` already correctly includes archived and non-archived published.
     
     if (filters.regulation !== "all") {
-      tempProducts = tempProducts.filter(dpp => {
+      userFilteredDpps = userFilteredDpps.filter(dpp => {
           const complianceData = dpp.compliance[filters.regulation as keyof typeof dpp.compliance];
           return complianceData && typeof complianceData === 'object' && 'status' in complianceData && (complianceData.status as string).toLowerCase() === 'compliant';
       });
     }
 
     if (filters.category !== "all") {
-      tempProducts = tempProducts.filter(dpp => dpp.category === filters.category);
+      userFilteredDpps = userFilteredDpps.filter(dpp => dpp.category === filters.category);
     }
     
-    if (filters.blockchainAnchored === 'anchored') tempProducts = tempProducts.filter(dpp => !!dpp.blockchainIdentifiers?.anchorTransactionHash);
-    if (filters.blockchainAnchored === 'not_anchored') tempProducts = tempProducts.filter(dpp => !dpp.blockchainIdentifiers?.anchorTransactionHash);
+    if (filters.blockchainAnchored === 'anchored') userFilteredDpps = userFilteredDpps.filter(dpp => !!dpp.blockchainIdentifiers?.anchorTransactionHash);
+    if (filters.blockchainAnchored === 'not_anchored') userFilteredDpps = userFilteredDpps.filter(dpp => !dpp.blockchainIdentifiers?.anchorTransactionHash);
     
-    if (filters.manufacturer !== "all") tempProducts = tempProducts.filter(dpp => dpp.manufacturer?.name === filters.manufacturer);
+    if (filters.manufacturer !== "all") userFilteredDpps = userFilteredDpps.filter(dpp => dpp.manufacturer?.name === filters.manufacturer);
     
-    if (filters.onChainStatus && filters.onChainStatus !== "all") { // Changed from "All" to "all"
-        tempProducts = tempProducts.filter(dpp => (dpp.metadata.onChainStatus || "Unknown") === filters.onChainStatus);
+    if (filters.onChainStatus && filters.onChainStatus !== "all") {
+        userFilteredDpps = userFilteredDpps.filter(dpp => (dpp.metadata.onChainStatus || "Unknown") === filters.onChainStatus);
     }
-
 
     if (filters.completeness !== "all") {
-      tempProducts = tempProducts.filter(dpp => {
+      userFilteredDpps = userFilteredDpps.filter(dpp => {
         const score = dpp.completeness.score;
         if (filters.completeness === '>75' && score <= 75) return false;
         if (filters.completeness === '50-75' && (score < 50 || score > 75)) return false;
@@ -197,15 +211,15 @@ export function useDPPLiveData() {
       });
     }
 
-    if (filters.isTextileProduct === true) tempProducts = tempProducts.filter(dpp => !!dpp.textileInformation);
-    if (filters.isTextileProduct === false) tempProducts = tempProducts.filter(dpp => !dpp.textileInformation);
+    if (filters.isTextileProduct === true) userFilteredDpps = userFilteredDpps.filter(dpp => !!dpp.textileInformation);
+    if (filters.isTextileProduct === false) userFilteredDpps = userFilteredDpps.filter(dpp => !dpp.textileInformation);
 
-    if (filters.isConstructionProduct === true) tempProducts = tempProducts.filter(dpp => !!dpp.constructionProductInformation);
-    if (filters.isConstructionProduct === false) tempProducts = tempProducts.filter(dpp => !dpp.constructionProductInformation);
+    if (filters.isConstructionProduct === true) userFilteredDpps = userFilteredDpps.filter(dpp => !!dpp.constructionProductInformation);
+    if (filters.isConstructionProduct === false) userFilteredDpps = userFilteredDpps.filter(dpp => !dpp.constructionProductInformation);
 
-    // Sort the final list
+    // 3. Sort the final list
     if (sortConfig.key && sortConfig.direction) {
-      tempProducts.sort((a, b) => {
+      userFilteredDpps.sort((a, b) => {
         let valA: any; let valB: any;
         if (sortConfig.key === 'completenessScore') { valA = a.completeness.score; valB = b.completeness.score; }
         else if (sortConfig.key === 'manufacturer.name') { valA = a.manufacturer?.name; valB = b.manufacturer?.name; }
@@ -223,12 +237,12 @@ export function useDPPLiveData() {
         return 0;
       });
     }
-    return tempProducts;
+    return userFilteredDpps;
   }, [allProcessedDpps, filters, sortConfig, currentRole]);
 
 
   const metrics = useMemo(() => {
-    const sourceForMetrics = roleScopedAndFilteredDPPs; // Base metrics on the fully filtered list
+    const sourceForMetrics = sortedAndFilteredDPPs; // Base metrics on the final filtered list
     const totalDPPs = sourceForMetrics.length;
     
     const fullyCompliantDPPsCount = sourceForMetrics.filter(dpp => 
@@ -258,29 +272,29 @@ export function useDPPLiveData() {
         totalConsumerScans, 
         averageConsumerScans, 
         averageCompleteness, 
-        metrics: productPageMetrics, // For Product Management page
-        allDpps: allProcessedDpps // Keep exposing this for filter dropdown population
+        metrics: productPageMetrics,
+        allDpps: allProcessedDpps 
     };
-  }, [roleScopedAndFilteredDPPs, filters, allProcessedDpps]); 
+  }, [sortedAndFilteredDPPs, filters]); // Added filters to dependency array
 
   const categoryDistribution = useMemo(() => {
-    const sourceForChart = roleScopedAndFilteredDPPs; 
+    const sourceForChart = sortedAndFilteredDPPs; 
     const counts: Record<string, number> = {};
     sourceForChart.forEach(dpp => {
       counts[dpp.category] = (counts[dpp.category] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [roleScopedAndFilteredDPPs, filters]); 
+  }, [sortedAndFilteredDPPs, filters]); // Added filters
 
   const complianceDistribution = useMemo(() => {
-    const sourceForChart = roleScopedAndFilteredDPPs; 
+    const sourceForChart = sortedAndFilteredDPPs; 
     const counts: Record<string, number> = {};
     sourceForChart.forEach(dpp => {
       const statusText = dpp.overallCompliance.text;
       counts[statusText] = (counts[statusText] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [roleScopedAndFilteredDPPs, filters]);
+  }, [sortedAndFilteredDPPs, filters]); // Added filters
 
   const handleFiltersChange = useCallback((newFilters: Partial<DashboardFiltersState>) => {
     setFilters((prevFilters) => ({ ...prevFilters, ...newFilters }));
@@ -308,7 +322,14 @@ export function useDPPLiveData() {
         ? { ...p, metadata: { ...p.metadata, isArchived: true, status: 'archived', last_updated: new Date().toISOString() } } 
         : p
     );
-    setAllRawDpps(updatedRawDpps); // This will trigger reprocessing
+    setAllRawDpps(updatedRawDpps); 
+
+    const updatedProcessedDpps = allProcessedDpps.map(p => 
+      p.id === productToDeleteId 
+        ? { ...p, metadata: { ...p.metadata, isArchived: true, status: 'archived', last_updated: new Date().toISOString() } } 
+        : p
+    );
+    setAllProcessedDpps(updatedProcessedDpps);
 
     if (productIsUserAdded) {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
@@ -326,17 +347,17 @@ export function useDPPLiveData() {
     toast({ title: "Product Archived", description: `Product "${productName}" has been archived.` });
     setIsDeleteDialogOpen(false);
     setProductToDeleteId(null);
-  }, [productToDeleteId, toast, allRawDpps]);
+  }, [productToDeleteId, toast, allRawDpps, allProcessedDpps]);
 
   return {
-    dpps: allProcessedDpps, // This still returns all for things like Scan Product Dialog
+    dpps: allProcessedDpps,
     filters,
     sortConfig,
     productToDeleteId,
     isDeleteDialogOpen,
     availableCategories,
     availableManufacturers, 
-    sortedAndFilteredDPPs: roleScopedAndFilteredDPPs, // This is the list for display
+    sortedAndFilteredDPPs, 
     metrics,
     categoryDistribution, 
     complianceDistribution, 
