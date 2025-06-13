@@ -1,17 +1,17 @@
 
 "use client";
-
 import type { SimpleProductDetail } from "@/types/dpp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AspectRatio } from "@/components/ui/aspect-ratio"; 
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
 import { getEbsiStatusDetails } from "@/utils/dppDisplayUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 
+import { BadgeWrapper } from './BadgeWrapper';
 interface OverviewTabProps {
 
   product: SimpleProductDetail;
@@ -350,3 +350,5 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+
+import { Badge } from "../../ui/badge";
