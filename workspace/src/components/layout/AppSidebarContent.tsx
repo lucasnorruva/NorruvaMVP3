@@ -19,24 +19,19 @@ import {
   Globe2,
   Users,
   Fingerprint,
-  Building,
-  Recycle as RecycleIconLucide,
-  UploadCloud,
-  Inbox,
-  BadgeCheck, // Changed from CheckSquare for Verifier
-  History as HistoryIconLucide,
-  ShoppingCart,
+  Building, // For Manufacturer icon
+  Recycle as RecycleIconLucide, // For Recycler icon
+  UploadCloud, // For Supplier icon
+  Inbox, // For Supplier icon
+  BadgeCheck, // For Verifier icon
+  History as HistoryIconLucide, // For Verifier icon
+  ShoppingCart, // For Retailer icon
   PlusCircle,
-  Users2,
-  Landmark, 
-  Palette, 
-  Server, 
-  DatabaseZap, 
-  MessageSquare, 
-  LifeBuoy,
-  HardDrive,
-  FileSearch, // Added for Verifier - DPPs for Verification
-  ClipboardEdit, // Added for Verifier - Submit Report
+  Users2, // For Supplier Directory / User Management
+  Landmark, // For GDPR Center (Admin)
+  HardDrive, // For Recycler EOL Data
+  FileSearch, // For Verifier - DPPs for Verification
+  ClipboardEdit, // For Verifier - Submit Report
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
@@ -79,14 +74,13 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   },
   manufacturer: {
     primary: [
-      { href: "/dashboard", label: "Manufacturer Dashboard", icon: LayoutDashboard, exactMatch: true },
+      { href: "/dashboard", label: "Manufacturer Dashboard", icon: Building, exactMatch: true },
       { href: "/products", label: "My Products", icon: Package },
       { href: "/products/new", label: "Add New Product", icon: PlusCircle, exactMatch: true },
       { href: "/suppliers", label: "My Suppliers", icon: Users2 },
       { href: "/blockchain", label: "Manage Product Tokens/Anchors", icon: Fingerprint },
       { href: "/sustainability", label: "Sustainability Reports", icon: FileText, exactMatch: true },
       { href: "/compliance/pathways", label: "Compliance Guidance", icon: ShieldCheck },
-      { href: "/dpp-global-tracker-v2", label: "Global Product View", icon: Globe2 },
     ],
     secondary: [
       { href: "/copilot", label: "AI Co-Pilot", icon: Bot, exactMatch: true },
@@ -95,10 +89,10 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   },
   supplier: {
     primary: [
-      { href: "/dashboard", label: "Supplier Dashboard", icon: LayoutDashboard, exactMatch: true },
-      { href: "/products/new", label: "Submit Component/Material Data", icon: UploadCloud, exactMatch: true },
-      { href: "/dpp-live-dashboard?suppliedBy=myOrg", label: "Products Using My Components", icon: Package },
-      { href: "/dashboard#data-requests", label: "View Data Requests", icon: Inbox }, // Conceptual link
+      { href: "/dashboard", label: "Supplier Dashboard", icon: UploadCloud, exactMatch: true },
+      { href: "/products/new", label: "Submit Component/Material Data", icon: PlusCircle, exactMatch: true }, // Re-purposing
+      { href: "/dpp-live-dashboard?suppliedBy=myOrg", label: "Products Using My Components", icon: Package }, // Conceptual filter
+      { href: "/dashboard#data-requests", label: "View Data Requests", icon: Inbox }, // Conceptual
     ],
     secondary: [
       { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot, exactMatch: true },
@@ -107,7 +101,7 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   },
   retailer: {
     primary: [
-      { href: "/dashboard", label: "Retailer Dashboard", icon: LayoutDashboard, exactMatch: true },
+      { href: "/dashboard", label: "Retailer Dashboard", icon: ShoppingCart, exactMatch: true },
       { href: "/dpp-live-dashboard", label: "Browse Product Passports", icon: LineChart },
       { href: "/sustainability/compare", label: "Compare Product Sustainability", icon: BarChartHorizontal, exactMatch: true },
     ],
@@ -118,8 +112,8 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   },
   recycler: {
     primary: [
-      { href: "/dashboard", label: "Recycler Dashboard", icon: LayoutDashboard, exactMatch: true },
-      { href: "/dpp-live-dashboard?status=all&includeArchived=true", label: "Search All DPPs (Incl. EOL)", icon: LineChart },
+      { href: "/dashboard", label: "Recycler Dashboard", icon: RecycleIconLucide, exactMatch: true },
+      { href: "/dpp-live-dashboard?status=all&includeArchived=true", label: "Search All DPPs (Incl. EOL)", icon: FileSearch },
       { href: "/dpp-live-dashboard?searchQuery=disassembly%20OR%20recycling%20instructions%20OR%20material%20composition&includeArchived=true", label: "Access EOL & Material Data", icon: HardDrive },
       { href: "/dashboard#report-recovery", label: "Report Recovered Materials", icon: RecycleIconLucide }, // Conceptual
     ],
@@ -130,7 +124,7 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   },
   verifier: {
     primary: [
-      { href: "/dashboard", label: "Verifier Dashboard", icon: LayoutDashboard, exactMatch: true },
+      { href: "/dashboard", label: "Verifier Dashboard", icon: BadgeCheck, exactMatch: true },
       { href: "/dpp-live-dashboard?status=pending_review&status=flagged", label: "DPPs for Verification", icon: FileSearch },
       { href: "/audit-log", label: "View Audit Trails", icon: HistoryIconLucide, exactMatch: true },
       { href: "/dashboard#submit-report", label: "Submit Verification Report", icon: ClipboardEdit }, // Conceptual
@@ -166,16 +160,12 @@ export default function AppSidebarContent() {
       if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
         isActive = false;
       }
-      // Prevent /compliance/pathways from being active if on /copilot or /gdpr,
-      // which might be relevant if these were sub-routes of compliance.
-      // Given current top-level structure, this might be redundant but safe.
+      // Prevent /compliance/pathways from being active if on /copilot or /gdpr
       if (href === "/compliance/pathways" && (pathname.startsWith("/copilot") || pathname.startsWith("/gdpr"))) {
         isActive = false;
       }
     }
     
-    // If we are on the dashboard, only the dashboard link should be active.
-    // This overrides other startsWith logic if not exactMatch
     if (pathname === "/dashboard" && href !== "/dashboard") {
         isActive = false;
     }
