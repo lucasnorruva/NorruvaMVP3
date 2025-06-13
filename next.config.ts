@@ -28,9 +28,10 @@ const nextConfig: NextConfig = {
     'https://9000-firebase-studio-1749754683363.cluster-6dx7corvpngoivimwvvljgokdw.cloudworkstations.dev',
     'https://9003-firebase-studio-1749754683363.cluster-6dx7corvpngoivimwvvljgokdw.cloudworkstations.dev', // Added this line
   ],
-  experimental: {
-    turbopack: false, // Explicitly disable Turbopack
-  },
+  // The experimental.turbopack option was removed as it's invalid for Next.js 15.3.3
+  // Turbopack is default for `next dev` in v15. If explicit opt-out is needed,
+  // it's usually done via CLI flags like `--no-turbo` in package.json script,
+  // but the config option itself was causing the error.
 };
 
 export default nextConfig;
