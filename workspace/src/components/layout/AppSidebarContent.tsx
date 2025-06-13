@@ -80,6 +80,7 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
       { href: "/products", label: "My Products", icon: Package },
       { href: "/products/new", label: "Add New Product", icon: PlusCircle },
       { href: "/suppliers", label: "My Suppliers", icon: Users2 },
+      { href: "/blockchain", label: "Manage Product Tokens/Anchors", icon: Fingerprint },
       { href: "/sustainability", label: "Sustainability Reports", icon: FileText, exactMatch: true },
       { href: "/compliance/pathways", label: "Compliance Guidance", icon: ShieldCheck },
       { href: "/dpp-global-tracker-v2", label: "Global Product View", icon: Globe2 },
