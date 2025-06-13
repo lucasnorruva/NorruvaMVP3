@@ -67,21 +67,21 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
       { href: "/sustainability", label: "Sustainability HQ", icon: FileText, exactMatch: true },
       { href: "/compliance/pathways", label: "Compliance Hub", icon: ShieldCheck },
       { href: "/blockchain", label: "Blockchain Console", icon: Fingerprint },
-      { href: "/gdpr", label: "GDPR Center", icon: Landmark },
-      { href: "/audit-log", label: "System Audit Log", icon: ListChecks },
+      { href: "/gdpr", label: "GDPR Center", icon: Landmark, exactMatch: true },
+      { href: "/audit-log", label: "System Audit Log", icon: ListChecks, exactMatch: true },
       { href: "/settings/users", label: "User Management", icon: Users },
       { href: "/settings", label: "Platform Settings", icon: Settings, exactMatch: true },
     ],
     secondary: [
       { href: "/developer", label: "Developer Portal", icon: Code2 },
-      { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
+      { href: "/copilot", label: "AI Co-Pilot", icon: Bot, exactMatch: true },
     ],
   },
   manufacturer: {
     primary: [
       { href: "/dashboard", label: "Manufacturer Dashboard", icon: LayoutDashboard, exactMatch: true },
       { href: "/products", label: "My Products", icon: Package },
-      { href: "/products/new", label: "Add New Product", icon: PlusCircle },
+      { href: "/products/new", label: "Add New Product", icon: PlusCircle, exactMatch: true },
       { href: "/suppliers", label: "My Suppliers", icon: Users2 },
       { href: "/blockchain", label: "Manage Product Tokens/Anchors", icon: Fingerprint },
       { href: "/sustainability", label: "Sustainability Reports", icon: FileText, exactMatch: true },
@@ -89,19 +89,19 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
       { href: "/dpp-global-tracker-v2", label: "Global Product View", icon: Globe2 },
     ],
     secondary: [
-      { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
+      { href: "/copilot", label: "AI Co-Pilot", icon: Bot, exactMatch: true },
       { href: "/settings", label: "My Profile", icon: Settings, exactMatch: true },
     ],
   },
   supplier: {
     primary: [
       { href: "/dashboard", label: "Supplier Dashboard", icon: LayoutDashboard, exactMatch: true },
-      { href: "/products/new", label: "Submit Component/Material Data", icon: UploadCloud },
+      { href: "/products/new", label: "Submit Component/Material Data", icon: UploadCloud, exactMatch: true },
       { href: "/dpp-live-dashboard?suppliedBy=myOrg", label: "Products Using My Components", icon: Package },
-      { href: "/dashboard#data-requests", label: "View Data Requests", icon: Inbox },
-      { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot },
+      { href: "/dashboard#data-requests", label: "View Data Requests", icon: Inbox }, // Conceptual link
     ],
     secondary: [
+      { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot, exactMatch: true },
       { href: "/settings", label: "My Supplier Profile", icon: Settings, exactMatch: true },
     ],
   },
@@ -109,10 +109,10 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
     primary: [
       { href: "/dashboard", label: "Retailer Dashboard", icon: LayoutDashboard, exactMatch: true },
       { href: "/dpp-live-dashboard", label: "Browse Product Passports", icon: LineChart },
-      { href: "/sustainability/compare", label: "Compare Product Sustainability", icon: BarChartHorizontal },
-      { href: "/copilot", label: "AI Product Assistant", icon: Bot },
+      { href: "/sustainability/compare", label: "Compare Product Sustainability", icon: BarChartHorizontal, exactMatch: true },
     ],
     secondary: [
+      { href: "/copilot", label: "AI Product Assistant", icon: Bot, exactMatch: true },
       { href: "/settings", label: "My Retailer Profile", icon: Settings, exactMatch: true },
     ],
   },
@@ -121,10 +121,10 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
       { href: "/dashboard", label: "Recycler Dashboard", icon: LayoutDashboard, exactMatch: true },
       { href: "/dpp-live-dashboard?status=all&includeArchived=true", label: "Search All DPPs (Incl. EOL)", icon: LineChart },
       { href: "/dpp-live-dashboard?searchQuery=disassembly%20OR%20recycling%20instructions%20OR%20material%20composition&includeArchived=true", label: "Access EOL & Material Data", icon: HardDrive },
-      { href: "/dashboard#report-recovery", label: "Report Recovered Materials", icon: RecycleIconLucide },
+      { href: "/dashboard#report-recovery", label: "Report Recovered Materials", icon: RecycleIconLucide }, // Conceptual
     ],
     secondary: [
-      { href: "/copilot", label: "EOL Co-Pilot", icon: Bot },
+      { href: "/copilot", label: "EOL Co-Pilot", icon: Bot, exactMatch: true },
       { href: "/settings", label: "My Recycler Profile", icon: Settings, exactMatch: true },
     ],
   },
@@ -132,11 +132,11 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
     primary: [
       { href: "/dashboard", label: "Verifier Dashboard", icon: LayoutDashboard, exactMatch: true },
       { href: "/dpp-live-dashboard?status=pending_review&status=flagged", label: "DPPs for Verification", icon: FileSearch },
-      { href: "/audit-log", label: "View Audit Trails", icon: HistoryIconLucide },
-      { href: "/dashboard#submit-report", label: "Submit Verification Report", icon: ClipboardEdit },
+      { href: "/audit-log", label: "View Audit Trails", icon: HistoryIconLucide, exactMatch: true },
+      { href: "/dashboard#submit-report", label: "Submit Verification Report", icon: ClipboardEdit }, // Conceptual
     ],
     secondary: [
-      { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot },
+      { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot, exactMatch: true },
       { href: "/settings", label: "My Verifier Profile", icon: Settings, exactMatch: true },
     ],
   },
@@ -152,25 +152,30 @@ export default function AppSidebarContent() {
 
   const commonButtonClass = (href: string, exactMatch?: boolean) => {
     let isActive: boolean;
+    const basePath = href.split('?')[0]; // Ignore query params for matching
 
     if (exactMatch) {
-      isActive = pathname === href;
+      isActive = pathname === basePath;
     } else {
-      const basePath = href.split('?')[0];
       isActive = pathname.startsWith(basePath);
-
+      // Special case for /products to not be active if /products/new is active
       if (href === "/products" && pathname.startsWith("/products/new")) {
         isActive = false;
       }
+      // Special case for /sustainability to not be active if /sustainability/compare is active
       if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
         isActive = false;
       }
-       // Ensure /compliance/pathways is active for sub-pages but not if another top-level compliance link is hit
-      if (href === "/compliance/pathways" && (pathname === "/copilot" || pathname === "/gdpr")) {
+      // Prevent /compliance/pathways from being active if on /copilot or /gdpr,
+      // which might be relevant if these were sub-routes of compliance.
+      // Given current top-level structure, this might be redundant but safe.
+      if (href === "/compliance/pathways" && (pathname.startsWith("/copilot") || pathname.startsWith("/gdpr"))) {
         isActive = false;
       }
     }
     
+    // If we are on the dashboard, only the dashboard link should be active.
+    // This overrides other startsWith logic if not exactMatch
     if (pathname === "/dashboard" && href !== "/dashboard") {
         isActive = false;
     }
@@ -212,7 +217,7 @@ export default function AppSidebarContent() {
           {navItems.map((item) => {
             const { className, isActive } = commonButtonClass(item.href, item.exactMatch);
             return (
-              <SidebarMenuItem key={item.label}> {/* Changed key to item.label for more stability if hrefs change slightly for same logical item */}
+              <SidebarMenuItem key={item.label}> 
                 <Link href={item.href} asChild>
                   <SidebarMenuButton
                     className={className}
@@ -236,7 +241,7 @@ export default function AppSidebarContent() {
               {secondaryNavItems.map((item) => {
                 const { className, isActive } = commonButtonClass(item.href, item.exactMatch);
                 return (
-                  <SidebarMenuItem key={item.label}> {/* Changed key to item.label */}
+                  <SidebarMenuItem key={item.label}> 
                     <Link href={item.href} asChild>
                       <SidebarMenuButton
                         className={className}
@@ -257,3 +262,4 @@ export default function AppSidebarContent() {
     </>
   );
 }
+
