@@ -57,43 +57,44 @@ export function useDPPLiveData() {
 
   useEffect(() => {
     let roleSpecificDefaults: Partial<DashboardFiltersState> = {};
+    const baseForRole: Omit<DashboardFiltersState, 'searchQuery' | 'status'> = { 
+        regulation: "all",
+        category: "all",
+        blockchainAnchored: "all",
+        manufacturer: "all",
+        completeness: "all",
+        onChainStatus: "all",
+        isTextileProduct: undefined,
+        isConstructionProduct: undefined,
+    };
 
     switch (currentRole) {
       case 'admin':
-        // Admin sees all by default.
-        roleSpecificDefaults = { ...defaultFiltersBase, status: "all" };
+        roleSpecificDefaults = { ...baseForRole, status: "all" };
         break;
       case 'manufacturer':
-        // Manufacturers might want to see all their products, regardless of status.
-        roleSpecificDefaults = { ...defaultFiltersBase, status: "all" };
-        // In a real app, we might add: manufacturer: "current_manufacturer_id_or_name"
+        roleSpecificDefaults = { ...baseForRole, status: "all" };
+        // Future: filter by current manufacturer's products
         break;
       case 'verifier':
-        // Verifiers focus on pending_review and flagged products primarily.
-        roleSpecificDefaults = { ...defaultFiltersBase, status: "pending_review" };
+        roleSpecificDefaults = { ...baseForRole, status: "pending_review" };
         break;
       case 'retailer':
-        // Retailers primarily care about published products.
-        roleSpecificDefaults = { ...defaultFiltersBase, status: "published" };
+        roleSpecificDefaults = { ...baseForRole, status: "published" };
         break;
       case 'recycler':
-        // Recyclers might look at archived or published (nearing EOL).
-        roleSpecificDefaults = { ...defaultFiltersBase, status: "archived" };
+        roleSpecificDefaults = { ...baseForRole, status: "archived" };
         break;
       case 'supplier':
-        // Suppliers might be interested in products their components are in,
-        // usually published ones.
-        roleSpecificDefaults = { ...defaultFiltersBase, status: "published" };
+        roleSpecificDefaults = { ...baseForRole, status: "published" };
         break;
-      default:
-        roleSpecificDefaults = { ...defaultFiltersBase, status: "published" };
+      default: 
+        roleSpecificDefaults = { ...baseForRole, status: "published" };
         break;
     }
-    // Preserve existing search query, reset other filters to role-specific defaults
     setFilters(prevFilters => ({
-      ...defaultFiltersBase, // Reset all to absolute base defaults
-      ...roleSpecificDefaults, // Apply new role-specific defaults
-      searchQuery: prevFilters.searchQuery || "", // Preserve search or default to empty
+      ...roleSpecificDefaults, 
+      searchQuery: prevFilters.searchQuery || "", 
     }));
   }, [currentRole]);
 
@@ -119,9 +120,7 @@ export function useDPPLiveData() {
   const sortedAndFilteredDPPs: ProcessedDPP[] = useMemo(() => {
     let tempProducts = [...processedDPPs]; 
 
-    // Client-side filtering for all criteria
     tempProducts = tempProducts.filter((dpp) => {
-      // Search Query (productName, id, gtin, manufacturer.name)
       if (filters.searchQuery) {
         const lowerSearch = filters.searchQuery.toLowerCase();
         if (
@@ -132,43 +131,30 @@ export function useDPPLiveData() {
         ) return false;
       }
       
-      // Status Filter
       if (filters.status !== "all") {
-        if (filters.status === "archived") { // "archived" UI filter now means metadata.isArchived
+        if (filters.status === "archived") {
           if (!dpp.metadata.isArchived) return false;
         } else {
-          // For any other specific status, ensure it's NOT archived AND matches the status
           if (dpp.metadata.isArchived || dpp.metadata.status !== filters.status) return false;
         }
       } else {
-        // If status is "all", we still need to respect if the user *doesn't* want to see archived items
-        // This is now handled by the API call (includeArchived=false by default)
-        // But for client-side, if we fetched all, we might need to filter out archived if an "includeArchived" UI toggle existed
-        // For now, if filters.status is "all", we show non-archived + archived if includeArchived was true.
-        // The API's default is includeArchived=false. Let's assume if filters.status is "all", the API was called with includeArchived=true
-        // So, no further client-side filtering based on isArchived is needed for "all" status here.
+         if (dpp.metadata.isArchived) return false; // If "all" status, hide archived unless explicitly requested by includeArchived mechanism (not present here)
       }
       
-      // Regulation Filter (conceptual, checks if ANY compliance status is "compliant" for the selected regulation)
       if (filters.regulation !== "all") {
         const complianceData = dpp.compliance[filters.regulation as keyof typeof dpp.compliance];
         if (!complianceData || (typeof complianceData === 'object' && 'status' in complianceData && (complianceData.status as string).toLowerCase() !== 'compliant')) return false;
       }
 
-      // Category Filter
       if (filters.category !== "all" && dpp.category !== filters.category) return false;
       
-      // Blockchain Anchored Filter
       if (filters.blockchainAnchored === 'anchored' && !dpp.blockchainIdentifiers?.anchorTransactionHash) return false;
       if (filters.blockchainAnchored === 'not_anchored' && dpp.blockchainIdentifiers?.anchorTransactionHash) return false;
       
-      // Manufacturer Filter
       if (filters.manufacturer !== "all" && dpp.manufacturer?.name !== filters.manufacturer) return false;
       
-      // On-Chain Status Filter
       if (filters.onChainStatus && filters.onChainStatus !== "all" && dpp.metadata.onChainStatus !== filters.onChainStatus) return false;
 
-      // Data Completeness Filter
       if (filters.completeness !== "all") {
         const score = dpp.completeness.score;
         if (filters.completeness === '>75' && score <= 75) return false;
@@ -176,11 +162,9 @@ export function useDPPLiveData() {
         if (filters.completeness === '<50' && score >= 50) return false;
       }
 
-      // Textile Product Filter
       if (filters.isTextileProduct === true && !dpp.textileInformation) return false;
       if (filters.isTextileProduct === false && dpp.textileInformation) return false;
 
-      // Construction Product Filter
       if (filters.isConstructionProduct === true && !dpp.constructionProductInformation) return false;
       if (filters.isConstructionProduct === false && dpp.constructionProductInformation) return false;
 
@@ -243,9 +227,16 @@ export function useDPPLiveData() {
     const averageCompleteness = totalDPPs > 0 
       ? (sourceForMetrics.reduce((sum, p) => sum + p.completeness.score, 0) / totalDPPs).toFixed(1) + "%" 
       : "0%";
+    
+    // Metrics for ProductPage
+    const productPageMetrics = {
+        active: sourceForMetrics.filter(d => d.metadata.status === 'published' && !d.metadata.isArchived).length,
+        draft: sourceForMetrics.filter(d => d.metadata.status === 'draft' && !d.metadata.isArchived).length,
+        issues: sourceForMetrics.filter(d => d.overallCompliance.text === 'Non-Compliant' && !d.metadata.isArchived).length,
+    };
 
-    return { totalDPPs, compliantPercentage, pendingReviewDPPs, totalConsumerScans, averageConsumerScans, averageCompleteness };
-  }, [sortedAndFilteredDPPs]); 
+    return { totalDPPs, compliantPercentage, pendingReviewDPPs, totalConsumerScans, averageConsumerScans, averageCompleteness, metrics: productPageMetrics };
+  }, [sortedAndFilteredDPPs, filters]); // Added filters to dependency array
 
   const categoryDistribution = useMemo(() => {
     const sourceForChart = sortedAndFilteredDPPs; 
@@ -254,7 +245,7 @@ export function useDPPLiveData() {
       counts[dpp.category] = (counts[dpp.category] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [sortedAndFilteredDPPs]); 
+  }, [sortedAndFilteredDPPs, filters]); // Added filters to dependency array
 
   const complianceDistribution = useMemo(() => {
     const sourceForChart = sortedAndFilteredDPPs; 
@@ -264,7 +255,7 @@ export function useDPPLiveData() {
       counts[statusText] = (counts[statusText] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [sortedAndFilteredDPPs]); 
+  }, [sortedAndFilteredDPPs, filters]); // Added filters to dependency array
 
 
   const handleFiltersChange = useCallback((newFilters: Partial<DashboardFiltersState>) => {
