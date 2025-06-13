@@ -26,12 +26,14 @@ export default function HomePage() {
         return storedRole as UserRole;
       }
     }
+    // If no stored role, use the role from context if valid, otherwise default
     if (roleFromContext && availableRoles.includes(roleFromContext)) {
       return roleFromContext;
     }
-    return availableRoles.length > 0 ? availableRoles[0] : 'admin';
+    return availableRoles.length > 0 ? availableRoles[0] : 'admin'; // Default to admin if no other info
   });
 
+  // Effect to update selectedRole if roleFromContext changes and is valid
   useEffect(() => {
     if (roleFromContext && availableRoles.includes(roleFromContext) && roleFromContext !== selectedRole) {
       setSelectedRole(roleFromContext);
@@ -47,7 +49,10 @@ export default function HomePage() {
 
   const handleRoleSelectAndNavigate = () => {
     if (selectedRole) {
-      setRoleInContext(selectedRole); 
+      setRoleInContext(selectedRole); // Update the global context
+      // The AppHeader will pick up this role and navigate to the correct dashboard
+      // via its own logic that watches currentRole.
+      // Or, more directly:
       router.push(`/${selectedRole}-dashboard`);
     }
   };
