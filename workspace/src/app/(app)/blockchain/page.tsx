@@ -236,7 +236,6 @@ export default function BlockchainPage() {
   const [linkNftResponse, setLinkNftResponse] = useState<string | null>(null);
   const [isLinkNftLoading, setIsLinkNftLoading] = useState(false);
 
-  // New state for DAO Transfer
   const [daoTransferTokenId, setDaoTransferTokenId] = useState<string>("");
   const [daoTransferCurrentOwner, setDaoTransferCurrentOwner] = useState<string>("");
   const [daoTransferNewOwnerAddress, setDaoTransferNewOwnerAddress] = useState<string>("");
@@ -315,7 +314,6 @@ export default function BlockchainPage() {
       setOnChainStatusUpdate(dpp.metadata.onChainStatus || "active");
       setOnChainLifecycleStage(dpp.metadata.onChainLifecycleStage || "Manufacturing"); 
 
-      // DAO Transfer Pre-fill
       setDaoTransferTokenId(tokenId || "N/A (Mint Token First)");
       if (parsedTokenStatus && parsedTokenStatus.tokenId === tokenId) {
         setDaoTransferCurrentOwner(parsedTokenStatus.ownerAddress);
@@ -345,7 +343,6 @@ export default function BlockchainPage() {
     setMintResponse(null);
     setUpdateTokenResponse(null);
     setStatusTokenResponse(null);
-    // setParsedTokenStatus(null); // Do not clear parsedTokenStatus here, it's needed for DAO transfer prefill
     setViewTokenMetadataResponse(null);
     setDaoTransferResponse(null);
     setIssueAuthVcResponse(null);
@@ -361,7 +358,7 @@ export default function BlockchainPage() {
           setUpdateTokenId(tokenId);
           setStatusTokenId(tokenId);
           setViewTokenId(tokenId);
-          setDaoTransferTokenId(tokenId); // Keep DAO transfer token ID updated
+          setDaoTransferTokenId(tokenId); 
       }
       if (updated.ownershipNftLink) {
         setNftRegistryUrl(updated.ownershipNftLink.registryUrl || "");
@@ -507,7 +504,7 @@ export default function BlockchainPage() {
             }
         };
         updateDppLocally(updatedSelectedDpp);
-        setDaoTransferTokenId(data.tokenId); // Update for DAO transfer form
+        setDaoTransferTokenId(data.tokenId); 
       } else {
         handleApiError(res, "Minting Token");
       }
@@ -564,11 +561,11 @@ export default function BlockchainPage() {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` },
         });
         const data: TokenStatusResponse = await res.json();
-        setStatusTokenResponse(JSON.stringify(data, null, 2)); // Keep raw for details view
+        setStatusTokenResponse(JSON.stringify(data, null, 2)); 
         if (res.ok) {
           setParsedTokenStatus(data); 
           if(selected && selected.blockchainIdentifiers?.tokenId === statusTokenId){
-            setDaoTransferCurrentOwner(data.ownerAddress); // Update for DAO transfer form
+            setDaoTransferCurrentOwner(data.ownerAddress); 
           }
           toast({ title: "Token Status Retrieved (Mock)", description: `Status for token ${statusTokenId} displayed.` });
         } else {
@@ -584,7 +581,7 @@ export default function BlockchainPage() {
 
   const handleViewTokenMetadata = async (e: FormEvent) => {
     e.preventDefault();
-    const effectiveTokenId = viewTokenId || parsedTokenStatus?.tokenId; // Prioritize input, then parsed status
+    const effectiveTokenId = viewTokenId || parsedTokenStatus?.tokenId; 
     if (!effectiveTokenId && !parsedTokenStatus?.metadataUri) {
       toast({ title: "Token ID or Metadata URI Required", description: "Please enter a Token ID or fetch token status first.", variant: "destructive" });
       return;
@@ -1328,4 +1325,3 @@ export default function BlockchainPage() {
 }
       
     
-
