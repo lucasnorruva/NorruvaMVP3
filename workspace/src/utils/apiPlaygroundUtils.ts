@@ -62,6 +62,7 @@ export const generateMockCodeSnippet = (
     case "logCriticalEvent": urlPath = `/dpp/${params.productId || '{productId}'}/log-critical-event`; break;
     case "registerVcHash": urlPath = `/dpp/${params.productId || '{productId}'}/register-vc-hash`; break;
     case "getPrivateSupplierAttestations": urlPath = `/private/dpp/${params.productId || '{productId}'}/supplier/${params.supplierId || '{supplierId}'}/attestations`; break; 
+    case "getConfidentialMaterials": urlPath = `/private/dpp/${params.productId || '{productId}'}/confidential-materials`; break; // New case
     case "postComponentTransfer": urlPath = `/private/dpp/${params.productId || '{productId}'}/component-transfer`; break;
     case "zkpSubmitProof": urlPath = `/zkp/submit-proof/${params.dppId || '{dppId}'}`; break;
     case "zkpVerifyClaim":

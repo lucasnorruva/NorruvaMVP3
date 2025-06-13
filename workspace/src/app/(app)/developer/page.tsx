@@ -200,12 +200,12 @@ export default function DeveloperPortalPage() {
   const [isGetStatusLoading, setIsGetStatusLoading] = useState(false);
   const [getStatusSnippetLang, setGetStatusSnippetLang] = useState("cURL");
 
-  const [anchorDppProductId, setAnchorDppProductId] = useState<string>("DPP001"); // New state
-  const [anchorDppPlatform, setAnchorDppPlatform] = useState<string>("EBSI Mock Ledger"); // New state
-  const [anchorDppResponse, setAnchorDppResponse] = useState<string | null>(null); // New state
-  const [isAnchorDppLoading, setIsAnchorDppLoading] = useState(false); // New state
-  const [anchorDppCodeSnippet, setAnchorDppCodeSnippet] = useState(""); // New state
-  const [anchorDppSnippetLang, setAnchorDppSnippetLang] = useState("cURL"); // New state
+  const [anchorDppProductId, setAnchorDppProductId] = useState<string>("DPP001"); 
+  const [anchorDppPlatform, setAnchorDppPlatform] = useState<string>("EBSI Mock Ledger"); 
+  const [anchorDppResponse, setAnchorDppResponse] = useState<string | null>(null); 
+  const [isAnchorDppLoading, setIsAnchorDppLoading] = useState(false); 
+  const [anchorDppCodeSnippet, setAnchorDppCodeSnippet] = useState(""); 
+  const [anchorDppSnippetLang, setAnchorDppSnippetLang] = useState("cURL"); 
 
   const [postOnchainStatusProductId, setPostOnchainStatusProductId] = useState<string>("DPP001");
   const [postOnchainStatusBody, setPostOnchainStatusBody] = useState<string>(JSON.stringify({ status: "active" }, null, 2));
@@ -231,13 +231,18 @@ export default function DeveloperPortalPage() {
   const [isPostRegisterVcHashLoading, setIsPostRegisterVcHashLoading] = useState(false);
   const [postRegisterVcHashSnippetLang, setPostRegisterVcHashSnippetLang] = useState("cURL");
 
-  // State for GET Private Supplier Attestations
   const [getAttestationsProductId, setGetAttestationsProductId] = useState<string>("DPP001");
   const [getAttestationsSupplierId, setGetAttestationsSupplierId] = useState<string>("SUP001");
   const [getAttestationsResponse, setGetAttestationsResponse] = useState<string | null>(null);
   const [isGetAttestationsLoading, setIsGetAttestationsLoading] = useState(false);
   const [getAttestationsSnippetLang, setGetAttestationsSnippetLang] = useState("cURL");
   const [getAttestationsCodeSnippet, setGetAttestationsCodeSnippet] = useState("");
+
+  const [getConfidentialMaterialsProductId, setGetConfidentialMaterialsProductId] = useState<string>("DPP001"); // New state
+  const [getConfidentialMaterialsResponse, setGetConfidentialMaterialsResponse] = useState<string | null>(null); // New state
+  const [isGetConfidentialMaterialsLoading, setIsGetConfidentialMaterialsLoading] = useState(false); // New state
+  const [getConfidentialMaterialsSnippetLang, setGetConfidentialMaterialsSnippetLang] = useState("cURL"); // New state
+  const [getConfidentialMaterialsCodeSnippet, setGetConfidentialMaterialsCodeSnippet] = useState(""); // New state
 
 
   const [postComponentTransferProductId, setPostComponentTransferProductId] = useState<string>("DPP001");
@@ -362,13 +367,14 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet), [getStatusProductId, getStatusSnippetLang, updateSnippet]);
 
-  useEffect(() => updateSnippet("anchorDpp", "POST", anchorDppSnippetLang, { productId: anchorDppProductId, platform: anchorDppPlatform }, JSON.stringify({ platform: anchorDppPlatform }), setAnchorDppCodeSnippet), [anchorDppProductId, anchorDppPlatform, anchorDppSnippetLang, updateSnippet]); // New useEffect for Anchor DPP
+  useEffect(() => updateSnippet("anchorDpp", "POST", anchorDppSnippetLang, { productId: anchorDppProductId, platform: anchorDppPlatform }, JSON.stringify({ platform: anchorDppPlatform }), setAnchorDppCodeSnippet), [anchorDppProductId, anchorDppPlatform, anchorDppSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet), [postOnchainStatusProductId, postOnchainStatusBody, postOnchainStatusSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet), [postOnchainLifecycleProductId, postOnchainLifecycleBody, postOnchainLifecycleSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet), [postLogCriticalEventProductId, postLogCriticalEventBody, postLogCriticalEventSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet), [postRegisterVcHashProductId, postRegisterVcHashBody, postRegisterVcHashSnippetLang, updateSnippet]);
   
   useEffect(() => updateSnippet("getPrivateSupplierAttestations", "GET", getAttestationsSnippetLang, { productId: getAttestationsProductId, supplierId: getAttestationsSupplierId }, null, setGetAttestationsCodeSnippet), [getAttestationsProductId, getAttestationsSupplierId, getAttestationsSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("getConfidentialMaterials", "GET", getConfidentialMaterialsSnippetLang, { productId: getConfidentialMaterialsProductId }, null, setGetConfidentialMaterialsCodeSnippet), [getConfidentialMaterialsProductId, getConfidentialMaterialsSnippetLang, updateSnippet]); // New useEffect for confidential materials
   useEffect(() => updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet), [postComponentTransferProductId, postComponentTransferBody, postComponentTransferSnippetLang, updateSnippet]);
 
   useEffect(() => updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet), [zkpSubmitDppId, zkpSubmitBody, zkpSubmitSnippetLang, updateSnippet]);
@@ -536,6 +542,7 @@ export default function DeveloperPortalPage() {
   const handleMockRegisterVcHash = () => { updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet); makeApiCall(`/api/v1/dpp/${postRegisterVcHashProductId}/register-vc-hash`, 'POST', postRegisterVcHashBody, setIsPostRegisterVcHashLoading, setPostRegisterVcHashResponse); }
   
   const handleMockGetPrivateSupplierAttestations = () => { updateSnippet("getPrivateSupplierAttestations", "GET", getAttestationsSnippetLang, { productId: getAttestationsProductId, supplierId: getAttestationsSupplierId }, null, setGetAttestationsCodeSnippet); makeApiCall(`/api/v1/private/dpp/${getAttestationsProductId}/supplier/${getAttestationsSupplierId}/attestations`, 'GET', null, setIsGetAttestationsLoading, setGetAttestationsResponse); }
+  const handleMockGetConfidentialMaterials = () => { updateSnippet("getConfidentialMaterials", "GET", getConfidentialMaterialsSnippetLang, { productId: getConfidentialMaterialsProductId }, null, setGetConfidentialMaterialsCodeSnippet); makeApiCall(`/api/v1/private/dpp/${getConfidentialMaterialsProductId}/confidential-materials`, 'GET', null, setIsGetConfidentialMaterialsLoading, setGetConfidentialMaterialsResponse); } // New handler
   const handleMockPostComponentTransfer = () => { updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet); makeApiCall(`/api/v1/private/dpp/${postComponentTransferProductId}/component-transfer`, 'POST', postComponentTransferBody, setIsPostComponentTransferLoading, setPostComponentTransferResponse); }
 
   const handleMockZkpSubmitProof = () => { updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet); makeApiCall(`/api/v1/zkp/submit-proof/${zkpSubmitDppId}`, 'POST', zkpSubmitBody, setIsZkpSubmitLoading, setZkpSubmitResponse); }
@@ -877,7 +884,7 @@ export default function DeveloperPortalPage() {
       )
     },
     {
-      id: 'anchor-dpp', // New endpoint configuration
+      id: 'anchor-dpp', 
       section: 'onchain',
       title: 'POST /api/v1/dpp/anchor/{productId}',
       description: 'Creates a blockchain anchor for the specified DPP. Conceptually also sets contractAddress and tokenId.',
@@ -1017,6 +1024,24 @@ export default function DeveloperPortalPage() {
                   <Label htmlFor="getAttestationsSupplierIdPlayground">Supplier ID (Path Parameter)</Label>
                   <Input id="getAttestationsSupplierIdPlayground" value={getAttestationsSupplierId} onChange={(e) => setGetAttestationsSupplierId(e.target.value)} placeholder="e.g., SUP001" />
               </div>
+          </div>
+        )
+    },
+    {
+        id: 'get-confidential-materials', // New endpoint ID
+        section: 'private',
+        title: 'GET /api/v1/private/dpp/{productId}/confidential-materials',
+        description: '[Private Layer] Retrieve private confidential material details.',
+        onSendRequest: handleMockGetConfidentialMaterials,
+        isLoading: isGetConfidentialMaterialsLoading,
+        response: getConfidentialMaterialsResponse,
+        codeSnippet: getConfidentialMaterialsCodeSnippet,
+        snippetLanguage: getConfidentialMaterialsSnippetLang,
+        onSnippetLanguageChange: (lang: string) => { setGetConfidentialMaterialsSnippetLang(lang); updateSnippet('getConfidentialMaterials', 'GET', lang, { productId: getConfidentialMaterialsProductId }, null, setGetConfidentialMaterialsCodeSnippet); },
+        children: (
+          <div>
+            <Label htmlFor="getConfidentialMaterialsProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="getConfidentialMaterialsProductIdPlayground" value={getConfidentialMaterialsProductId} onChange={(e) => setGetConfidentialMaterialsProductId(e.target.value)} placeholder="e.g., DPP001" />
           </div>
         )
     },
