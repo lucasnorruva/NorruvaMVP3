@@ -2,7 +2,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
-import { RoleProvider } from '@/contexts/RoleContext'; // Import RoleProvider
+import { RoleProvider } from '@/contexts/RoleContext';
 import { SkipToContent } from '@/components/layout/SkipToContent'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 
@@ -17,6 +17,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const timestamp = new Date().toISOString();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -36,12 +37,12 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Norruva DPP" />
       </head>
       <body className="font-body antialiased">
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', backgroundColor: 'red', color: 'white', padding: '10px', zIndex: 99999, textAlign: 'center', fontWeight: 'bold', fontSize: '1.2em' }}>
-          ROOT LAYOUT DEBUG BANNER - LOADED AT: {new Date().toLocaleTimeString()} - IF YOU SEE THIS, LAYOUT.TSX IS UPDATING.
+        <div style={{ backgroundColor: '#FFCC00', color: '#000000', padding: '15px', textAlign: 'center', fontWeight: 'bold', fontSize: '1.5em', borderBottom: '5px solid red', zIndex: 100000, position: 'relative' }}>
+          ROOT LAYOUT DEBUG - LOADED AT: {timestamp} - IF YOU SEE THIS, LAYOUT.TSX IS UPDATING.
         </div>
         <SkipToContent />
         <ServiceWorkerRegister />
-        <RoleProvider> {/* RoleProvider now wraps all children at the root level */}
+        <RoleProvider>
           {children}
         </RoleProvider>
         <Toaster />
