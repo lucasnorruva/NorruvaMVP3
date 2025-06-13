@@ -6,13 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; 
+import { 
+    FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, 
+    Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, 
+    Layers as LayersIconShadcn, Construction, Shirt 
+} from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
 import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
-import React from "react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"; // ENSURED BADGE IMPORT
 import { cn } from "@/lib/utils";
+import React from "react"; 
 
 interface OverviewTabProps {
   product: SimpleProductDetail;
@@ -47,8 +51,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     parsedSpecifications = product.specifications;
   }
 
-  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus); 
-  const ebsiBadgeClasses = getStatusBadgeClasses(product.ebsiStatus);
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -163,16 +165,23 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                   View Token on Mock Explorer <ExternalLink className="ml-1 h-3 w-3" />
                 </NextLink>
               )}
-             {product.ebsiStatus && (
+            {/* CORRECTED EBSI STATUS DISPLAY */}
+            {product?.complianceSummary?.ebsi?.status && (
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">
-                  <Badge variant={ebsiDetails.variant} className={cn("capitalize", ebsiBadgeClasses)}>
-                    {React.cloneElement(ebsiDetails.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
-                    {ebsiDetails.text}
-                  </Badge>
+                {(() => {
+                  const ebsiStatusDetails = getEbsiStatusDetails(product.complianceSummary.ebsi.status);
+                  const badgeClass = getStatusBadgeClasses(product.complianceSummary.ebsi.status);
+                  return (
+                    <Badge variant={ebsiStatusDetails.variant} className={badgeClass}>
+                      {ebsiStatusDetails.icon}
+                      <span className="ml-1">{ebsiStatusDetails.text}</span>
+                    </Badge>
+                  );
+                })()}
                 </div>
-                {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
+                {product.ebsiVerificationId && product.complianceSummary.ebsi.status === 'verified' && (
                     <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
                 )}
               </div>
@@ -184,18 +193,16 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                   {product.onChainLifecycleStage && <p className="mt-1"><strong className="text-muted-foreground flex items-center"><LayersIconShadcn className="mr-1.5 h-4 w-4 text-purple-600"/>Lifecycle Stage:</strong> <span className="font-semibold capitalize text-foreground/90">{product.onChainLifecycleStage.replace(/([A-Z])/g, ' $1').trim()}</span></p>}
                 </div>
             )}
-            {!(product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.ebsiStatus || product.onChainStatus || product.onChainLifecycleStage) && (
+            {!(product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.complianceSummary?.ebsi?.status || product.onChainStatus || product.onChainLifecycleStage) && (
               <p className="text-muted-foreground">No specific blockchain, EBSI, or on-chain state details available.</p>
             )}
-             {!product.ebsiStatus && (product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.onChainStatus || product.onChainLifecycleStage) && (
+             {!product.complianceSummary?.ebsi?.status && (product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.onChainStatus || product.onChainLifecycleStage) && (
                 <div className="mt-2 pt-2 border-t border-border/50">
                      <p className="text-xs text-muted-foreground">EBSI status not specified.</p>
                 </div>
             )}
           </CardContent>
         </Card>
-
-
       </div>
 
       {/* Right Column: Description, Key Points, Specifications, Custom Attributes */}
@@ -351,6 +358,5 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
-    
 
     
