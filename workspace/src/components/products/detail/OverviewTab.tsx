@@ -1,14 +1,14 @@
 
 "use client";
 
-import React from "react"; // Ensure React is imported for JSX
+import React from "react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { SimpleProductDetail as Product } from "@/types/dpp"; // Using alias for consistency if product prop is named 'product'
+import { Badge } from "@/components/ui/badge"; // Correctly import Badge
+import type { SimpleProductDetail as Product } from "@/types/dpp"; // Use SimpleProductDetail
 import { 
   Truck, 
-  CalendarDays, // Corrected: Use CalendarDays
+  CalendarDays, // Corrected icon name
   MapPin, 
   Factory, 
   Leaf, 
@@ -17,17 +17,16 @@ import {
   Package,
   Globe,
   Hash,
-  Link as LinkIconPath, // Aliased to avoid conflict with NextLink
+  Link as LinkIconPath,
   CheckCircle,
   Clock,
   AlertCircle,
-  Database, 
-  Fingerprint,
-  Layers3,
-  FileCog,
-  Tag,
-  Sigma,
-  Layers as LayersIconShadcn,
+  Fingerprint, // Used for Auth VC ID
+  Layers3,     // Used for Blockchain Platform
+  FileCog,     // Used for Contract Address
+  Tag,         // Used for Token ID
+  Sigma,       // Used for On-Chain Status
+  Layers as LayersIconShadcn, // Used for On-Chain Lifecycle Stage
   Construction,
   Shirt,
   BatteryCharging,
@@ -36,18 +35,19 @@ import {
   FileText as FileTextIcon,
   KeyRound,
   Info as InfoIcon,
-  Heart // Added missing Heart icon
+  Heart, // Added for State of Health
+  Anchor, // Added for Anchor Tx Hash
+  // Database // Not strictly needed for the corrected EBSI display logic
 } from "lucide-react";
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
-// Corrected: Import the correct functions that actually exist
+// Correctly import the functions that exist
 import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-
 interface OverviewTabProps {
-  product: Product; // Using the alias
+  product: Product; 
 }
 
 export default function OverviewTab({ product }: OverviewTabProps) {
@@ -199,27 +199,27 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                   View Token on Mock Explorer <ExternalLink className="ml-1 h-3 w-3" />
                 </NextLink>
               )}
-            {product.ebsiStatus && ( // Check if ebsiStatus exists
-              <div className="mt-2 pt-2 border-t border-border/50">
-                <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
-                <div className="flex items-center mt-0.5">
-                  {(() => {
-                    const ebsiStatusDetails = getEbsiStatusDetails(product.ebsiStatus); // Use the imported function
-                    const badgeClass = getStatusBadgeClasses(product.ebsiStatus); // Use the imported function
-                    return (
-                      <Badge variant={ebsiStatusDetails.variant} className={cn(badgeClass, "capitalize")}>
-                        {React.cloneElement(ebsiStatusDetails.icon, {className: "mr-1.5 h-3.5 w-3.5"})} {/* Ensure icon is valid JSX */}
-                        {ebsiStatusDetails.text}
-                      </Badge>
-                    );
-                  })()}
+            {product.ebsiStatus && (
+                <div className="mt-2 pt-2 border-t border-border/50">
+                    <strong className="text-muted-foreground flex items-center">EBSI Status:</strong>
+                    <div className="flex items-center mt-0.5">
+                        {(() => {
+                        const ebsiStatusDetails = getEbsiStatusDetails(product.ebsiStatus);
+                        const badgeClasses = getStatusBadgeClasses(product.ebsiStatus);
+                        return (
+                            <Badge variant={ebsiStatusDetails.variant} className={cn(badgeClasses, "capitalize")}>
+                            {React.cloneElement(ebsiStatusDetails.icon, {className: "mr-1.5 h-3.5 w-3.5"})}
+                            {ebsiStatusDetails.text}
+                            </Badge>
+                        );
+                        })()}
+                    </div>
+                    {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
+                       <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                        <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
+                      </TooltipTrigger><TooltipContent><p>{product.ebsiVerificationId}</p></TooltipContent></Tooltip></TooltipProvider>
+                    )}
                 </div>
-                {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
-                   <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                    <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
-                  </TooltipTrigger><TooltipContent><p>{product.ebsiVerificationId}</p></TooltipContent></Tooltip></TooltipProvider>
-                )}
-              </div>
             )}
             {(product.onChainStatus || product.onChainLifecycleStage) && (
                 <div className="mt-2 pt-2 border-t border-border/50">
@@ -371,6 +371,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                     <p><strong className="text-muted-foreground flex items-center"><InfoIcon className="mr-1.5 h-4 w-4 text-blue-500" />Status:</strong> <Badge variant="outline" className="capitalize">{product.batteryRegulation.status?.replace('_', ' ') || 'N/A'}</Badge></p>
                     {product.batteryRegulation.batteryChemistry && <p><strong className="text-muted-foreground flex items-center"><Thermometer className="mr-1.5 h-4 w-4 text-blue-500" />Chemistry:</strong> {product.batteryRegulation.batteryChemistry}</p>}
                     {product.batteryRegulation.batteryPassportId && <p><strong className="text-muted-foreground flex items-center"><Barcode className="mr-1.5 h-4 w-4 text-blue-500" />Passport ID:</strong> <span className="font-mono">{product.batteryRegulation.batteryPassportId}</span></p>}
+                    
                     {product.batteryRegulation.carbonFootprint && (product.batteryRegulation.carbonFootprint.value !== null && product.batteryRegulation.carbonFootprint.value !== undefined) && (
                         <div className="mt-1 pt-1 border-t border-border/30">
                             <strong className="text-muted-foreground flex items-center"><Zap className="mr-1.5 h-4 w-4 text-orange-500" />Carbon Footprint:</strong>
@@ -378,6 +379,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                             {product.batteryRegulation.carbonFootprint.calculationMethod && <p className="pl-5">Method: {product.batteryRegulation.carbonFootprint.calculationMethod}</p>}
                         </div>
                     )}
+
                     {product.batteryRegulation.recycledContent && product.batteryRegulation.recycledContent.length > 0 && (
                         <div className="mt-1 pt-1 border-t border-border/30">
                             <strong className="text-muted-foreground flex items-center"><Recycle className="mr-1.5 h-4 w-4 text-green-600" />Recycled Content:</strong>
@@ -388,6 +390,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                             </ul>
                         </div>
                     )}
+
                     {product.batteryRegulation.stateOfHealth && (product.batteryRegulation.stateOfHealth.value !== null && product.batteryRegulation.stateOfHealth.value !== undefined) && (
                         <div className="mt-1 pt-1 border-t border-border/30">
                             <strong className="text-muted-foreground flex items-center"><Heart className="mr-1.5 h-4 w-4 text-red-500" />State of Health:</strong>
