@@ -48,6 +48,9 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     parsedSpecifications = product.specifications;
   }
 
+  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus); // Get details object
+  const ebsiBadgeClasses = getStatusBadgeClasses(product.ebsiStatus); // Get specific classes
+  const EbsiIcon = ebsiDetails.icon.type; // Extract icon component type
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -172,17 +175,10 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">
-                  {(() => {
-                    const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus);
-                    const ebsiBadgeClasses = getStatusBadgeClasses(product.ebsiStatus); 
-                    const EbsiIcon = ebsiDetails.icon.type; 
-                    return (
-                      <Badge variant={ebsiDetails.variant} className={cn("capitalize", ebsiBadgeClasses)}>
-                        <EbsiIcon className="mr-1.5 h-3.5 w-3.5" /> {/* Render the icon component */}
-                        {ebsiDetails.text}
-                      </Badge>
-                    );
-                  })()}
+                  <Badge variant={ebsiDetails.variant} className={cn("capitalize", ebsiBadgeClasses)}>
+                    <EbsiIcon className="mr-1.5 h-3.5 w-3.5" />
+                    {ebsiDetails.text}
+                  </Badge>
                 </div>
                 {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
                    <TooltipProvider><Tooltip><TooltipTrigger asChild>
@@ -203,8 +199,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
           </CardContent>
         </Card>
-
-
       </div>
 
       {/* Right Column: Description, Key Points, Specifications, Custom Attributes */}
@@ -333,7 +327,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </Card>
         )}
 
-
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -361,4 +354,3 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   );
 }
 
-    
