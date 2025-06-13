@@ -1,18 +1,35 @@
+
+// --- File: src/app/api/v1/dpp/country-stats/route.ts ---
+// Description: API endpoint to retrieve DPP counts by country of origin.
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/data';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
 
+interface CountryStat {
+  countryCode: string;
+  count: number;
+}
+
 export async function GET(request: NextRequest) {
-  const auth = validateApiKey(request);
-  if (auth) return auth;
+  const authError = validateApiKey(request);
+  if (authError) return authError;
 
-  const counts: Record<string, number> = {};
-  for (const dpp of MOCK_DPPS) {
-    const country = dpp.traceability?.originCountry || 'unknown';
-    counts[country] = (counts[country] || 0) + 1;
-  }
+  const countryCounts: Record<string, number> = {};
 
-  const result = Object.entries(counts).map(([countryCode, count]) => ({ countryCode, count }));
+  MOCK_DPPS.forEach(dpp => {
+    const originCountry = dpp.traceability?.originCountry?.toUpperCase() || 'UNKNOWN';
+    countryCounts[originCountry] = (countryCounts[originCountry] || 0) + 1;
+  });
+
+  const result: CountryStat[] = Object.entries(countryCounts).map(([code, num]) => ({
+    countryCode: code,
+    count: num,
+  }));
+
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 100));
+
   return NextResponse.json(result);
 }
