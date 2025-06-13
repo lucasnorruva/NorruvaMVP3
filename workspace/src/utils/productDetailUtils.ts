@@ -142,7 +142,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
                       event.type.toLowerCase().includes('sale') || event.type.toLowerCase().includes('sold') ? 'ShoppingCart' :
                       'Info',
         })) || [],
-        materialsUsed: dpp.productDetails?.materials?.map(m => ({ name: m.name, percentage: m.percentage, source: m.origin, isRecycled: m.isRecycled })),
+        materialsUsed: dpp.productDetails?.materials?.map(m => ({ name: m.name, percentage: m.percentage, source: m.origin, isRecycled: m.isRecycled, recycledContentPercentage: m.recycledContentPercentage })),
         energyLabelRating: dpp.productDetails?.energyLabel,
         repairabilityScore: dpp.productDetails?.repairabilityScore,
         sparePartsAvailability: dpp.productDetails?.sparePartsAvailability,
@@ -231,7 +231,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             imageUrl: userProductData.imageUrl,
             imageHint: userProductData.imageHint,
             sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
-            materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
+            materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [], // Simplified mapping for this mock
             energyLabel: userProductData.energyLabel,
             specifications: userProductData.specifications, 
             customAttributes: parsedCustomAttributes, 
@@ -281,3 +281,4 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
     
 
     
+

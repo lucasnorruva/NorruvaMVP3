@@ -195,12 +195,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     authenticationVcId: "vc_auth_DPP002_mock456", 
     productDetails: {
-      description: "A sustainable t-shirt made from 100% GOTS certified organic cotton.",
+      description: "A sustainable t-shirt made from 100% GOTS certified organic cotton. Features reinforced neckline and double-stitched hems for durability.",
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "cotton t-shirt apparel",
-      materials: [{name: "Organic Cotton", percentage: 100, isRecycled: false, origin: "India"}],
-      specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
-      customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}],
+      materials: [{name: "Organic Cotton", percentage: 95, isRecycled: false, origin: "India"}, {name: "Elastane (for stretch)", percentage: 5, origin: "Turkey"}],
+      specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India/Portugal", "Care": "Machine wash cold, tumble dry low. Do not bleach." }, null, 2),
+      customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Color", value: "Navy Blue"}],
     },
     textileInformation: {
       fiberComposition: [
@@ -241,7 +241,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       tokenId: "TOKEN_TSHIRT_002" 
     }, 
     certifications: [
-      {id: "cert3", name: "GOTS", issuer: "Control Union", issueDate: "2024-02-20", expiryDate: "2025-02-19", documentUrl: "#gots", standard: "Global Organic Textile Standard 6.0"},
+      {id: "cert3", name: "GOTS", issuer: "Control Union", issueDate: "2024-02-20", expiryDate: "2025-02-19", documentUrl: "#gots", standard: "Global Organic Textile Standard 6.0", vcId: "vc:gots:cu:dpp002"},
+      {id: "cert_fairtrade_dpp002", name: "Fair Trade Certified", issuer: "Fair Trade International", issueDate: "2024-03-01", documentUrl: "#fairtrade", standard: "Fair Trade Textile Standard"},
     ],
     verifiableCredentials: [
       {
@@ -418,7 +419,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, 
       battery_regulation: {
-        status: "pending",
+        status: "pending_review", // Changed status
         batteryChemistry: "NMC 811",
         batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
         carbonFootprint: { value: 85.5, unit: "kg CO2e/kWh", calculationMethod: "PEFCR for Batteries v1.2", vcId: "vc:cf:dpp005" },
@@ -430,9 +431,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         stateOfHealth: {value: 100, unit: '%', measurementDate: "2024-07-15T00:00:00Z", vcId: "vc:soh:dpp005"},
         vcId: "vc:battreg:overall:dpp005"
       } as BatteryRegulationDetails,
-      eu_espr: { status: "pending" }, 
+      eu_espr: { status: "pending_assessment" }, // Changed status
       scipNotification: { 
-        status: 'Pending Notification', 
+        status: 'Notified', // Changed status
+        notificationId: 'SCIP-BATTERY-XYZ',
         svhcListVersion: '2024/01 (24.0.1)',
         submittingLegalEntity: 'PowerVolt Inc.',
         articleName: 'EV Battery Module Assembly',
@@ -442,6 +444,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       },
       euCustomsData: { 
         status: 'Pending Documents', 
+        declarationId: 'CUSTOMS_EVB_001',
         hsCode: "85076000", // HS code for lithium-ion batteries
         countryOfOrigin: "US",
         netWeightKg: 450.0,
@@ -453,8 +456,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-29T00:00:00Z"} as EbsiVerificationDetails,
     consumerScans: 50,
     certifications: [
-      {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#", transactionHash: "0xcertAnchorBat1", standard: "UN Manual of Tests and Criteria, Part III, subsection 38.3"},
-      {id: "cert_bat_02", name: "ISO 26262 (ASIL D)", issuer: "AutomotiveSafetyCert", issueDate: "2024-06-15", documentUrl: "#", standard: "ISO 26262-Road vehicles Functional safety", vcId: "vc:iso26262:dpp005"}
+      {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#un383", transactionHash: "0xcertAnchorBat1", standard: "UN Manual of Tests and Criteria, Part III, subsection 38.3", vcId: "vc:un383:dpp005"},
+      {id: "cert_bat_02", name: "ISO 26262 (ASIL D)", issuer: "AutomotiveSafetyCert", issueDate: "2024-06-15", documentUrl: "#iso26262", standard: "ISO 26262-Road vehicles Functional safety", vcId: "vc:iso26262:dpp005"}
     ],
     documents: [
         { name: "Battery Safety Data Sheet (SDS)", url: "#sds_pv_evb_75kwh.pdf", type: "Safety Data Sheet", addedTimestamp: "2024-05-10T00:00:00Z" },
@@ -537,7 +540,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         articleName: "Insulation Panel (Cellulose Based)",
         primaryArticleId: "ESP-R50-1200-PANEL"
       },
-      esprConformity: { status: "conformant", assessmentId: "CPR_ASSESS_006", assessmentDate: "2024-07-15" },
+      esprConformity: { status: "conformant", assessmentId: "CPR_ASSESS_006", assessmentDate: "2024-07-15", vcId: "vc:cpr:buildgreen:dpp006" },
       euCustomsData: {
         status: "Verified",
         declarationId: "CUST_CPR_DPP006",
@@ -549,11 +552,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         lastChecked: "2024-07-20T00:00:00Z"
       }
     },
-    ebsiVerification: { status: "pending_verification", lastChecked: "2024-08-01T00:00:00Z"} as EbsiVerificationDetails,
+    ebsiVerification: { status: "verified", verificationId: "EBSI_CPR_VERIF_789", lastChecked: "2024-08-01T00:00:00Z"} as EbsiVerificationDetails,
     traceability: { originCountry: "BE" },
     consumerScans: 15,
     certifications: [
-      {id: "cert_cpr_01", name: "CE Marking (CPR)", issuer: "Notified Body 0123 (BE)", issueDate: "2024-07-15", documentUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf", standard: "EN 13163"},
+      {id: "cert_cpr_01", name: "CE Marking (CPR)", issuer: "Notified Body 0123 (BE)", issueDate: "2024-07-15", documentUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf", standard: "EN 13163", vcId: "vc:ce:cpr:dpp006"},
       {id: "cert_epd_01", name: "Environmental Product Declaration", issuer: "EPD Program Operator XYZ", issueDate: "2024-07-20", documentUrl: "https://buildgreen.com/epd/esp-r50.pdf", standard: "ISO 14025", vcId: "vc:epd:buildgreen:dpp006"}
     ],
   }
@@ -562,5 +565,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     
     
     
+
 
 

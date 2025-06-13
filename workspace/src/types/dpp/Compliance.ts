@@ -70,7 +70,7 @@ export interface StateOfHealthData {
 }
 
 export interface BatteryRegulationDetails {
-  status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
+  status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | 'pending_review' | string; // Added pending_review
   batteryChemistry?: string;
   batteryPassportId?: string;
   carbonFootprint?: CarbonFootprintData;
@@ -159,4 +159,3 @@ export interface ConstructionProductInformation {
   intendedUseDescription?: string;
   essentialCharacteristics?: EssentialCharacteristic[];
 }
-
