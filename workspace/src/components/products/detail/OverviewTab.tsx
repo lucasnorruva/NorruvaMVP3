@@ -1,15 +1,14 @@
 
 "use client";
 
-import React from "react";
+import React from "react"; // Ensure React is imported for JSX
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge"; 
-import type { SimpleProductDetail as Product } from "@/types/dpp";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import type { SimpleProductDetail as Product } from "@/types/dpp"; // Using alias for consistency if product prop is named 'product'
 import { 
   Truck, 
-  Calendar, 
+  CalendarDays, // Corrected: Use CalendarDays
   MapPin, 
   Factory, 
   Leaf, 
@@ -18,7 +17,7 @@ import {
   Package,
   Globe,
   Hash,
-  Link as LinkIconPath,
+  Link as LinkIconPath, // Aliased to avoid conflict with NextLink
   CheckCircle,
   Clock,
   AlertCircle,
@@ -37,54 +36,24 @@ import {
   FileText as FileTextIcon,
   KeyRound,
   Info as InfoIcon,
-  Heart
+  Heart // Added missing Heart icon
 } from "lucide-react";
 import { getAiHintForImage } from "@/utils/imageUtils";
-import NextLink from "next/link";
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
+import NextLink from "next/link"; 
+// Corrected: Import the correct functions that actually exist
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
+
 interface OverviewTabProps {
-  product: Product;
+  product: Product; // Using the alias
 }
 
 export default function OverviewTab({ product }: OverviewTabProps) {
   if (!product) {
     return <p className="text-muted-foreground p-4">Product data not available.</p>;
   }
-
-  // Helper for product status icon, adapted for SimpleProductDetail.status
-  const getProductStatusIcon = (status?: Product['status']) => {
-    switch (status) {
-      case 'Active':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'Pending':
-        return <Clock className="h-4 w-4 text-yellow-600" />;
-      case 'Draft':
-        return <FileCog className="h-4 w-4 text-gray-600" />;
-      case 'Archived':
-      case 'Flagged':
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
-      default:
-        return <Package className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
-  // Helper for on-chain lifecycle stage icon
-  const getLifecycleStageIcon = (stage?: string) => {
-    if (!stage) return <Clock className="h-4 w-4 text-gray-600" />;
-    const lowerStage = stage.toLowerCase().replace(/_/g, ' ');
-    if (lowerStage.includes('design')) return <FileCog className="h-4 w-4 text-purple-600" />;
-    if (lowerStage.includes('manufacturing')) return <Factory className="h-4 w-4 text-blue-600" />;
-    if (lowerStage.includes('quality assurance')) return <ShieldCheck className="h-4 w-4 text-teal-600" />;
-    if (lowerStage.includes('distribution')) return <Truck className="h-4 w-4 text-orange-600" />;
-    if (lowerStage.includes('in use')) return <Package className="h-4 w-4 text-green-600" />;
-    if (lowerStage.includes('maintenance')) return <Sigma className="h-4 w-4 text-indigo-600" />;
-    if (lowerStage.includes('end of life')) return <Recycle className="h-4 w-4 text-red-600" />;
-    return <Clock className="h-4 w-4 text-gray-600" />;
-  };
-
 
   const imageDisplayUrl = product.imageUrl || "https://placehold.co/400x300.png?text=No+Image";
   const aiHint = getAiHintForImage({
@@ -109,6 +78,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   } else if (product.specifications && typeof product.specifications === 'object' && product.specifications !== null) {
     parsedSpecifications = product.specifications;
   }
+
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -229,16 +199,16 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                   View Token on Mock Explorer <ExternalLink className="ml-1 h-3 w-3" />
                 </NextLink>
               )}
-             {product.ebsiStatus && ( 
+            {product.ebsiStatus && ( // Check if ebsiStatus exists
               <div className="mt-2 pt-2 border-t border-border/50">
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">
                   {(() => {
-                    const ebsiStatusDetails = getEbsiStatusDetails(product.ebsiStatus);
-                    const badgeClass = getStatusBadgeClasses(product.ebsiStatus); 
+                    const ebsiStatusDetails = getEbsiStatusDetails(product.ebsiStatus); // Use the imported function
+                    const badgeClass = getStatusBadgeClasses(product.ebsiStatus); // Use the imported function
                     return (
                       <Badge variant={ebsiStatusDetails.variant} className={cn(badgeClass, "capitalize")}>
-                        {React.cloneElement(ebsiStatusDetails.icon, {className: "mr-1.5 h-3.5 w-3.5"})}
+                        {React.cloneElement(ebsiStatusDetails.icon, {className: "mr-1.5 h-3.5 w-3.5"})} {/* Ensure icon is valid JSX */}
                         {ebsiStatusDetails.text}
                       </Badge>
                     );
@@ -413,7 +383,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                             <strong className="text-muted-foreground flex items-center"><Recycle className="mr-1.5 h-4 w-4 text-green-600" />Recycled Content:</strong>
                             <ul className="list-disc list-inside ml-5">
                                 {product.batteryRegulation.recycledContent.map((rc, idx) => (
-                                    <li key={idx}>{rc.material}: {rc.percentage ?? 'N/A'}%</li>
+                                    <li key={idx}>{rc.material}: {rc.percentage ?? 'N/A'}% {rc.vcId && <span className="text-xs text-muted-foreground">(VC: {rc.vcId.substring(0,10)}...)</span>}</li>
                                 ))}
                             </ul>
                         </div>
@@ -453,3 +423,5 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+
+    
