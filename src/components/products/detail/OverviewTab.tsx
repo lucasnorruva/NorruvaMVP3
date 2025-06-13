@@ -1,6 +1,7 @@
 
 "use client";
 import type { SimpleProductDetail } from "@/types/dpp";
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
