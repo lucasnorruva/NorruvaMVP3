@@ -9,11 +9,11 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Shirt, Construction } from "lucide-react";
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link";
-// Corrected import based on the error message and available exports
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils";
-import React from "react";
+// Removed all imports related to getEbsiStatusBadge, getEbsiStatusDetails, getStatusBadgeClasses
+import React from "react"; // Keep React import
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+// Removed Badge import as it's not used if EBSI badge is gone
+// import { Badge } from "@/components/ui/badge";
 import * as LucideIcons from 'lucide-react';
 
 interface OverviewTabProps {
@@ -48,8 +48,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   } else if (product.specifications && typeof product.specifications === 'object' && product.specifications !== null) {
     parsedSpecifications = product.specifications;
   }
-
-  const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus);
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -102,7 +100,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center">
-                <KeyRound className="mr-2 h-5 w-5 text-primary" />
+                <KeyRound className="mr-2 h-5 w-5 text-primary" /> 
                 Authenticity & Ownership
               </CardTitle>
             </CardHeader>
@@ -129,11 +127,11 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             </CardContent>
           </Card>
         )}
-
+        
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
-              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & EBSI Details
+              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & Token Details 
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
@@ -141,18 +139,18 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <p><strong className="text-muted-foreground flex items-center"><Layers3 className="mr-1.5 h-4 w-4 text-teal-600"/>Platform:</strong> {product.blockchainPlatform}</p>
             )}
             {product.contractAddress && (
-              <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong>
+              <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong> 
                    <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
               </p>
             )}
             {product.tokenId && (
-              <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong>
+              <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong> 
                    <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
               </p>
             )}
             {product.anchorTransactionHash && (
               <div>
-                <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong>
+                <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong> 
                    <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
                 <NextLink href={`https://mock-token-explorer.example.com/tx/${product.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs ml-2">
                   View Anchor Tx <ExternalLink className="ml-1 h-3 w-3" />
@@ -164,20 +162,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                   View Token on Mock Explorer <ExternalLink className="ml-1 h-3 w-3" />
                 </NextLink>
               )}
-             {product.ebsiStatus && (
-              <div className="mt-2 pt-2 border-t border-border/50">
-                <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
-                <div className="flex items-center mt-0.5">
-                   <Badge variant={ebsiDetails.variant} className={cn("capitalize", getStatusBadgeClasses(product.ebsiStatus))}>
-                      {React.cloneElement(ebsiDetails.icon, { className: "mr-1.5 h-3.5 w-3.5"})}
-                      {ebsiDetails.text}
-                   </Badge>
-                </div>
-                {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
-                    <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
-                )}
-              </div>
-            )}
+             {/* EBSI Status Display Removed */}
             {(product.onChainStatus || product.onChainLifecycleStage) && (
                 <div className="mt-2 pt-2 border-t border-border/50">
                   <h4 className="font-medium text-sm text-muted-foreground mb-1">Conceptual On-Chain State:</h4>
@@ -186,7 +171,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 </div>
             )}
             {!(product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.ebsiStatus || product.onChainStatus || product.onChainLifecycleStage) && (
-              <p className="text-muted-foreground">No specific blockchain or EBSI details available.</p>
+              <p className="text-muted-foreground">No specific blockchain or token details available.</p>
             )}
           </CardContent>
         </Card>
@@ -232,7 +217,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               )}
             </CardContent>
           </Card>
-
+          
           <Card className="shadow-sm">
             <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><ShieldCheck className="mr-2 h-5 w-5 text-blue-600" />Key Compliance</CardTitle></CardHeader>
             <CardContent>
@@ -347,5 +332,3 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
-
-    
