@@ -19,23 +19,31 @@ import { Label } from '@/components/ui/label';
 
 export default function HomePage() {
   const router = useRouter();
-  const { availableRoles, setCurrentRole: setRoleInContext } = useRole(); // Get available roles from context
-  const [selectedRole, setSelectedRole] = useState<UserRole>(availableRoles[0] || 'admin'); // Default to first available role or admin
+  // Get available roles, the current role from context, and the function to set it
+  const { availableRoles, setCurrentRole: setRoleInContext, currentRole: roleFromContext } = useRole();
+  
+  // Initialize selectedRole:
+  // 1. Try role from context (if user navigated back to home after being on a dashboard)
+  // 2. Fallback to the first available role
+  // 3. Fallback to 'admin' if no roles are somehow available (defensive)
+  const [selectedRole, setSelectedRole] = useState<UserRole>(roleFromContext || availableRoles[0] || 'admin');
+
+  // Effect to synchronize the local selectedRole if the context's currentRole changes
+  // (e.g., if another part of the app could change it, though less likely from home)
+  useEffect(() => {
+    if (roleFromContext && availableRoles.includes(roleFromContext)) {
+      setSelectedRole(roleFromContext);
+    } else if (availableRoles.length > 0) {
+      setSelectedRole(availableRoles[0]);
+    }
+  }, [roleFromContext, availableRoles]);
 
   const handleRoleSelectAndNavigate = () => {
     if (selectedRole) {
-      setRoleInContext(selectedRole); // Update context before navigating
-      router.push(`/${selectedRole}-dashboard`);
+      setRoleInContext(selectedRole); // Update the global role context
+      router.push(`/${selectedRole}-dashboard`); // Navigate to the role-specific dashboard
     }
   };
-  
-  // Update selectedRole if availableRoles changes and current selectedRole is no longer valid
-  useEffect(() => {
-    if (!availableRoles.includes(selectedRole)) {
-      setSelectedRole(availableRoles[0] || 'admin');
-    }
-  }, [availableRoles, selectedRole]);
-
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-background to-secondary p-6 text-center">
@@ -49,11 +57,15 @@ export default function HomePage() {
         Securely manage your product data, ensure EU compliance, and harness the power of AI for streamlined operations.
       </p>
 
+      {/* --- Role Selector Section --- */}
       <div className="mb-8 w-full max-w-xs sm:max-w-sm md:max-w-md">
         <Label htmlFor="role-selector-homepage" className="text-md font-medium text-foreground/90 mb-2 flex items-center justify-center">
           <Users className="mr-2 h-5 w-5 text-primary"/> Select Your Role to Proceed:
         </Label>
-        <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
+        <Select 
+          value={selectedRole} 
+          onValueChange={(value) => setSelectedRole(value as UserRole)}
+        >
           <SelectTrigger id="role-selector-homepage" className="w-full h-11 bg-card shadow-sm text-base">
             <SelectValue placeholder="Select a role..." />
           </SelectTrigger>
@@ -66,17 +78,19 @@ export default function HomePage() {
           </SelectContent>
         </Select>
       </div>
+      {/* --- End Role Selector Section --- */}
 
       <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-6">
-        <Button 
-          size="lg" 
+        <Button
+          size="lg"
           className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto"
           onClick={handleRoleSelectAndNavigate}
-          disabled={!selectedRole}
+          disabled={!selectedRole} // Disable if no role is somehow selected
         >
           Go to {selectedRole ? (selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)) : ''} Dashboard
           <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
+        {/* This "Learn More" button is not essential for the role selection functionality */}
         <Button variant="outline" size="lg" className="w-full sm:w-auto">
           Learn More
         </Button>
@@ -87,4 +101,3 @@ export default function HomePage() {
     </div>
   );
 }
-    
