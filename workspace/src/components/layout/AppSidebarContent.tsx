@@ -93,8 +93,9 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   supplier: {
     primary: [
       { href: "/dashboard", label: "Supplier Dashboard", icon: LayoutDashboard, exactMatch: true },
-      { href: "/dpp-live-dashboard?filter=my_supplied_components", label: "Products Using My Components", icon: Package }, 
-      { href: "/developer/docs/data-management-best-practices", label: "Data Submission Portal", icon: UploadCloud }, 
+      { href: "/products/new", label: "Submit Component/Material Data", icon: UploadCloud },
+      { href: "/dpp-live-dashboard?suppliedBy=myOrg", label: "Products Using My Components", icon: Package },
+      { href: "/dashboard#data-requests", label: "View Data Requests", icon: Inbox },
       { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot },
     ],
     secondary: [
@@ -104,11 +105,11 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   retailer: {
     primary: [
       { href: "/dashboard", label: "Retailer Dashboard", icon: LayoutDashboard, exactMatch: true },
-      { href: "/dpp-live-dashboard", label: "View Product DPPs", icon: LineChart },
-      { href: "/sustainability/compare", label: "Compare Products", icon: BarChartHorizontal },
+      { href: "/dpp-live-dashboard", label: "Browse Product Passports", icon: LineChart },
+      { href: "/sustainability/compare", label: "Compare Product Sustainability", icon: BarChartHorizontal },
+      { href: "/copilot", label: "AI Product Assistant", icon: Bot },
     ],
     secondary: [
-      { href: "/copilot", label: "Product Info Co-Pilot", icon: Bot },
       { href: "/settings", label: "My Retailer Profile", icon: Settings, exactMatch: true },
     ],
   },
