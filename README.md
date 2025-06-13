@@ -244,6 +244,18 @@ development (`npm run dev`) or production, you can install it like a native app:
 2. Click the browser's **Install** icon or choose **Add to Home Screen**.
 3. Launch the app from your home screen to use it in standalone mode.
 
+### Before Running Tests or Building
+
+Make sure all dependencies are installed before invoking `npm test` or
+`npm run build`:
+
+```bash
+npm install
+```
+
+The test suite relies on **Jest**, so this package must be available in your
+environment (it will be installed automatically by the command above).
+
 ### Running Tests
 
 Run the unit tests with:
