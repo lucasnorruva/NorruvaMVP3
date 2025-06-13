@@ -9,8 +9,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Shirt, Construction } from "lucide-react";
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link";
-import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // CORRECTED IMPORT
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+// Corrected import based on the error message and available exports
+import { getEbsiStatusDetails, getStatusBadgeClasses } from "@/utils/dppDisplayUtils";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +50,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   }
 
   const ebsiDetails = getEbsiStatusDetails(product.ebsiStatus);
-
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -143,24 +142,18 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
             {product.contractAddress && (
               <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong>
-                <TooltipProvider><Tooltip><TooltipTrigger asChild>
                    <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
-                </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></TooltipProvider>
               </p>
             )}
             {product.tokenId && (
               <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong>
-                 <TooltipProvider><Tooltip><TooltipTrigger asChild>
                    <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
-                 </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></TooltipProvider>
               </p>
             )}
             {product.anchorTransactionHash && (
               <div>
                 <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong>
-                <TooltipProvider><Tooltip><TooltipTrigger asChild>
                    <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
-                </TooltipTrigger><TooltipContent><p>{product.anchorTransactionHash}</p></TooltipContent></Tooltip></TooltipProvider>
                 <NextLink href={`https://mock-token-explorer.example.com/tx/${product.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs ml-2">
                   View Anchor Tx <ExternalLink className="ml-1 h-3 w-3" />
                 </NextLink>
@@ -181,9 +174,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                    </Badge>
                 </div>
                 {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
-                   <TooltipProvider><Tooltip><TooltipTrigger asChild>
                     <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
-                  </TooltipTrigger><TooltipContent><p>{product.ebsiVerificationId}</p></TooltipContent></Tooltip></TooltipProvider>
                 )}
               </div>
             )}
@@ -356,3 +347,5 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+
+    
