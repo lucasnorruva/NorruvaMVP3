@@ -28,12 +28,12 @@ import {
   ShoppingCart,
   PlusCircle,
   Users2,
-  Landmark, // Example for GDPR
-  Palette, // Example for Theme/Branding
-  Server, // Example for System Health
-  DatabaseZap, // Example for Data Management
-  MessageSquare, // Example for Feedback/Support
-  LifeBuoy, // Example for Help
+  Landmark, 
+  Palette, 
+  Server, 
+  DatabaseZap, 
+  MessageSquare, 
+  LifeBuoy, 
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
@@ -48,8 +48,8 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ElementType;
-  group?: string; // To group items under a conceptual header if needed later
-  exactMatch?: boolean; // For links like /dashboard where sub-paths shouldn't activate it
+  group?: string; 
+  exactMatch?: boolean; 
 }
 
 const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[] }> = {
@@ -59,19 +59,19 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
       { href: "/dpp-live-dashboard", label: "Live DPPs Overview", icon: LineChart },
       { href: "/products", label: "Product Management", icon: Package },
       { href: "/suppliers", label: "Supplier Directory", icon: Users2 },
-      { href: "/sustainability", label: "Sustainability HQ", icon: Leaf, exactMatch: true },
-      { href: "/compliance/pathways", label: "Compliance Hub", icon: ShieldCheck },
       { href: "/customs-dashboard", label: "Customs Tracker", icon: ClipboardList },
       { href: "/dpp-global-tracker-v2", label: "DPP Global View", icon: Globe2 },
+      { href: "/sustainability", label: "Sustainability HQ", icon: FileText, exactMatch: true },
+      { href: "/compliance/pathways", label: "Compliance Hub", icon: ShieldCheck },
       { href: "/blockchain", label: "Blockchain Console", icon: Fingerprint },
+      { href: "/gdpr", label: "GDPR Center", icon: Landmark },
+      { href: "/audit-log", label: "System Audit Log", icon: ListChecks },
       { href: "/settings/users", label: "User Management", icon: Users },
+      { href: "/settings", label: "Platform Settings", icon: Settings, exactMatch: true },
     ],
     secondary: [
       { href: "/developer", label: "Developer Portal", icon: Code2 },
-      { href: "/audit-log", label: "System Audit Log", icon: ListChecks },
-      { href: "/settings", label: "Platform Settings", icon: Settings, exactMatch: true },
       { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
-      { href: "/gdpr", label: "GDPR Center", icon: Landmark },
     ],
   },
   manufacturer: {
@@ -92,9 +92,8 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   supplier: {
     primary: [
       { href: "/dashboard", label: "Supplier Dashboard", icon: LayoutDashboard, exactMatch: true },
-      // Conceptual links for supplier specific tasks
-      { href: "/dpp-live-dashboard?filter=my_supplied_components", label: "Products Using My Components", icon: Package }, // Placeholder filter
-      { href: "/developer/docs/data-management-best-practices", label: "Data Submission Portal", icon: UploadCloud }, // Link to guide as placeholder
+      { href: "/dpp-live-dashboard?filter=my_supplied_components", label: "Products Using My Components", icon: Package }, 
+      { href: "/developer/docs/data-management-best-practices", label: "Data Submission Portal", icon: UploadCloud }, 
       { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot },
     ],
     secondary: [
@@ -105,7 +104,6 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
     primary: [
       { href: "/dashboard", label: "Retailer Dashboard", icon: LayoutDashboard, exactMatch: true },
       { href: "/dpp-live-dashboard", label: "View Product DPPs", icon: LineChart },
-      // Conceptual: { href: "/retailer/inventory-check", label: "Scan Inventory DPPs", icon: ScanLine },
       { href: "/sustainability/compare", label: "Compare Products", icon: BarChartHorizontal },
     ],
     secondary: [
@@ -117,8 +115,6 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
     primary: [
       { href: "/dashboard", label: "Recycler Dashboard", icon: LayoutDashboard, exactMatch: true },
       { href: "/dpp-live-dashboard?status=all&includeArchived=true", label: "Search All DPPs (Incl. EOL)", icon: LineChart },
-      // Conceptual: { href: "/recycler/scan-eol", label: "Scan EOL Product", icon: ScanLine },
-      // Conceptual: { href: "/recycler/material-database", label: "Material Recovery DB", icon: DatabaseZap },
     ],
     secondary: [
       { href: "/copilot", label: "EOL Co-Pilot", icon: Bot },
@@ -128,9 +124,8 @@ const ALL_NAV_ITEMS: Record<UserRole, { primary: NavItem[], secondary: NavItem[]
   verifier: {
     primary: [
       { href: "/dashboard", label: "Verifier Dashboard", icon: LayoutDashboard, exactMatch: true },
-      { href: "/dpp-live-dashboard?status=pending_review", label: "DPPs for Verification", icon: LineChart }, // Default to pending
+      { href: "/dpp-live-dashboard?status=pending_review", label: "DPPs for Verification", icon: LineChart }, 
       { href: "/audit-log", label: "View Audit Trails", icon: HistoryIconLucide },
-      // Conceptual: { href: "/verifier/submit-report", label: "Submit Verification Report", icon: FileText },
     ],
     secondary: [
       { href: "/copilot", label: "Compliance Co-Pilot", icon: Bot },
@@ -145,7 +140,7 @@ export default function AppSidebarContent() {
   const { state: sidebarState, isMobile } = useSidebar();
   const { currentRole } = useRole();
 
-  const { primary: navItems, secondary: secondaryNavItems } = ALL_NAV_ITEMS[currentRole] || ALL_NAV_ITEMS.admin; // Default to admin if role somehow undefined
+  const { primary: navItems, secondary: secondaryNavItems } = ALL_NAV_ITEMS[currentRole] || ALL_NAV_ITEMS.admin; 
 
   const commonButtonClass = (href: string, exactMatch?: boolean) => {
     let isActive: boolean;
@@ -154,17 +149,14 @@ export default function AppSidebarContent() {
       isActive = pathname === href;
     } else {
       isActive = pathname.startsWith(href);
-      // Special case for /products to not be active for /products/new
       if (href === "/products" && pathname.startsWith("/products/new")) {
         isActive = false;
       }
-       // Special case for /sustainability to not be active for /sustainability/compare
       if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
         isActive = false;
       }
     }
     
-    // If on /dashboard, only highlight exact /dashboard link
     if (pathname === "/dashboard" && href !== "/dashboard") {
         isActive = false;
     }
@@ -252,4 +244,3 @@ export default function AppSidebarContent() {
     </>
   );
 }
-
