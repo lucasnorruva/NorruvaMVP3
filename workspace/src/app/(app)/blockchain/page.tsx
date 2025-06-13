@@ -313,6 +313,8 @@ export default function BlockchainPage() {
       setNftChainName(dpp.ownershipNftLink?.chainName || dpp.blockchainIdentifiers?.platform || "");
       setOnChainStatusUpdate(dpp.metadata.onChainStatus || "active");
       setOnChainLifecycleStage(dpp.metadata.onChainLifecycleStage || "Manufacturing"); 
+      setCriticalEventLog(""); // Reset critical event log input
+      setCriticalEventSeverity("High"); // Reset severity
 
       setDaoTransferTokenId(tokenId || "N/A (Mint Token First)");
       if (parsedTokenStatus && parsedTokenStatus.tokenId === tokenId) {
@@ -335,6 +337,8 @@ export default function BlockchainPage() {
       setNftChainName("");
       setOnChainStatusUpdate("active");
       setOnChainLifecycleStage("Manufacturing"); 
+      setCriticalEventLog(""); 
+      setCriticalEventSeverity("High");
       setDaoTransferTokenId("");
       setDaoTransferCurrentOwner("");
       setDaoTransferNewOwnerAddress("");
@@ -1325,3 +1329,4 @@ export default function BlockchainPage() {
 }
       
     
+
