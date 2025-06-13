@@ -125,11 +125,12 @@ export async function GET(request: NextRequest) {
   const blockchainAnchored = searchParams.get('blockchainAnchored') as DashboardFiltersState['blockchainAnchored'] | null;
   const isTextileProductParam = searchParams.get('isTextileProduct');
   const isConstructionProductParam = searchParams.get('isConstructionProduct');
-  const includeArchivedParam = searchParams.get('includeArchived'); // New parameter
+  const includeArchivedParam = searchParams.get('includeArchived'); // Parameter to control inclusion of archived items
 
   let filteredDPPs: DigitalProductPassport[] = [...MOCK_DPPS];
 
-  // Filter by isArchived first, unless includeArchived=true
+  // Handle includeArchived parameter
+  // If includeArchived is not 'true', filter out items where metadata.isArchived is true.
   if (includeArchivedParam !== 'true') {
     filteredDPPs = filteredDPPs.filter(dpp => !dpp.metadata.isArchived);
   }
@@ -145,15 +146,14 @@ export async function GET(request: NextRequest) {
   }
 
   if (status && status !== 'all') {
-    // If filtering for 'archived' status, we need to consider 'isArchived' flag if includeArchived was true.
-    // However, the primary mechanism for "archived" from UI perspective is now isArchived flag.
-    // So, if `status === 'archived'`, it's handled by the includeArchived logic above and client-side filtering.
-    // For other statuses, we filter by `metadata.status`.
+    // The 'archived' status filter is now primarily handled by the `includeArchived` logic
+    // and client-side for specific "Show Archived" views.
+    // For other statuses, we filter by metadata.status as before.
     if (status !== 'archived') {
-      filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
+        filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
     }
-    // If status === 'archived', the API has already potentially included them if includeArchived=true.
-    // The client (useDPPLiveData) will do the final filter for dpp.metadata.isArchived === true.
+    // If status === 'archived' and includeArchived === 'true', items with metadata.isArchived=true are already included.
+    // The client will then specifically filter for these.
   }
 
 
@@ -191,9 +191,8 @@ export async function GET(request: NextRequest) {
       blockchainAnchored,
       isTextileProduct, 
       isConstructionProduct, 
-      includeArchived: includeArchivedParam === 'true', // Reflect the param
+      includeArchived: includeArchivedParam === 'true', 
     },
     totalCount: filteredDPPs.length,
   });
 }
-

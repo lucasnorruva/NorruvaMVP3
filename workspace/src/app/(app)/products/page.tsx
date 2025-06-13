@@ -30,7 +30,7 @@ import { ProductListRow } from "@/components/products/ProductListRow";
 import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils";
 import { cn } from "@/lib/utils";
 import { MOCK_DPPS as InitialMockDppsData } from '@/data'; 
-import { useDPPLiveData, ProcessedDPP } from '@/hooks/useDPPLiveData'; // Import useDPPLiveData and ProcessedDPP
+import { useDPPLiveData, ProcessedDPP } from '@/hooks/useDPPLiveData'; 
 
 
 const SortableTableHead: React.FC<{
@@ -56,67 +56,48 @@ const SortableTableHead: React.FC<{
 export default function ProductsPage() {
   const { currentRole } = useRole();
   const { 
-    dpps: processedDpps, // Note: dpps from the hook are already ProcessedDPP
     filters, 
     sortConfig, 
-    productToDeleteId, 
     isDeleteDialogOpen, 
     availableCategories,
-    availableManufacturers,
+    availableManufacturers, // Now available from the hook
     sortedAndFilteredDPPs, 
+    metrics, // Metrics are now derived from filtered data in the hook
     handleFiltersChange, 
     handleSort, 
     handleDeleteRequest, 
     confirmDeleteProduct, 
     setIsDeleteDialogOpen,
     toast
-  } = useDPPLiveData();
+  } = useDPPLiveData(); // Use the comprehensive hook
 
-  // Rename productToDeleteId to avoid conflict in this component's scope
   const [productToDeleteForDialog, setProductToDeleteForDialog] = useState<ProcessedDPP | null>(null);
-  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
-
 
   const openDeleteConfirmDialog = (product: ProcessedDPP) => {
     setProductToDeleteForDialog(product);
-    setIsAlertDialogOpen(true);
+    handleDeleteRequest(product.id); // This will set productToDeleteId in the hook and open the dialog
   };
 
   const handleDeleteProduct = () => {
-    if (productToDeleteForDialog) {
-      confirmDeleteProduct(); // Call the hook's delete function
-    }
-    setIsAlertDialogOpen(false);
-    setProductToDeleteForDialog(null);
+    confirmDeleteProduct(); // Call the hook's delete function
+    setProductToDeleteForDialog(null); // Clear local state after hook handles it
   };
 
   const canAddProducts = currentRole === 'admin' || currentRole === 'manufacturer';
 
   const statusOptions = useMemo(() => {
-    const uniqueStatuses = new Set(processedDpps.map(p => p.metadata.status).filter(Boolean).sort());
+    const uniqueStatuses = new Set(sortedAndFilteredDPPs.map(p => p.metadata.status).filter(Boolean).sort());
     return ["All", ...Array.from(uniqueStatuses)];
-  }, [processedDpps]);
+  }, [sortedAndFilteredDPPs]);
 
   const complianceOptions = useMemo(() => {
-    const uniqueCompliance = new Set(processedDpps.map(p => p.overallCompliance.text).filter(Boolean).sort());
+    const uniqueCompliance = new Set(sortedAndFilteredDPPs.map(p => p.overallCompliance.text).filter(Boolean).sort());
     return ["All", ...Array.from(uniqueCompliance)];
-  }, [processedDpps]);
+  }, [sortedAndFilteredDPPs]);
 
   const categoryOptionsForFilter = useMemo(() => {
     return ["All", ...availableCategories];
   }, [availableCategories]);
-
-
-  const summaryMetrics = useMemo(() => {
-    const sourceForMetrics = sortedAndFilteredDPPs; // Use the filtered list
-    const total = sourceForMetrics.length;
-    const active = sourceForMetrics.filter(p => p.metadata.status === 'published' && !p.metadata.isArchived).length; // Adjusted for soft delete
-    const draft = sourceForMetrics.filter(p => p.metadata.status === 'draft' && !p.metadata.isArchived).length;
-    const issues = sourceForMetrics.filter(p => (p.overallCompliance.text === 'Non-Compliant' || p.overallCompliance.text === 'Pending') && !p.metadata.isArchived).length;
-    const totalCompletenessScore = sourceForMetrics.reduce((sum, p) => sum + (p.completeness?.score || 0), 0);
-    const averageCompleteness = total > 0 ? (totalCompletenessScore / total).toFixed(1) + "%" : "0%";
-    return { total, active, draft, issues, averageCompleteness };
-  }, [sortedAndFilteredDPPs]);
 
   return (
     <div className="space-y-8">
@@ -133,11 +114,11 @@ export default function ProductsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-        <MetricCard title="Total Products" value={summaryMetrics.total} icon={PackageIcon} />
-        <MetricCard title="Active Products" value={summaryMetrics.active} icon={CheckCircle2} />
-        <MetricCard title="Draft Products" value={summaryMetrics.draft} icon={Edit3} />
-        <MetricCard title="Compliance Issues" value={summaryMetrics.issues} trendDirection={summaryMetrics.issues > 0 ? "up" : "neutral"} />
-        <MetricCard title="Avg. DPP Completeness" value={summaryMetrics.averageCompleteness} icon={PieChart} />
+        <MetricCard title="Total Products" value={metrics.totalDPPs} icon={PackageIcon} />
+        <MetricCard title="Active Products" value={metrics.metrics?.active || 0} icon={CheckCircle2} /> {/* Corrected to use metrics from hook */}
+        <MetricCard title="Draft Products" value={metrics.metrics?.draft || 0} icon={Edit3} /> {/* Corrected */}
+        <MetricCard title="Compliance Issues" value={metrics.metrics?.issues || 0} trendDirection={(metrics.metrics?.issues || 0) > 0 ? "up" : "neutral"} /> {/* Corrected */}
+        <MetricCard title="Avg. DPP Completeness" value={metrics.averageCompleteness} icon={PieChart} />
       </div>
 
       <ProductManagementFiltersComponent
@@ -177,7 +158,7 @@ export default function ProductsPage() {
                     product={product}
                     completenessData={product.completeness}
                     currentRole={currentRole}
-                    onDeleteProduct={() => handleDeleteRequest(product.id)} // Pass the ID
+                    onDeleteProduct={() => openDeleteConfirmDialog(product)} 
                 />
               ))}
                {sortedAndFilteredDPPs.length === 0 && (
@@ -193,13 +174,13 @@ export default function ProductsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will archive product "{processedDpps.find(p => p.id === productToDeleteId)?.productName || productToDeleteId}". 
+              This action will archive product "{productToDeleteForDialog?.productName || productToDeleteId}". 
               Archived products can be viewed by adjusting filters.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Archive Product
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -208,4 +189,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-
