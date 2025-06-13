@@ -255,7 +255,6 @@ const STATUS_DISPLAY_MAP: Record<string, StatusDisplayConfig> = {
   default: defaultDisplay,
 };
 
-// This function remains as it's generally useful
 export const getStatusIcon = (status?: string): JSX.Element => {
   const key = status?.toLowerCase().trim() ?? 'default';
   return STATUS_DISPLAY_MAP[key]?.icon ?? STATUS_DISPLAY_MAP.default.icon;
@@ -270,9 +269,3 @@ export const getStatusBadgeClasses = (status?: string): string => {
   const key = status?.toLowerCase().trim() ?? 'default';
   return STATUS_DISPLAY_MAP[key]?.classes ?? STATUS_DISPLAY_MAP.default.classes;
 };
-
-// Removed the getEbsiStatusBadge function as it's no longer needed
-// and was the source of the conflict.
-// OverviewTab.tsx will now directly use getEbsiStatusDetails and getStatusBadgeClasses.
-
-    
