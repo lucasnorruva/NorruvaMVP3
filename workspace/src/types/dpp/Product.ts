@@ -289,7 +289,7 @@ export interface RichMockProduct {
   compliance: string;
   lastUpdated: string;
   gtin?: string;
-  manufacturer?: string;
+  manufacturer?: string; // Changed from Manufacturer object to simple string
   modelNumber?: string;
   description?: string;
   imageUrl?: string;
@@ -484,4 +484,5 @@ export interface CustomsAlert {
 
 // InspectionEvent is already defined in Lifecycle.ts and re-exported by index.ts
 // No need to redefine here.
+    
     
