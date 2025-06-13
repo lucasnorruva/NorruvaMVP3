@@ -2,57 +2,36 @@
 "use client";
 
 import { useEffect } from 'react';
-// registerServiceWorker import is not strictly needed if we are only unregistering for this debug step.
-// import { registerServiceWorker } from '@/utils/registerServiceWorker'; 
 
 export default function ServiceWorkerRegister() {
   useEffect(() => {
-    // FORCED UNREGISTER FOR DEBUGGING - Revert to original logic after testing this.
-    console.log('[DEBUG] Forcing service worker unregistration attempt on component mount...');
+    // Ensure any existing service workers are unregistered.
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(registrations => {
-        if (registrations.length === 0) {
-          console.log('[DEBUG] No service workers found to unregister.');
-          return;
+        if (registrations.length > 0) {
+          console.log('[ServiceWorkerRegister] Unregistering existing service workers...');
+          for (let registration of registrations) {
+            registration.unregister().then(unregistered => {
+              if (unregistered) {
+                console.log('[ServiceWorkerRegister] Successfully unregistered service worker for scope:', registration.scope);
+              } else {
+                console.warn('[ServiceWorkerRegister] Call to unregister service worker for scope returned false:', registration.scope);
+              }
+            }).catch(err => {
+              console.error('[ServiceWorkerRegister] Error during service worker unregistration for scope:', registration.scope, err);
+            });
+          }
+          // Advise a reload after unregistration attempts
+          // console.log("[ServiceWorkerRegister] Service workers unregistration attempted. A page reload might be needed to fully clear control.");
+        } else {
+          // console.log("[ServiceWorkerRegister] No service workers found to unregister.");
         }
-        for (let registration of registrations) {
-          registration.unregister().then(unregistered => {
-            if (unregistered) {
-              console.log('[DEBUG] Successfully unregistered service worker for scope:', registration.scope);
-            } else {
-              // This often happens if the page controlling the SW is already gone or being refreshed.
-              console.warn('[DEBUG] Call to unregister service worker for scope returned false (might be okay if page is reloading):', registration.scope);
-            }
-          }).catch(err => {
-            console.error('[DEBUG] Error during service worker unregistration for scope:', registration.scope, err);
-          });
-        }
-        // After attempting unregistration, it's good to reload to ensure the page is no longer controlled.
-        // However, automatically reloading can be disruptive. We'll rely on manual hard refresh for now.
-        // console.log('[DEBUG] Attempted unregistration. A hard refresh might be needed.');
-
       }).catch(err => {
-        console.error('[DEBUG] Error getting service worker registrations:', err);
+        console.error('[ServiceWorkerRegister] Error getting service worker registrations:', err);
       });
-    } else {
-      console.log('[DEBUG] Service Worker API not available or not in browser environment.');
     }
-    // --- END OF FORCED UNREGISTER ---
-
-    // Original logic (commented out for this debug step):
-    // if (process.env.NODE_ENV === 'production') {
-    //   registerServiceWorker();
-    // } else {
-    //   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    //     navigator.serviceWorker.getRegistrations().then(registrations => {
-    //       for (let registration of registrations) {
-    //         registration.unregister();
-    //         console.log('[Dev Env] Service worker unregistered:', registration);
-    //       }
-    //     });
-    //   }
-    // }
+    // Do not register any new service worker.
   }, []);
 
-  return null;
+  return null; // This component now does nothing visible and primarily ensures cleanup.
 }
