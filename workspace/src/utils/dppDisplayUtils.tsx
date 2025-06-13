@@ -268,17 +268,3 @@ export const getStatusBadgeClasses = (status?: string): string => {
   const key = status?.toLowerCase().trim() ?? 'default';
   return STATUS_DISPLAY_MAP[key]?.classes ?? STATUS_DISPLAY_MAP.default.classes;
 };
-
-/**
- * New function to return a complete Badge component for EBSI status.
- */
-export const getEbsiStatusBadge = (status?: EbsiVerificationDetails['status']): JSX.Element => {
-  const details = getEbsiStatusDetails(status);
-  const badgeClasses = getStatusBadgeClasses(status); // Re-use existing class getter for styling consistency
-  return (
-    <Badge variant={details.variant} className={cn("capitalize", badgeClasses)}>
-      {React.cloneElement(details.icon, { className: cn(details.icon.props.className, "mr-1.5 h-3.5 w-3.5")})}
-      {details.text}
-    </Badge>
-  );
-};
