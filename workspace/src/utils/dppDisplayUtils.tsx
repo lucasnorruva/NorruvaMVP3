@@ -240,7 +240,7 @@ const STATUS_DISPLAY_MAP: Record<string, StatusDisplayConfig> = {
   pending_verification: pendingDisplay,
   "in progress": pendingDisplay,
   "data incomplete": pendingDisplay,
-  "data mismatch": pendingDisplay, // This was in errorDisplay, but can also mean pending action
+  "data mismatch": pendingDisplay, 
   "product not found in eprel": pendingDisplay,
   "pending notification": pendingDisplay,
   "pending documents": pendingDisplay,
@@ -274,7 +274,7 @@ export const getStatusBadgeClasses = (status?: string): string => {
  */
 export const getEbsiStatusBadge = (status?: EbsiVerificationDetails['status']): JSX.Element => {
   const details = getEbsiStatusDetails(status);
-  const badgeClasses = getStatusBadgeClasses(status); // Re-use existing class getter
+  const badgeClasses = getStatusBadgeClasses(status); // Re-use existing class getter for styling consistency
   return (
     <Badge variant={details.variant} className={cn("capitalize", badgeClasses)}>
       {React.cloneElement(details.icon, { className: cn(details.icon.props.className, "mr-1.5 h-3.5 w-3.5")})}
